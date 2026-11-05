@@ -10,6 +10,7 @@
 //   sfx.onPlay(cb)                   cb(name, gain) after a sound starts (the music dips under big ones)
 // Every call is a safe no-op where WebAudio is missing (Node, old browsers).
 import { ALERT_RECIPES, ALERT_LIMITS, ALERT_LEVEL } from './sfx-alerts.js';
+import { IMPACT_RECIPES, IMPACT_LIMITS, IMPACT_LEVEL } from './sfx-impacts.js';
 
 export const SFX_NAMES = [
   'click', 'select', 'move', 'attack_melee', 'attack_ranged', 'hit', 'death', 'build',
@@ -505,6 +506,11 @@ function buildGraph(ctx) {
 
 // The alert, tip and milestone sounds are written in sfx-alerts.js.
 SFX_NAMES.push(...Object.keys(ALERT_RECIPES));
+// The impact, death and collapse sounds by material and size are written in sfx-impacts.js.
+SFX_NAMES.push(...Object.keys(IMPACT_RECIPES));
+Object.assign(LIMITS, IMPACT_LIMITS);
+Object.assign(LEVEL, IMPACT_LEVEL);
+Object.assign(RECIPES, IMPACT_RECIPES);
 Object.assign(LIMITS, ALERT_LIMITS);
 Object.assign(LEVEL, ALERT_LEVEL);
 Object.assign(RECIPES, ALERT_RECIPES);

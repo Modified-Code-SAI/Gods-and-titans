@@ -13,6 +13,7 @@ import { HostSession, ClientSession } from '../net/session.js';
 import { createWorld } from '../sim/world.js';
 import { getSettings, onSettingsChange } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
+import { impactSound, deathSound } from '../audio/sfx-impacts.js';
 import { GAME_SPEEDS, PEACE_NAME, UI_SCALES } from '../config.js';
 import { edgeName } from '../sim/survival.js';
 import { UNITS, BUILDINGS, buildingIcon } from '../data/index.js';
@@ -1274,7 +1275,8 @@ export class Game {
           else if (t && t.class === 'god') hud.message(`${t.name} has fallen! Revive them at a Temple.`, 'alert', { icon: '💀' });
           else if (t && t.class === 'titan') hud.message(`${t.name} has fallen!`, 'alert', { icon: '💀' });
         }
-        this.worldSound('death', ev.x, ev.y, ev.k === 'b' ? (BUILDINGS[ev.t] && BUILDINGS[ev.t].wall ? 0.5 : 1) : 0.8);
+        const [dName, dVol] = deathSound(ev, ev.k === 'b' ? BUILDINGS[ev.t] : UNITS[ev.t]);
+        this.worldSound(dName, ev.x, ev.y, dVol);
         break;
       }
       case 'attack':
@@ -1290,7 +1292,12 @@ export class Game {
       }
       case 'hit': {
         const p = this.entityPos(ev.dst);
-        if (p) this.worldSound('hit', p.x, p.y, 0.8);
+        if (p) {
+          const s = ev.src ? this.viewState.entities.get(ev.src) : null;
+          const srcDef = s ? (s.k === 'b' ? BUILDINGS[s.t] : UNITS[s.t]) : null;
+          const [hName, hVol] = impactSound({ kind: p.e.k, id: p.e.t, def: p.e.k === 'b' ? BUILDINGS[p.e.t] : UNITS[p.e.t] }, srcDef ? { def: srcDef } : null);
+          this.worldSound(hName, p.x, p.y, hVol);
+        }
         break;
       }
       case 'effect': {

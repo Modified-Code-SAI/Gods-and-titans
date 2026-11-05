@@ -59,6 +59,7 @@ export const DUCKS = {
   defeat: [0.7, 4.5],
   tier_up: [0.3, 2],
   horn: [0.3, 2.5],
+  death_titan: [0.35, 3], // a titan crashing down is the battle's moment: the score gives it room
 };
 
 /** A dark hall: mono noise that dies away, smoothed more the longer it lasts. */
