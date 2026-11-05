@@ -52,7 +52,7 @@ export function same(a, b) {
     if (!hasOwn.call(b, k) || !same(a[k], b[k])) return false;
     n++;
   }
-  for (const k in b) n--;
+  for (const _k in b) n--;
   return n === 0;
 }
 

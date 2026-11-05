@@ -16,7 +16,7 @@
 //   --mode=mirror: each pantheon against itself.
 // --teams=2v2 plays 4-player games (players 0,1 vs 2,3) on a medium map;
 // --teams=ffa plays 4-player free-for-all games (one game per listed pantheon).
-import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
+import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import { createWorld } from '../src/sim/world.js';

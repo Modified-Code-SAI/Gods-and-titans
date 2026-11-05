@@ -512,7 +512,7 @@ export function courseSlope(a0, a1, b0, b1, n, lip, { shadow = 0.2, butt = 0.55,
   const lerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t];
   const push = (pts, shades, flipUp) => {
     // two triangles of a quad, wound so the normal points up (faces) or toward the eave (butts)
-    const [A, B, C2, D] = pts;
+    const [A, B, C2] = pts;
     const nx = (B[1] - A[1]) * (C2[2] - A[2]) - (B[2] - A[2]) * (C2[1] - A[1]);
     const ny = (B[2] - A[2]) * (C2[0] - A[0]) - (B[0] - A[0]) * (C2[2] - A[2]);
     const nz = (B[0] - A[0]) * (C2[1] - A[1]) - (B[1] - A[1]) * (C2[0] - A[0]);

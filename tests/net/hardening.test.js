@@ -23,8 +23,7 @@ async function waitFor(cond, ms = 3000, what = 'condition') {
   }
 }
 const json = (v) => JSON.parse(JSON.stringify(v));
-// eslint-disable-next-line no-control-regex
-const UNSAFE = /[\u0000-\u001f\u007f-\u009f​‎‏‪-‮⁦-⁩﻿]/;
+const UNSAFE = /[\u0000-\u001f\u007f-\u009f\u200b\u200e\u200f\u202a-\u202e\u2066-\u2069\ufeff]/;
 
 /** Run fn with console.warn / console.error silenced; returns what was logged. */
 async function quietly(fn) {

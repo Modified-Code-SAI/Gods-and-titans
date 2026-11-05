@@ -58,6 +58,13 @@ npm install
 npm run serve
 ```
 
-then open http://localhost:8080/. Run the tests with `npm test`.
+then open http://localhost:8080/. Checks (CI runs all four on every pull request):
+
+- `npm test`: the unit tests (about 2.5 minutes).
+- `npm run lint`: ESLint, real mistakes only (unused or undefined names and the like).
+- `npm run audit`: headless AI-vs-AI games with the world's rules checked as they play, and a same-seed replay.
+- `npm run e2e`: the real interface driven by mouse and keyboard in Chromium (`tools/play-test.mjs`; add `-- --slow` on a machine without a GPU).
+
+The deployed site is the same code bundled by `node tools/build-site.mjs` (the Pages workflow runs it): a few minified files with hashed names instead of ~270 modules. Browser tools pick their browser through `tools/browser.mjs`; set `CHROMIUM_PATH` to use another one.
 
 `DESIGN.md` is the full design spec. The game rules live in `src/sim/` (plain JavaScript that also runs in Node), rendering in `src/render/`, the interface in `src/ui/`, online play in `src/net/` and the computer players in `src/ai/`.

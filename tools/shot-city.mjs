@@ -12,7 +12,7 @@
 //        [--stats]    print triangle and draw-call counts of each shot
 //
 // Files: DIR/PREFIX-<pantheon>-<view>-<tod>.png
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

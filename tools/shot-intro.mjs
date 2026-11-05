@@ -21,7 +21,7 @@
 // --sound reads the same graph on the real page, under the browser's autoplay policies: the default (a first visit),
 // the policy switched off, and a site set to "Sound: Allow" in a profile.)
 
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

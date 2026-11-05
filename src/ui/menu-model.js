@@ -315,7 +315,6 @@ export function safeUrl(value) {
   const s = String(value).trim();
   if (!s) return '';
   // Browsers drop tabs / newlines inside URLs and ignore leading control characters.
-  // eslint-disable-next-line no-control-regex
   const probe = s.replace(/[\u0000-\u0020\u007f-\u009f]/g, '').toLowerCase();
   const m = /^([a-z][a-z0-9+.-]*):/.exec(probe);
   if (!m) return s; // relative (or protocol-relative, i.e. http/https)

@@ -162,7 +162,7 @@ test('several raiders are counted; creatures, units out of sight and the peace d
   s.at(1);
   const pack = [s.unit(900, 'warrior', 1, 14.5, 12.5), s.unit(901, 'archer', 1, 15.5, 12.5), s.unit(902, 'warrior', 1, 16.5, 12.5)];
   s.at(2, { edit: (snap) => snap.entities.push(...pack) });
-  assert.match(s.take()[0].text, /^3 enemy units have been sighted near your base!  \[\[Space\]\]$/);
+  assert.match(s.take()[0].text, /^3 enemy units have been sighted near your base! {2}\[\[Space\]\]$/);
 
   const t = scene();
   t.at(1);

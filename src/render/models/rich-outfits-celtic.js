@@ -39,7 +39,6 @@ const WOOL = withMat('#cdb98e', 'cloth');
 const BLACK_CLOTH = withMat('#1c1a22', 'cloth');
 const RAVEN = withMat('#17151d', 'feather');
 const RAVEN_BLUE = withMat('#3a4478', 'feather');
-const RUBY = withMat('#c0262e', 'gem');
 const SAPPHIRE = withMat('#3a6ad0', 'gem');
 const EMBER = withMat('#ff9a3a', 'gem');
 const WOAD = withMat('#26428e', 'skin');

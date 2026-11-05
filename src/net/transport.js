@@ -24,7 +24,7 @@ import { createPulse } from './ticker.js';
 export const TRANSPORTS = ['peer', 'local', 'loopback', 'none'];
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
-const later = typeof setImmediate === 'function' ? setImmediate : (fn) => setTimeout(fn, 0);
+const later = typeof globalThis.setImmediate === 'function' ? globalThis.setImmediate : (fn) => setTimeout(fn, 0);
 
 /** The error a cancelled join rejects with (`signal` in joinRoom; `type` 'aborted'). */
 export function abortError() {

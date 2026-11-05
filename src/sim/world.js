@@ -271,7 +271,7 @@ export class World {
       dmgMult: 1, armorNow: def.armor, speedNow: def.speed, atkSpeedMult: 1, lifesteal, regen, shield: 0,
       stunned: false, invuln: false, slowPct: 0,
       dead: false, constructed: true, buildProgress: 1, queue: null, size: 0, amount: 0,
-      lastGather: null, camp: null, jamT: 0, // jamT: tick until which the unit squeezes through allies (movement.js)
+      lastGather: null, camp: null, jamT: 0, jams: 0, // jamT: tick until which the unit squeezes through allies; jams: stuck checks pressed against allies (movement.js)
       boost: opts.boost || null, // Trial of the Titans: a wave monster's { hp, dmg } multipliers
       // Engagement bookkeeping (combat.js / surround.js): current target id, ticks approaching it,
       // ticks blocked, last progress check, the melee attack spot, and attackers claiming spots on us.

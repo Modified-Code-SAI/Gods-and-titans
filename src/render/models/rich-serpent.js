@@ -56,9 +56,6 @@ const SPINE = {
   ],
 };
 
-/** The bones of the spine in order of the keys (key 0 first). */
-const SPINE_BONES = ['head', 'n3', 'n2', 'n1', 's0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7'];
-
 /** The color of a glowing eye: the unit's own aura, lit, rather than the washed-out tint the humanoids' glow uses. */
 export const glowEye = (pal) => withMat(mixC(pal.glow, pal.eyeGlow, 0.3), 'gem');
 

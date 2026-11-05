@@ -134,7 +134,6 @@ export function buildBirdTemplate(unitType, ctx) {
   const skin = pal.skin;
   const backC = pal.back;
   const belly = pal.belly;
-  const dark = shadeC(skin, 0.6);
 
   // the barrel and the neck as one loft, from the tail's root to the skull
   const nk = Sx.neck;
@@ -291,7 +290,6 @@ function lionMetrics(S) {
 function flamePiece(spec, ctx, S, Lay) {
   const { pal } = ctx;
   const kit = new MeshKit(null, { sides: 6 });
-  const cy = Lay.cy;
   const flame = (base, dir, L, r, bend = 0.45) => {
     const l = Math.hypot(...dir);
     tongue(kit, pal, base, dir.map((x) => x / l), L, r, { bend, k: 0.33, sides: 5, n: 4, rings: 4, cap: 2 });

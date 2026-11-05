@@ -11,7 +11,7 @@
 // construction stages, close-ups of temples / titan gates / cities, the nature
 // patch and a real generated map. Prints console errors from the page.
 
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

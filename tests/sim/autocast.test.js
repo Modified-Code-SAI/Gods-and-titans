@@ -6,7 +6,7 @@ import { isAutocastOn } from '../../src/sim/abilities.js';
 import { chooseCast } from '../../src/sim/cast-choice.js';
 import { ViewState } from '../../src/game/view-state.js';
 import { getCommandCard } from '../../src/ui/command-card.js';
-import { makeWorld, run, runCollect, spawn, clearUnits, defineUnit, ability, eventsOf } from './helpers.js';
+import { makeWorld, runCollect, spawn, clearUnits, defineUnit, ability, eventsOf } from './helpers.js';
 
 function arena() {
   const w = makeWorld({ width: 64, height: 64, map: { width: 64, height: 64 } });
@@ -74,7 +74,7 @@ test('nothing is cast with no enemy around, and a moving unit does not stop to a
 test('an ultimate is not wasted on a lone neutral creep but fires into a big fight', () => {
   const w = arena();
   const ult = ability('t_ult', [{ type: 'damage', amount: 300, radius: 3, at: 'target' }], { range: 8, cooldown: 90 });
-  const c = caster(w, [ult]);
+  caster(w, [ult]);
   const creep = dummy(w, NEUTRAL, 24, 20);
   assert.equal(casts(runCollect(w, 1)).length, 0, 'lone creep');
   w.killEntity(creep, null);
@@ -85,7 +85,7 @@ test('an ultimate is not wasted on a lone neutral creep but fires into a big fig
 test('heals autocast on a hurt ally (in a fight or after it) and wait while everyone is healthy', () => {
   const w = arena();
   const heal = ability('t_mend', [{ type: 'heal', amount: 200, radius: 0 }], { target: 'ally', range: 6, ai: { use: 'heal' }, cooldown: 12 });
-  const c = caster(w, [heal]);
+  caster(w, [heal]);
   const friend = dummy(w, 0, 23, 20);
   assert.equal(casts(runCollect(w, 1)).length, 0, 'nobody hurt');
   friend.hp = friend.maxHp - 150;

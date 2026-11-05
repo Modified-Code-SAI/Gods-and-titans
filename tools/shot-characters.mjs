@@ -18,7 +18,7 @@
 //   unit:<id>   one unit close up, e.g. unit:norse_thor@9 or unit:warrior@6~0.3 (~n: look n tiles further south of the unit)
 //   field       the base at the default zoom, with workers at their jobs (25)
 // Files: DIR/PREFIX-<scene>-<tod>.png   (--clean hides the harness panel and stats)
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

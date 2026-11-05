@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // End-to-end play test that drives the REAL UI with the mouse and keyboard.
 //
-//   node tools/play-test.mjs [--port 8202] [--out DIR] [--only sp,controls,late,online] [--size 1280x720] [--headed]
+//   node tools/play-test.mjs [--port 8202] [--out DIR] [--only sp,controls,late,online] [--size 1280x720] [--headed] [--slow] [--site _site]
+//
+// --slow: clicks, screenshots and waits get 4 minutes instead of 30 s, for software GL on a machine without a
+// GPU (CI, cloud sessions), where a frame can take seconds.
+// --site DIR: serve that folder instead of the repo (the deployed build from tools/build-site.mjs).
 //
 // sp:     title → Play vs AI → Start → the game view appears with the getting-started
 //         tips → click a worshipper → B, H → place a House on a valid spot → construction
@@ -25,7 +29,7 @@
 //         moves that worker.
 // Screenshots go to --out (default: <tmp>/mythicwar-play-test). Prints frame timings.
 // Exits non-zero when a check fails or a page logs an error.
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -78,7 +82,7 @@ async function serverUp() {
 async function ensureServer() {
   if (await serverUp()) return null;
   const bin = join(root, 'node_modules', 'http-server', 'bin', 'http-server');
-  const child = spawn(process.execPath, [bin, '.', '-p', String(port), '-c-1', '--silent'], { cwd: root, stdio: 'ignore' });
+  const child = spawn(process.execPath, [bin, opt('site', '.'), '-p', String(port), '-c-1', '--silent'], { cwd: root, stdio: 'ignore' });
   for (let i = 0; i < 50; i++) {
     await wait(200);
     if (await serverUp()) return child;
@@ -502,7 +506,6 @@ function ownOnScreen(page, filterSrc) {
   return page.evaluate((src) => {
     const g = window.__game;
     const vs = g.viewState;
-    // eslint-disable-next-line no-new-func
     const f = new Function('e', `return (${src});`);
     const bottom = document.querySelector('.hud-bottom').getBoundingClientRect().top - 4;
     const out = [];
@@ -790,7 +793,6 @@ async function controls(browser) {
 function cheat(page, fn, arg) {
   return page.evaluate(([src, arg]) => {
     const g = window.__game;
-    // eslint-disable-next-line no-new-func
     return new Function('g', 'w', 'vs', 'arg', src)(g, g.session.world, g.viewState, arg);
   }, [fn, arg]);
 }
@@ -1154,6 +1156,14 @@ async function online(browser) {
 
 const server = await ensureServer();
 const browser = await chromium.launch({ args: LAUNCH_ARGS, headless: !flag('headed') });
+if (flag('slow')) {
+  const newContext = browser.newContext.bind(browser);
+  browser.newContext = async (o) => {
+    const c = await newContext(o);
+    c.setDefaultTimeout(240000);
+    return c;
+  };
+}
 try {
   for (const [name, fn] of [['sp', singlePlayer], ['controls', controls], ['late', lateGame], ['online', online]]) {
     if (!only.includes(name)) continue;

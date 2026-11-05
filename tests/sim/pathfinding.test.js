@@ -327,3 +327,27 @@ test('a rect arrival does not stand once the unit is pushed away from the footpr
   assert.notEqual(again, mv);
   assert.ok(!again.arrived);
 });
+
+test('a god behind allies standing still in a one-tile lane squeezes past instead of being held there for good', () => {
+  // Found in an AI game (FFA Brutal, seed 21): Athena stood at the water's edge for over 100 s on an attack-move,
+  // pressed against an idle Poseidon on the only open tile, with worshippers praying in the lane beyond. Idle allies
+  // did not count as traffic, so each move gave up after four stuck checks and the AI's next order (every few
+  // seconds) started the count again. Here: a one-tile lane with two allies on Hold Position in it.
+  const rock = [{ x: 10, y: 8, w: 10, h: 24 }, { x: 21, y: 8, w: 10, h: 24 }];
+  const w = makeWorld({ map: { width: 48, height: 48, rock, starts: [{ x: 4, y: 40 }, { x: 40, y: 40 }], mines: [] } });
+  clearUnits(w, 0);
+  clearUnits(w, 1);
+  const athena = spawn(w, 0, 'greek_athena', 20.5, 26.5);
+  const holders = [spawn(w, 0, 'greek_poseidon', 20.5, 24.5), spawn(w, 0, 'warrior', 20.5, 22.5)];
+  for (const h of holders) w.issueCommand(0, { type: 'hold', units: [h.id] });
+  run(w, 1);
+  // Like the AI, give the order again every 4 s.
+  let out = false;
+  for (let k = 0; k < 8 && !out; k++) {
+    w.issueCommand(0, { type: 'attackMove', units: [athena.id], x: 20.5, y: 4 });
+    out = runUntil(w, () => athena.y < 9, 4) > 0;
+  }
+  assert.ok(out, `Athena got out of the lane: ${athena.x.toFixed(2)},${athena.y.toFixed(2)}`);
+  // The holders were walked past, not bulldozed up the lane.
+  assert.ok(holders.every((h) => h.y > 20), `holders stayed put: ${holders.map((h) => h.y.toFixed(2)).join(', ')}`);
+});

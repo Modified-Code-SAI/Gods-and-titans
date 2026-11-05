@@ -12,7 +12,7 @@
 // Each shot renders one frame at a frozen render clock (identical wind between runs).
 // --perf prints the renderer's draw calls and triangles for every shot; --bench N also times N frames
 // (median, ms; a software rasterizer, so only comparable between runs on the same machine).
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

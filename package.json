@@ -7,10 +7,16 @@
   "scripts": {
     "serve": "http-server . -p 8080 -c-1 --silent",
     "test": "node --test \"tests/**/*.test.js\"",
-    "e2e": "node tests/e2e/run-all.mjs",
+    "e2e": "node tools/play-test.mjs --only sp",
+    "audit": "node tools/sim-audit.mjs --seeds=1-3 --max=15 --determinism --strict",
+    "lint": "eslint src tools tests",
     "peer-server": "peerjs --port 9000 --path /myapp"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "esbuild": "0.28.2",
+    "eslint": "9.39.5",
+    "globals": "17.0.0",
     "http-server": "14.1.1",
     "peer": "1.0.2",
     "playwright": "1.56.1"

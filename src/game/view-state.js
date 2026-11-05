@@ -16,7 +16,6 @@ const HISTORY = 8; // position samples kept per unit
 const SNAP_DIST = 4; // tiles; a jump this big between samples (blink) is not interpolated
 const DEFAULT_SIGHT = 6;
 const CLOCK_WINDOW = 20; // snapshots (~1 s): if all of them came late, the playback clock follows
-const KEEP_KEYS = new Set(['ix', 'iy', 'if']);
 
 const nowMs = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 

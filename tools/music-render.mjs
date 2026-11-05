@@ -13,14 +13,11 @@
 //
 // Starts a small static server for the repo, opens tools/music-lab.html in headless Chromium
 // and calls its renderTheme(). Prints peak and RMS per file. Needs Playwright (global or local).
-import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join, extname, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+import { chromium } from './browser.mjs';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => {

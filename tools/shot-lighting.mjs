@@ -12,7 +12,7 @@
 //                     (no HUD; works for high / ultra, where software GL can be too slow for a screenshot)
 //
 // Files: DIR/PREFIX-<scene>-<tod>.png
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';

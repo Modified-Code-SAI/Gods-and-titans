@@ -160,7 +160,6 @@ export function issueResearch(world, player, b, upId) {
  */
 export function issueWallUpgrade(world, player, ids) {
   if (!Array.isArray(ids)) return;
-  const p = world.players[player];
   let short = null;
   let queued = 0;
   for (const id of ids) {

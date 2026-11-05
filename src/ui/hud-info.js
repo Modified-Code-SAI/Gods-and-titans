@@ -280,7 +280,7 @@ export class InfoView {
   }
 
   buildUnitExtra(s) {
-    const { e, def, extra } = s;
+    const { def, extra } = s;
     const soldier = canRank(def);
     if (def && (def.class === 'god' || soldier)) {
       const xpBar = el('div', soldier ? 'hi-bar is-xp is-rank' : 'hi-bar is-xp', el('i', 'hi-bar-fill'));
