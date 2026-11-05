@@ -19,6 +19,7 @@ export async function resolve(spec, ctx, next) {
 
 const { GameRenderer } = await import('../../src/render/game-renderer.js');
 const { FOW_UNIFORMS } = await import('../../src/render/fog.js');
+const { CORPSE } = await import('../../src/render/remains.js');
 const { createWorld } = await import('../../src/sim/world.js');
 const { ViewState } = await import('../../src/game/view-state.js');
 const { PLAYER_COLORS, DT } = await import('../../src/config.js');
@@ -237,7 +238,15 @@ test('GameRenderer: events become effects, deaths play out, quality changes live
   assert.ok(effects >= 2, `${effects} effects spawned`);
   assert.ok(!r.units.has(b.id), 'the dead unit view left the live set');
   step(2);
-  assert.equal(r.dying.length, 0, 'death animation finished and was released');
+  assert.equal(r.dying.length, 1, 'the fallen body lies on the field');
+  const body = r.dying[0];
+  assert.ok(body.model.root.parent, 'still drawn');
+  assert.equal(body.model.deathHold, CORPSE.hold);
+  const y0 = body.model.rigGroup.position.y;
+  step(CORPSE.hold - 6); // (it died during the 3 s above: 2 to 5 s ago at y0)
+  assert.equal(body.model.rigGroup.position.y, y0, 'lies still, not yet sinking');
+  step(5);
+  assert.equal(r.dying.length, 0, 'then sinks away and is released');
   // a lasting ground zone seen only after its cast gets a visual for its remaining time, once
   const zones = [];
   const spawnEffect = vfx.spawnEffect.bind(vfx);
@@ -596,5 +605,34 @@ test('GameRenderer: resize without a post pipeline just applies the size (stub W
   assert.deepEqual(webgl.size, [800, 450]);
   assert.equal(r.viewW, 800);
   assert.equal(r.sizeTimer, 0);
+  r.dispose();
+});
+
+test('GameRenderer: a building that falls leaves rubble and a scorch, cleared when a new one goes up there', () => {
+  const { world, vs, r, step } = makeMatch();
+  step(0.3);
+  const tc = tcOf(vs, 0);
+  const tx = Math.floor(tc.x) + 5;
+  const ty = Math.floor(tc.y) - 1;
+  const house = world.createBuilding(0, 'house', tx, ty, true);
+  assert.ok(house);
+  step(0.3);
+  assert.ok(r.buildings.has(house.id));
+  world.killEntity(house, null);
+  step(0.5);
+  assert.ok(!r.buildings.has(house.id), 'the house fell');
+  const s = r.rubble.stats();
+  assert.equal(s.piles, 1, 'one pile of rubble');
+  assert.ok(s.chunks > 5);
+  let scorch = 0;
+  r.rubble.scorches(() => scorch++);
+  assert.equal(scorch, 1);
+  step(2);
+  assert.equal(r.collapsing.length, 0, 'the model sank; the rubble stays');
+  assert.equal(r.rubble.stats().piles, 1);
+  const again = world.createBuilding(0, 'house', tx, ty, true);
+  assert.ok(again);
+  step(0.3);
+  assert.equal(r.rubble.stats().piles, 0, 'building on the spot clears it');
   r.dispose();
 });

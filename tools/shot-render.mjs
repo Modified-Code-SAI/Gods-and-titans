@@ -106,6 +106,24 @@ const SHOTS = {
       advance: 0.6,
     }, { advance: 0.4 }],
   },
+  // what a fight leaves: fallen soldiers lying where they fell, rubble and a scorch where buildings came down
+  remains: {
+    q: 'scenario=base&t=6',
+    frames: [{
+      js: `const tc = [...harness.vs.entities.values()].find((e) => e.t === 'town_center' && e.o === 0);
+        const w = harness.world;
+        window.__fallen = [];
+        const types = ['warrior', 'archer', 'warrior', 'priest', 'warrior', 'archer', 'warrior', 'warrior', 'archer', 'warrior'];
+        types.forEach((t, i) => { const u = w.spawnUnit(i % 2, t, tc.x + 4 + (i % 5) * 1.1, tc.y + 5 + Math.floor(i / 5) * 1.3, { silent: true }) || w.spawnUnit(i % 2, 'warrior', tc.x + 4 + (i % 5) * 1.1, tc.y + 5 + Math.floor(i / 5) * 1.3, { silent: true }); if (u) window.__fallen.push(u); });
+        const tx = Math.floor(tc.x) - 7, ty = Math.floor(tc.y) + 3;
+        window.__ruins = [w.createBuilding(0, 'house', tx, ty, true), w.createBuilding(0, 'barracks', tx - 1, ty + 4, true)].filter(Boolean);
+        harness.camera(tc.x - 1, tc.y + 6, 22);`,
+      advance: 0.4,
+    }, {
+      js: 'for (const e of [...window.__fallen, ...window.__ruins]) if (!e.dead) harness.world.killEntity(e, null);',
+      advance: 3,
+    }, { advance: 6, suffix: 'later' }],
+  },
   // command markers, rally flag + dotted line, selection and hover rings up close
   markers: {
     q: 'scenario=base&t=20',

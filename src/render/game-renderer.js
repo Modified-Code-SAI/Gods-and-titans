@@ -26,6 +26,7 @@ import { hazeStretch, shadowShare, aoShare, overlayScale, crowdScale, ringLineSc
 import { FarUnits } from './far-units.js';
 import { FogOfWar, patchFowObject, FOW_UNIFORMS } from './fog.js';
 import { createTerrain, WATER_LEVEL } from './terrain.js';
+import { CORPSE, corpseCap, corpseHold, corpseSink, hurryCorpses, RubbleLayer } from './remains.js';
 import { RingLayer, BlobLayer, StarLayer, BarLayer, MarkerLayer, FloatingTextLayer, RallyFlags, OrderPaths, healthColor } from './overlays.js';
 import { PlacementLayer } from './placement.js';
 import { FireLayer } from './fires.js';
@@ -70,7 +71,6 @@ const SCALE_UP_WAIT = 240; // frames before a step up (doubled while steps up ke
 const SCALE_UP_WAIT_MAX = 3600;
 const MAX_VSYNC_MS = 34; // no display or browser cap runs slower than 30 Hz: longer is the GPU
 const AIR_RING_LIFT = AIR_HOVER_HEIGHT - 0.14; // flyers' rings: just under the hovering body
-const DEATH_SECONDS = 1.65; // keep animating 'dead' this long (topple + sink)
 // A struck unit flinches: knocked back a little away from the blow and leaning with it, then settling (render only).
 const FLINCH_SECONDS = 0.26;
 const FLINCH_PEAK = 0.22; // the push peaks at this share of the flinch, then eases back
@@ -118,6 +118,14 @@ const _lampSpots = new Float32Array(LAMP_SPOTS * 4);
 /** Key of a tile of one owner's wall in GameRenderer.wallTiles (maps stay under 1024 tiles a side, owners under 15). */
 function wallKey(owner, tx, ty) {
   return ((ty * 1024 + tx) << 4) | (owner + 1);
+}
+
+/** A stable small number from an entity id (seeds the rubble of a fallen building). */
+function hashId(id) {
+  const t = String(id);
+  let h = 7;
+  for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 1000003;
+  return h + 1;
 }
 
 function clamp(v, a, b) {
@@ -294,6 +302,7 @@ export class GameRenderer {
     this.relicLayer = new RelicLayer(scene, (x, y) => heightAt(this.map, x, y));
 
     this.blobs = new BlobLayer(this.groundFxRoot);
+    this.rubble = new RubbleLayer(this.groundFxRoot, this.heightFn, { quality: this.quality });
     this.rings = new RingLayer(this.overlayRoot);
     this.stars = new StarLayer(this.groundFxRoot);
     this.status = new StatusLayer(this.overlayRoot);
@@ -1311,6 +1320,7 @@ export class GameRenderer {
     this.syncUnits(dt);
     this.animateDying(dt);
     this.animateBuildings(dt);
+    this.rubble.update(dt);
     this.relicLayer.update(vs, this.time, this.units, this.buildings);
     this.flushPendingHits();
 
@@ -1562,6 +1572,8 @@ export class GameRenderer {
       this.units.delete(id);
       if (v.visible && this.deaths.has(id)) {
         v.dyingT = 0;
+        v.deathHold = corpseHold(v.def, v.model); // the fallen lie a while before they sink (remains.js)
+        v.model.deathHold = v.deathHold;
         v.clearFlinch(); // the fall starts upright
         // (a marker no more: the death plays on the model)
         if (v.far) {
@@ -1595,6 +1607,8 @@ export class GameRenderer {
   animateDying(dt) {
     const list = this.dying;
     if (!list.length) return;
+    // too many bodies on the field: the oldest sink early
+    if (hurryCorpses(list, corpseCap(this.quality))) for (const v of list) v.model.deathHold = v.deathHold;
     let j = 0;
     const ex = this.extra;
     ex.moving = false;
@@ -1605,17 +1619,21 @@ export class GameRenderer {
     for (let i = 0; i < list.length; i++) {
       const v = list[i];
       v.dyingT += dt;
-      if (v.dyingT >= DEATH_SECONDS) {
-        v.dispose();
-        continue;
-      }
-      try {
-        v.model.animate('dead', this.time, dt, ex);
-      } catch (err) {
+      if (v.dyingT >= v.deathHold + CORPSE.sink) {
         v.dispose();
         continue;
       }
       list[j++] = v;
+      // once it has settled, the body lies still: no animation until the sink starts
+      if (v.dyingT > CORPSE.settle && v.dyingT < v.deathHold) continue;
+      try {
+        // (the model's own death clock follows ours across the frames it was left still)
+        if (v.model.state === 'dead') v.model.deadTime = v.dyingT - dt;
+        v.model.animate('dead', this.time, dt, ex);
+      } catch (err) {
+        v.dispose();
+        j--;
+      }
     }
     list.length = j;
   }
@@ -1658,6 +1676,13 @@ export class GameRenderer {
         b.collapseT = 0;
         b.baseY = b.model.root.position.y;
         this.collapsing.push(b);
+        // the rubble it leaves, under the sinking model (remains.js)
+        const def = b.def;
+        this.rubble.add(b.tx + def.size / 2, b.ty + def.size / 2, def.size, {
+          wood: def.id === 'wooden_wall' || def.id === 'house',
+          amount: (def.wall ? 0.5 : 1) * Math.max(0.3, b.bp >= 0 ? b.bp : 1),
+          seed: hashId(id),
+        });
       } else b.dispose();
     }
     this.syncWallJoins();
@@ -1739,6 +1764,7 @@ export class GameRenderer {
       });
       this.entityRoot.add(model.root);
       this.decor.hideInRect(tx - 0.2, ty - 0.2, tx + def.size + 0.2, ty + def.size + 0.2);
+      this.rubble.clearRect(tx - 0.5, ty - 0.5, tx + def.size + 0.5, ty + def.size + 0.5);
       this.groundCover.hideInRect(tx - 0.1, ty - 0.1, tx + def.size + 0.1, ty + def.size + 0.1);
       if (this.terrain.paintYard && !def.wall) this.terrain.paintYard(tx, ty, def.size); // a fence does not wear the grass bare
       this.buildings.set(e.id, b);
@@ -1984,10 +2010,13 @@ export class GameRenderer {
     // dying units keep their blob while they fall, fading out
     for (const v of this.dying) {
       if (v.air || !v.onScreen) continue;
-      const k = 1 - v.dyingT / DEATH_SECONDS;
+      const k = 1 - corpseSink(v.dyingT, v.deathHold);
       const br = v.radius * 1.35 + 0.16;
       blobs.add(v.x, v.gh + 0.03, v.y, this.unitNormal(v), br, br * 0.92, 0, blobAlpha * k);
     }
+
+    // scorched ground under fallen buildings
+    this.rubble.scorches((x, gy, y, r, rot, a) => blobs.add(x, gy + 0.025, y, null, r, r * 0.88, rot, a));
 
     rings.end();
     bars.end();
@@ -2451,6 +2480,7 @@ export class GameRenderer {
     this.sacredSites.dispose();
     this.placement.dispose();
     this.blobs.dispose();
+    this.rubble.dispose();
     this.stars.dispose();
     this.status.dispose();
     this.fires.dispose();
