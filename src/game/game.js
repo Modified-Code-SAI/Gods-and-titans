@@ -14,9 +14,11 @@ import { createWorld } from '../sim/world.js';
 import { getSettings, onSettingsChange } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
 import { impactSound, deathSound } from '../audio/sfx-impacts.js';
+import { ambience, ambienceMix, sampleLand } from '../audio/ambience.js';
 import { GAME_SPEEDS, PEACE_NAME, UI_SCALES } from '../config.js';
 import { edgeName } from '../sim/survival.js';
-import { UNITS, BUILDINGS, buildingIcon } from '../data/index.js';
+import { UNITS, BUILDINGS, buildingIcon, getPantheon } from '../data/index.js';
+import { LANDSCAPES } from '../data/landscapes.js';
 import { POWERS, isHarmfulPower } from '../data/powers.js';
 import { MARKS, MARK_SEND_RATE } from '../data/marks.js';
 import { Hud } from '../ui/hud.js';
@@ -110,6 +112,24 @@ export function describeStartFailure(err) {
   if (GRAPHICS_FAILURE.test(detail)) text = 'Your browser could not start 3D graphics. Check that hardware acceleration is on, or try another browser.';
   else if (LOADING_FAILURE.test(detail)) text = 'Some of the game files could not be loaded. Check your internet connection and reload the page.';
   return { text, detail };
+}
+
+/**
+ * The loading screen's matchup line: the sides by team ("Greek & Hindu vs Norse & Celtic"), then the landscape.
+ * Empty for a campaign mission or the guided first match (they have their own briefings).
+ */
+export function matchupLine(setup) {
+  if (!setup || !Array.isArray(setup.players) || !setup.players.length || typeof setup.campaign === 'string' || setup.tutorial) return '';
+  const teams = new Map();
+  for (const p of setup.players) {
+    const key = p.team ?? `solo${p.index}`;
+    const pan = p.pantheon ? getPantheon(p.pantheon) : null;
+    if (!teams.has(key)) teams.set(key, []);
+    teams.get(key).push(pan && pan.name ? pan.name : 'Unknown');
+  }
+  const sides = [...teams.values()].map((names) => names.join(' & ')).join(' vs ');
+  const land = LANDSCAPES.find((l) => l.id === (setup.landscape || 'classic'));
+  return land ? `${sides} · ${land.name}` : sides;
 }
 
 /** The loading screen's tip: "Tip: …" with the keys drawn as <kbd>. */
@@ -486,7 +506,7 @@ export class Game {
     this.stats.rendererInitMs = performance.now() - tr;
     // A match that keeps running slowly above Low quality says once (per device) where to lower it (src/game/slow-hint.js).
     this.slowWatch = this.replay ? null : new SlowFrameWatch();
-    this.setLoading(false);
+    this.setLoading(false, true);
     this.resize();
     this.applyShowAllBars();
     this.applySpeed();
@@ -506,11 +526,23 @@ export class Game {
     this.raf = requestAnimationFrame((t) => this.frame(t));
   }
 
-  /** "Preparing the battlefield…" over the empty canvas while the renderer's code loads and its scene builds. */
-  setLoading(on) {
+  /**
+   * "Preparing the battlefield…" over the empty canvas while the renderer's code loads and its scene builds.
+   * Off with `fade`, the veil dissolves over the first frames of the match (0.8 s) instead of cutting away.
+   */
+  setLoading(on, fade = false) {
     if (!on) {
-      if (this.loadingEl) this.loadingEl.remove();
+      const node = this.loadingEl;
       this.loadingEl = null;
+      if (!node) return;
+      const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!fade || reduced || !node.style || typeof requestAnimationFrame !== 'function') return node.remove();
+      node.style.pointerEvents = 'none';
+      node.style.transition = 'opacity 0.8s ease';
+      requestAnimationFrame(() => {
+        node.style.opacity = '0';
+      });
+      setTimeout(() => node.remove(), 900);
       return;
     }
     const root = this.root;
@@ -518,7 +550,7 @@ export class Game {
     const node = document.createElement('div');
     node.setAttribute('role', 'status');
     node.style.cssText = 'position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6em;'
-      + 'font:600 18px/1.4 var(--mw-font-display);letter-spacing:0.3em;text-transform:uppercase;color:var(--mw-gold);'
+      + 'font:700 18px/1.4 var(--mw-font-display);letter-spacing:0.3em;text-transform:uppercase;color:var(--mw-gold);'
       + 'background:radial-gradient(ellipse at 50% 40%,#121a33,#05070d 70%)';
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:0.9em';
@@ -527,6 +559,15 @@ export class Game {
     const text = document.createElement('span');
     text.textContent = 'Preparing the battlefield…';
     row.append(spin, text);
+    const line = matchupLine(this.launch && this.launch.setup);
+    if (line) {
+      const vs = document.createElement('div');
+      vs.className = 'mw-loading-matchup';
+      vs.style.cssText = 'font:700 clamp(22px, 3.6vmin, 44px)/1.2 var(--mw-font-display);letter-spacing:0.14em;color:var(--mw-gold-hi);'
+        + 'text-shadow:0 0 18px rgba(227,184,79,0.35),0 2px 0 #000;text-align:center;padding:0 1em';
+      vs.textContent = line;
+      node.append(vs);
+    }
     node.append(row);
     const tip = getSettings().hints ? loadingHint() : null;
     if (tip) node.append(loadingTip(tip.text));
@@ -710,6 +751,7 @@ export class Game {
       const cam = this.renderer.camera;
       if (cam && cam.target) sfx.setListener(cam.target.x, cam.target.y, hearingScale(cam));
       this.ambientSounds(now);
+      this.updateAmbience(now, cam);
     } catch (err) {
       this.frameFault(err);
     }
@@ -1297,6 +1339,8 @@ export class Game {
           const srcDef = s ? (s.k === 'b' ? BUILDINGS[s.t] : UNITS[s.t]) : null;
           const [hName, hVol] = impactSound({ kind: p.e.k, id: p.e.t, def: p.e.k === 'b' ? BUILDINGS[p.e.t] : UNITS[p.e.t] }, srcDef ? { def: srcDef } : null);
           this.worldSound(hName, p.x, p.y, hVol);
+          const cam = this.renderer && this.renderer.camera;
+          if (cam && cam.target && Math.hypot(p.x - cam.target.x, p.y - cam.target.y) < 20 * hearingScale(cam)) this.battleHeat = (this.battleHeat || 0) + 1;
         }
         break;
       }
@@ -1410,6 +1454,37 @@ export class Game {
     if (p) this.worldSound(name, p.x, p.y, volume);
   }
 
+  /**
+   * The world's ambience (src/audio/ambience.js): the land around the camera is sampled twice a second,
+   * the hour comes from the renderer, and fighting in earshot (hits counted in `battleHeat`) quiets the birds.
+   */
+  updateAmbience(now, cam) {
+    if (!ambience.running) {
+      if (!sfx.ready || !sfx.shared) return;
+      ambience.start(sfx.shared);
+    }
+    const last = this.ambienceAt || 0;
+    const dt = Math.min(1, Math.max(0, (now - last) / 1000));
+    this.ambienceAt = now;
+    this.battleHeat = (this.battleHeat || 0) * Math.exp(-dt / 4);
+    if (cam && cam.target && (!this.land || now - this.landAt > 500)) {
+      const vs = this.viewState;
+      const scale = hearingScale(cam);
+      this.land = sampleLand(vs.seenTerrain || vs.map.terrain, vs.width, vs.height, cam.target.x, cam.target.y, Math.round(10 * scale));
+      this.landAt = now;
+    }
+    const tod = this.renderer && this.renderer.timeOfDay;
+    const land = this.land || { water: 0, forest: 0 };
+    ambience.update(ambienceMix({
+      hour: tod ? tod.hour : 12,
+      water: land.water,
+      forest: land.forest,
+      zoom: hearingScale(cam),
+      battle: Math.min(1, this.battleHeat / 10),
+      hidden: typeof document !== 'undefined' && !!document.hidden,
+    }));
+  }
+
   /** Occasional chop / mine / hammer / prayer sounds from own workers working near the camera. */
   ambientSounds(now) {
     if (now - this.lastAmbient < AMBIENT_MS || !this.renderer || this.paused) return;
@@ -1442,6 +1517,7 @@ export class Game {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    ambience.stop();
     cancelAnimationFrame(this.raf);
     this.setLoading(false);
     for (const off of this.offs.splice(0)) {

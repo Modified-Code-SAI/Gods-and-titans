@@ -65,8 +65,12 @@ function paintedFrame() {
   });
 }
 
-function clearStartNotice(el = document.getElementById('start-message')) {
-  if (el) el.remove();
+/** Remove the notice; with `fade`, it dissolves over the first frames of the match instead of cutting away. */
+function clearStartNotice(el = document.getElementById('start-message'), fade = false) {
+  if (!el) return;
+  if (!fade) return el.remove();
+  el.classList.add('is-leaving');
+  setTimeout(() => el.remove(), 900);
 }
 
 /**
@@ -143,7 +147,7 @@ export async function startGame(launch) {
       if (menu) menu.toast('The game could not start. Reload the page (Ctrl+Shift+R) and try again.');
     }
   } finally {
-    clearStartNotice(notice);
+    clearStartNotice(notice, !!current);
   }
 }
 

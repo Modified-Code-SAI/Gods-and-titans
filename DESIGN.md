@@ -2106,6 +2106,11 @@ per-frame budget, so a revealed army appears over a few frames.
   losing one (important, Space jumps there), a side holding every site and that hold broken (a gong), and a line
   with a gong at 2:00, 1:00 and 0:30 left on the countdown. The minimap draws each site as a diamond in the
   holder's colour. One line as a Sacred Victory game opens.
+  Cursors (`InputController.updateCursor`, the SVG cursors at the top of hud.css): the gold arrow; a red one over a
+  foe with units selected; a crosshair while a targeted order waits; and, with Worshippers selected, the work cursors
+  (`workCursor`): a pick over a gold mine (`cur-gather-gold`), an axe over a known tree (`cur-gather-wood`, from the
+  hover's ground point), a hammer over an own building that is unfinished or damaged (`cur-repair`) and a flame over
+  an own finished Shrine or Temple (`cur-pray`).
   Decade of Peace (5.10): a 🕊️ countdown chip sits next to the game clock (tooltip explains it,
   it turns amber and pulses for the last minute and is gone when the peace ends); one line as the
   game opens, a reminder at 5:00, 1:00 and 0:10 (not for marks already passed when the HUD
@@ -2226,7 +2231,10 @@ per-frame budget, so a revealed army appears over a few frames.
   length (while the pointer rests on it, and 4 s after), and has ✕ and "Turn tips off" (saves `hints: false`).
   A soft chime goes with it when `alerts` is `'all'`. A tip is text with `[[Key]]` markers drawn as `<kbd>`;
   the hotkeys and numbers it quotes come from the data (`tests/ui/hud-hints.test.js` checks them). The
-  loading screen ("Preparing the battlefield…") shows one general tip under the spinner.
+  loading screen ("Preparing the battlefield…") shows the matchup above the spinner (`matchupLine`: the pantheons
+  by team, then the landscape, as "Greek & Hindu vs Norse & Celtic · Islands"; none for a campaign mission or the
+  guided first match) and one general tip under it. When the scene is ready the loading veil and the start notice
+  dissolve over 0.8 s (`setLoading(false, true)`, `#start-message.is-leaving`; at once with reduced motion or on a failure).
   **Sounds** (`src/audio/sfx-alerts.js`, merged into the tables of `sfx.js`): `nudge` (two soft notes: a
   reminder), `drums` (four war-drum beats), `gong` (the peace is about to end), `research` (an upgrade
   finished), `tip` (a tip appeared) and `milestone` (a short fanfare).
@@ -2428,6 +2436,13 @@ per-frame budget, so a revealed army appears over a few frames.
   death_big (a god, a creature of 3+ population), death_titan, collapse (any building; walls quieter). `impactSound(dst, src)`
   and `deathSound(ev, def)` pick the name and volume from the `hit` and `death` events; a spell's hit keeps the soft `hit`
   under the spell's own sound, and a worker or light soldier still gets the old `hit` and `death`.
+- Ambience (`src/audio/ambience.js`, driven by `Game.updateAmbience` each frame): a wind bed with gusts, birds by
+  day (more over forest), crickets at night (not over water), and waves that swell and draw back where water is
+  near the camera. Synthesized live through the effects' chain (`sfx.shared`), so the effects volume and mute cover it.
+  `ambienceMix({ hour, water, forest, zoom, battle, hidden })` is pure: the hour comes from the renderer's time of day,
+  the land from `sampleLand` over the seen terrain within 10 tiles × the hearing scale (twice a second), the zoom
+  pulls the land sounds back under the wind, hits near the camera (`battleHeat`) quiet the birds and crickets, and a
+  hidden tab is silent. Levels (`AMBIENCE_LEVEL`) sit about 15 dB under a hit: about −39 dB RMS by a forest lake at noon.
   The `AudioContext` is made, and asked to run, as the page loads (`sfx.init`, from `initAudio`). A browser that allows
   sound with no input (a site set to "Sound: Allow" in its site settings, Chrome's `--autoplay-policy=no-user-gesture-required`,
   a page reached by a click on a link of the site) runs it at once, and everything is heard from the
