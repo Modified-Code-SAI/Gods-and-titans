@@ -76,6 +76,7 @@ export class InputController {
     this.lastArmy = -Infinity; // when Ctrl+A last selected the army (a second tap jumps to it)
     this.hoverId = null;
     this.hoverRelic = null; // a relic on the ground under the cursor (vs.relicNear)
+    this.hoverTree = false; // a known tree under the cursor (the work cursor's axe)
     this.hoverAt = 0;
     this.hoverMoved = true;
     this.placeAt = 0;
@@ -1632,12 +1633,14 @@ export class InputController {
       const id = e ? e.id : null;
       const g = e ? null : this.ground(p.x, p.y);
       this.hoverRelic = g ? this.vs.relicNear(g.x, g.y) : null;
+      this.hoverTree = !!g && this.forestAt(g.x, g.y);
       if (id !== this.hoverId) {
         this.hoverId = id;
         r.setHover(id);
       }
     } else if ((!this.overCanvas || overlay) && this.hoverId !== null) {
       this.hoverRelic = null;
+      this.hoverTree = false;
       this.hoverId = null;
       r.setHover(null);
     }
@@ -1684,8 +1687,35 @@ export class InputController {
       return this.setCursor('target');
     }
     if (h && this.sel.ownUnitIds().length && vs.canHarm(h.o) && (h.o >= 0 || h.k === 'u')) return this.setCursor('enemy');
+    const work = this.workCursor(h);
+    if (work) return this.setCursor(work);
     if (h || (this.hoverRelic && this.sel.ownUnitIds().length)) return this.setCursor('select');
     return this.setCursor('');
+  }
+
+  /** Whether the tile under a world point is a tree I know of (what a right-click there gathers). */
+  forestAt(x, y) {
+    const vs = this.vs;
+    const tx = Math.floor(x);
+    const ty = Math.floor(y);
+    return tx >= 0 && ty >= 0 && tx < vs.width && ty < vs.height && vs.seenTerrain[ty * vs.width + tx] === TERRAIN.FOREST && vs.isExplored(tx, ty);
+  }
+
+  /**
+   * With Worshippers selected, the cursor says what a right-click will set them to: 'gather-gold' over a gold mine,
+   * 'gather-wood' over trees, 'repair' over an own building that is unfinished or damaged, 'pray' over an own finished
+   * Shrine or Temple. Null otherwise (the ordinary cursors apply).
+   */
+  workCursor(h) {
+    if (!h && !this.hoverTree) return null;
+    if (h && h.k === 'u') return null;
+    if (!this.ownWorkers().length) return null;
+    if (!h) return this.hoverTree && !this.hoverRelic ? 'gather-wood' : null;
+    if (h.k === 'm') return 'gather-gold';
+    if (h.k !== 'b' || h.o !== this.vs.myIndex) return null;
+    if (!isComplete(h) || h.hp < h.mhp) return 'repair';
+    const def = BUILDINGS[h.t];
+    return def && def.prayerSlots > 0 ? 'pray' : null;
   }
 
   dispose() {

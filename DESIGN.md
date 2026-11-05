@@ -2106,6 +2106,11 @@ per-frame budget, so a revealed army appears over a few frames.
   losing one (important, Space jumps there), a side holding every site and that hold broken (a gong), and a line
   with a gong at 2:00, 1:00 and 0:30 left on the countdown. The minimap draws each site as a diamond in the
   holder's colour. One line as a Sacred Victory game opens.
+  Cursors (`InputController.updateCursor`, the SVG cursors at the top of hud.css): the gold arrow; a red one over a
+  foe with units selected; a crosshair while a targeted order waits; and, with Worshippers selected, the work cursors
+  (`workCursor`): a pick over a gold mine (`cur-gather-gold`), an axe over a known tree (`cur-gather-wood`, from the
+  hover's ground point), a hammer over an own building that is unfinished or damaged (`cur-repair`) and a flame over
+  an own finished Shrine or Temple (`cur-pray`).
   Decade of Peace (5.10): a 🕊️ countdown chip sits next to the game clock (tooltip explains it,
   it turns amber and pulses for the last minute and is gone when the peace ends); one line as the
   game opens, a reminder at 5:00, 1:00 and 0:10 (not for marks already passed when the HUD
