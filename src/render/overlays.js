@@ -623,7 +623,7 @@ export class MarkerLayer {
 const TEXT_LIFE = 1.5;
 const TEXT_W = 256;
 const TEXT_H = 64;
-const TEXT_FONT = 'bold 40px "Trebuchet MS", "Segoe UI", system-ui, sans-serif';
+const TEXT_FONT = '800 40px "Mythic UI", "Trebuchet MS", "Segoe UI", system-ui, sans-serif';
 
 /** Pooled camera-facing text sprites ("+25", "Level 3"). Needs a DOM canvas (no-op in Node). */
 export class FloatingTextLayer {

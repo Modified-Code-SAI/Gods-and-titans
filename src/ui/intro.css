@@ -56,7 +56,7 @@
   margin: 0;
   padding: 0 4%;
   max-width: 100%;
-  font: 600 clamp(0.95em, 2.5vh, 2.1em) / 1.2 var(--mw-font-display);
+  font: 700 clamp(0.95em, 2.5vh, 2.1em) / 1.2 var(--mw-font-display);
   letter-spacing: 0.3em;
   text-indent: 0.3em; /* the last letter's spacing would pull the line off centre */
   text-transform: uppercase;
