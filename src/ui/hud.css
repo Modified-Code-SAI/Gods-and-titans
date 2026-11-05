@@ -2056,7 +2056,9 @@
   position: absolute;
   top: 3.1em;
   left: 4.9em;
-  width: 19em;
+  /* As wide as the longest row needs ("Player590 YOU Surrendered"), from 19em up to a third of the screen. */
+  width: max-content;
+  min-width: 19em;
   max-width: 36vw;
   padding: 0.25em 0.45em 0.35em;
   border-radius: 4px;

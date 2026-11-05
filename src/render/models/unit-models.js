@@ -27,7 +27,7 @@ import { buildTemplate, normalizeVisual } from './unit-bodies.js';
 import { animateModel, driveWave } from './unit-anim.js';
 import { buildRichTemplate, richSupported } from './rich-humanoid.js';
 import { instantiate, mountOn, bindInstance, B } from './rich-kit.js';
-import { PartBuilder, TEAM, C, withMat, box, cyl, dodeca, seg, T, bakeAO } from './unit-geo.js';
+import { PartBuilder, TEAM, C, withMat, cyl, dodeca, seg, T, bakeAO } from './unit-geo.js';
 import { patchWorldMaterial } from '../shading.js';
 
 const HOVER = 2.2; // air units fly this high above the ground

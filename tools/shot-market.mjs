@@ -2,7 +2,7 @@
 // The team market: a 2v2 vs AI game with the Market panel open (teammate picked, an amount
 // entered), then the whole map from the minimap corner to show teammates on one side.
 //   node tools/shot-market.mjs [--port 8302] [--out DIR] [--quality low]
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

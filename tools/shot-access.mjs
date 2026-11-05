@@ -10,7 +10,7 @@
 // the nearest painted ancestor, see-through ones laid over a mid-grey stand-in for the map; a gradient counts
 // by its first colour, so a card with a glow at one end can be flagged when it reads well: look at the still). Exits
 // non-zero when a page logs an error. The report is <out>/access-report.json.
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -91,7 +91,7 @@ function audit([minPx, minContrast]) {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let t = walker.nextNode(); t; t = walker.nextNode()) {
     const text = t.textContent.replace(/\s+/g, ' ').trim();
-    if (!text || /^[\p{Extended_Pictographic}‍️\s·•|×✕✖✓›‹…—-]+$/u.test(text)) continue; // icons and separators
+    if (!text || /^(?:[\p{Extended_Pictographic}\s·•|×✕✖✓›‹…—-]|\u200d|\ufe0f)+$/u.test(text)) continue; // icons and separators
     const n = t.parentElement;
     if (!n || n.closest('[hidden], [aria-hidden="true"]')) continue;
     const r = n.getBoundingClientRect();

@@ -108,15 +108,7 @@ function wobble(g, amt, rng, keepBottom = false) {
   return g;
 }
 
-/** Flatten the lower half of a blob around its own center (canopies sit flatter underneath). */
-function squashBottom(g, k) {
-  const p = g.attributes.position;
-  for (let i = 0; i < p.count; i++) if (p.getY(i) < 0) p.setY(i, p.getY(i) * k);
-  return g;
-}
-
 const cyl = (rt, rb, h, seg, open = true, hseg = 1) => prep(new THREE.CylinderGeometry(rt, rb, h, seg, hseg, open)).translate(0, h / 2, 0);
-const cone = (r, h, seg) => prep(new THREE.ConeGeometry(r, h, seg, 1, true)).translate(0, h / 2, 0);
 const ico = (r) => prep(new THREE.IcosahedronGeometry(r, 0));
 const dodeca = (r) => prep(new THREE.DodecahedronGeometry(r, 0));
 const octa = (r) => prep(new THREE.OctahedronGeometry(r, 0));
@@ -203,16 +195,6 @@ function shade(g, color, rng, { jit = 0.1, ao = null, center = null, soft = 0, l
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.setAttribute('aFol', new THREE.BufferAttribute(fol, 3));
   return g;
-}
-
-/** Occlusion inside a canopy of radius r around c: darker low down and toward the middle. */
-function canopyAO(c, r, min) {
-  return (p) => {
-    const d = p.distanceTo(c) / r;
-    const h = (p.y - c.y) / r;
-    const t = 0.45 * smooth01((h + 1) * 0.5) + 0.7 * smooth01((d - 0.15) / 0.9);
-    return min + (1 - min) * Math.min(1, t);
-  };
 }
 
 /** Bark: dark where it meets the ground and in the shade of the crown from `top` up. */

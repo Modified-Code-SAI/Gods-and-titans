@@ -6,10 +6,10 @@ import * as THREE from 'three';
 import { RNG, hashSeed } from '../../sim/rng.js';
 import {
   PLINTH, PI, C, mix, shade, tint,
-  luma, clamp01, SURF, made, prep, box, bevelBox, bevelFrustum, courseSlope, courseLoft, courseCone, shadedTris,
+  luma, clamp01, SURF, made, prep, box, bevelBox, bevelFrustum, courseSlope, courseLoft, courseCone,
   frustum, cyl, cone, ball, dome, octa,
   dodeca, torus, strut, pole, extrude, fromTris,
-  soft, orient, rectRing, loft, hipLoft, GLOW,
+  orient, hipLoft, GLOW,
 } from './building-core.js';
 
 // ---------------------------------------------------------------------------

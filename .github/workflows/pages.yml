@@ -22,11 +22,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Collect the static site
-        run: |
-          mkdir -p _site
-          cp -r index.html style.css src vendor assets _site/
-          touch _site/.nojekyll
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build the site (bundled, minified, hashed file names)
+        run: node tools/build-site.mjs --out _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

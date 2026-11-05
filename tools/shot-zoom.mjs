@@ -18,7 +18,7 @@
 // frames, each ended with a readPixels so the work is done: only ratios mean anything) and the update time.
 // Picture files are written as DIR/PREFIX-QUALITY-dDIST.png. High and ultra take about a minute a frame under
 // software GL: use a smaller --width / --height for those, or --timeout for more patience.
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

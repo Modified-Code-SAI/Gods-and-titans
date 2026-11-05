@@ -12,7 +12,7 @@
 // center), yard (mid zoom, base + ground), forest (forest edge), mine (gold mine),
 // crowd (workers and a few gods at close zoom), far (zoomed out).
 // With --perf it also prints the frame stats the game keeps in game.stats.
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

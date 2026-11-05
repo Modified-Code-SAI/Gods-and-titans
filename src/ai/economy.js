@@ -340,7 +340,6 @@ function bestPair(ai, u) {
  * economy shifts smoothly.
  */
 export function manageWorkers(ai, s) {
-  const world = ai.world;
   const want = targets(ai, s);
   ai.workerTargets = want;
   const pairByMine = new Map();

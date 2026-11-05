@@ -149,7 +149,6 @@ test('host caps pending handshakes and total connections against a connection fl
 
     // Keep opening fresh connections (each opens its channel right away) up to
     // and past the total ceiling.
-    let opened = ep.conns.size;
     let lastRefused = false;
     for (let i = 0; i < MAX_HOST_CONNECTIONS; i++) {
       const dc = new FakeDataConnection('raw', `o${i}`);
@@ -157,7 +156,6 @@ test('host caps pending handshakes and total connections against a connection fl
       if (!dc.closed) dc.openChannel();
       await sleep(1);
       if (dc.closed) { lastRefused = true; break; }
-      opened++;
     }
     assert.ok(ep.conns.size <= MAX_HOST_CONNECTIONS, `conns never exceed the ceiling (${ep.conns.size})`);
     assert.ok(lastRefused, 'connections past the total ceiling are refused');

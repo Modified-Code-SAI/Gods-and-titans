@@ -20,7 +20,7 @@
 // column is the JavaScript three.js spends per frame (scene walk, sorting, uniforms, state) without
 // SwiftShader's rasterizing; the draw-call count is still three.js's own. --focus points the camera at the
 // densest crowd of units instead of the map's middle; --warm draws that many frames before the measured ones.
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -50,7 +50,6 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const server = spawn(join(root, 'node_modules/.bin/http-server'), ['.', '-p', String(port), '-c-1', '--silent'], { cwd: root, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const launch = { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] };
-if (process.env.CHROMIUM_PATH) launch.executablePath = process.env.CHROMIUM_PATH;
 const browser = await chromium.launch(launch);
 const page = await browser.newPage({ viewport: { width, height } });
 page.setDefaultTimeout(900000);

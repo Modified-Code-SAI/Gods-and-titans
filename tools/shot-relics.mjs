@@ -4,7 +4,7 @@
 // the Temple with the selection panel and the relic chip's tooltip.
 //   node tools/shot-relics.mjs [--port 8322] [--out DIR] [--prefix relics] [--quality low]
 //                              [--seed 4242] [--width 1600] [--height 900]
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -25,7 +25,7 @@ mkdirSync(out, { recursive: true });
 
 const server = spawn(join(root, 'node_modules/.bin/http-server'), ['.', '-p', String(port), '-c-1', '--silent'], { cwd: root, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
-const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width, height } });
 page.on('pageerror', (e) => console.log('pageerror', e.message));
 page.on('console', (m) => { if (m.type() === 'error') console.log('console.error', m.text()); });

@@ -120,7 +120,7 @@ function check(world, add) {
       if (world.map.occ[y * W + x] !== b.id) add('occupancy', `${b.type}#${b.id} at ${x},${y} occ=${world.map.occ[y * W + x]}`);
     }
   }
-  for (const m of world.mineList) listed++;
+  for (const _m of world.mineList) listed++;
   if (listed !== world.entities.size) add('entity-count', `listed=${listed} map=${world.entities.size}`);
   // Every occupied tile belongs to a living building or mine.
   for (let i = 0; i < W * H; i++) {

@@ -2,7 +2,7 @@
 // Quick look at the whole game: title, lobby, and the live game view with HUD after a short
 // AI match warm-up (camera on the home base and pulled in close).
 //   node tools/shot-overview.mjs [--port 8301] [--out DIR] [--prefix before] [--quality high]
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

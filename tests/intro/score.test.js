@@ -191,7 +191,7 @@ test('end("cut"): the stingers are back, the piece fades out inside the dip, the
   assert.ok(fade > 0 && fade <= 0.32, `gone within the 0.32 s dip to black (${fade})`);
   const [, gain, , delay] = m.calls[2];
   assert.equal(gain, 1, 'the stage back where the settings have it');
-  assert.ok(delay >= fade && delay <= 0.5, `after the piece has gone and before the title\'s own is heard (${delay})`);
+  assert.ok(delay >= fade && delay <= 0.5, `after the piece has gone and before the title's own is heard (${delay})`);
   score.speaking(false); // the voice that was cut off may still report its last word
   score.update(3);
   score.end('cut');

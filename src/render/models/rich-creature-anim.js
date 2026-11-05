@@ -132,7 +132,6 @@ function applyQuadruped(m, R, P, state, t) {
   const dead = state === 'dead';
   const idle = !moving && !dead && state !== 'attack' ? 1 : 0;
   const breath = Math.sin(t * 1.7 + seed);
-  const sway = Math.sin(t * 0.5 + seed * 1.9);
   const s = moving ? Math.sin(phi) : 0;
   const alpha = P.bRz;
   // a sprawling lizard's trunk wags from side to side as it walks, well past a beast's (the yaw of the hips, spine and chest below)

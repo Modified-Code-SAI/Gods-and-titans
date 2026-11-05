@@ -10,7 +10,7 @@
 // howto, settings. Starts a static server on the port unless one already answers there.
 // Prints page errors and console errors; exits non-zero when a check fails.
 
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

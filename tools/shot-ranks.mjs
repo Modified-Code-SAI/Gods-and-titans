@@ -4,7 +4,7 @@
 // selection panel for a Veteran Warrior and for a mixed group.
 //   node tools/shot-ranks.mjs [--port 8321] [--out DIR] [--prefix ranks] [--quality low]
 //                             [--pantheon greek] [--seed 4242] [--width 1600] [--height 900]
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

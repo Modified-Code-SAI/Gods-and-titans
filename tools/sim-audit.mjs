@@ -9,7 +9,10 @@
 // ids left in them are not reported. "pop-over-cap" is legal after losing Houses.)
 //
 // Usage: node tools/sim-audit.mjs [--seeds=1-3] [--max=25] [--teams=1v1|2v2|ffa] [--diff=hard]
-//        [--pantheons=greek,norse] [--every=20] [--peace=30] [--sacred] [--determinism]
+//        [--pantheons=greek,norse] [--every=20] [--peace=30] [--sacred] [--determinism] [--strict]
+//
+// --strict (CI): exit 1 when a game breaks an invariant, an AI throws, a command errors or a replay differs.
+// Stuck and unproductive units, far gold hops, pop-over-cap and stale prayer-slot ids are only printed.
 import { createWorld } from '../src/sim/world.js';
 import { createAI } from '../src/ai/ai.js';
 import { PANTHEON_LIST } from '../src/data/index.js';
@@ -192,16 +195,27 @@ for (const seed of seeds) {
   else games.push({ seed, size: 'small', players: [{ pantheon: a, team: 1, difficulty: diff }, { pantheon: b, team: 2, difficulty: diff }] });
 }
 
+const SOFT = new Set(['pop-over-cap', 'prayer-slot-stale', 'prayer-slot-dangling']);
+const failures = [];
 for (const g of games) {
   const t0 = performance.now();
   const r = runGame(g);
   const label = `seed ${g.seed} ${g.players.map((p) => p.pantheon).join(' v ')}`;
   console.log(`\n== ${label}: ${r.minutes.toFixed(1)} min ${r.over ? `winner team ${r.over.winningTeam} ${r.over.how || ''}` : 'unfinished'} (${((performance.now() - t0) / 1000).toFixed(1)} s) aiErrors=${JSON.stringify(r.aiErrors)} goldHops far=${r.hops.far} bounce=${r.hops.bounce} longWalk=${r.hops.longWalk.toFixed(0)}s`);
-  for (const [k, v] of r.issues) console.log(`  ${k} x${v.count} (first tick ${v.tick}): ${v.first}`);
+  for (const [k, v] of r.issues) {
+    console.log(`  ${k} x${v.count} (first tick ${v.tick}): ${v.first}`);
+    if (!SOFT.has(k)) failures.push(`seed ${g.seed}: ${k}`);
+  }
+  if (r.aiErrors.some((n) => n > 0)) failures.push(`seed ${g.seed}: AI errors ${JSON.stringify(r.aiErrors)}`);
   for (const s of r.stuckReports.slice(0, 15)) console.log(`  stuck: ${s}`);
   if (r.stuckReports.length > 15) console.log(`  ... ${r.stuckReports.length - 15} more stuck`);
   if (opt.determinism) {
     const r2 = runGame(g);
     console.log(`  determinism: ${r.hash === r2.hash ? 'same' : `DIFFERENT ${r.hash} vs ${r2.hash}`}`);
+    if (r.hash !== r2.hash) failures.push(`seed ${g.seed}: replay differs`);
   }
+}
+if (opt.strict) {
+  console.log(failures.length ? `\nFAILED: ${failures.join('; ')}` : '\nAll games passed.');
+  process.exit(failures.length ? 1 : 0);
 }

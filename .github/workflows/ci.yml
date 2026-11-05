@@ -8,10 +8,53 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
       - name: Run tests
         run: npm test
+
+  # Headless AI-vs-AI games with the world's invariants checked every second and a same-seed replay.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: AI games (1v1, 2v2 and free-for-all)
+        run: |
+          node tools/sim-audit.mjs --seeds=1-3 --max=15 --determinism --strict
+          node tools/sim-audit.mjs --seeds=4-5 --max=15 --teams=2v2 --diff=hard --strict
+          node tools/sim-audit.mjs --seeds=6 --max=15 --teams=ffa --diff=brutal --strict
+
+  # The real UI driven with mouse and keyboard in Chromium on software graphics (no GPU on the runners).
+  play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Play test (single player)
+        run: node tools/play-test.mjs --only sp --slow --out play-shots
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: play-shots
+          path: play-shots
+          retention-days: 7

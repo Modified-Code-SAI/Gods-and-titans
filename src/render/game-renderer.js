@@ -1833,7 +1833,6 @@ export class GameRenderer {
   }
 
   updateOverlays(dt) {
-    const vs = this.vs;
     const rings = this.rings;
     const bars = this.bars;
     const zk = this.zoomK();

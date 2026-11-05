@@ -8,7 +8,6 @@
 // material and level and shared by every fading unit, so fading allocates
 // nothing per frame and the extra shader programs are a handful (one per
 // morph-target count), compiled at warm-up.
-import * as THREE from 'three';
 
 export const FADE_SECONDS = 0.25;
 export const FADE_LEVELS = 8;

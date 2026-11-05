@@ -103,7 +103,7 @@ export const HINTS = [
   { id: 'titan', text: 'In the City, raise a Titan Gate ([[B]], then [[G]]) and summon one colossal Titan.', when: (c) => c.tier >= 3 && !c.has.titan_gate && !c.titan },
   { id: 'elite', text: (c) => {
     const e = c.pantheon ? eliteFor(c.pantheon) : null;
-    return `Your pantheon\'s own soldier${e ? `, the ${e.name},` : ''} is trained at the Barracks once you are a Town. Press [[E]] there.`;
+    return `Your pantheon's own soldier${e ? `, the ${e.name},` : ''} is trained at the Barracks once you are a Town. Press [[E]] there.`;
   }, when: (c) => c.tier >= 2 && !!c.has.barracks && !!c.pantheon && !!eliteFor(c.pantheon) },
   { id: 'pantheon-chip', text: 'Hover the pantheon chip at the top left to read your pantheon\'s blessings and its elite soldier.', when: (c) => c.time < 600 },
 

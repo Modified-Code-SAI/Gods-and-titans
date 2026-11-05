@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { godsFor } from '../../src/data/index.js';
-import { makeWorld, run, runCollect, runUntil, place, spawn, clearUnits, defineUnit, eventsOf, errorsOf } from './helpers.js';
+import { makeWorld, run, runCollect, runUntil, place, spawn, defineUnit, eventsOf, errorsOf } from './helpers.js';
 
 const workers = (w, p = 0) => w.unitsOf(p).filter((u) => u.type === 'worshipper');
 

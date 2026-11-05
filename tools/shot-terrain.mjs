@@ -16,7 +16,7 @@
 // as 18.5; it needs the lighting branch, plain main ignores it). High and ultra can take a
 // minute a frame under software GL: use a smaller --width / --height for those, or
 // --timeout 600000 for more patience.
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

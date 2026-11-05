@@ -18,7 +18,7 @@ const THREE = await import('three');
 const { SUN_DIR } = await import('../../src/render/shading.js');
 const { createWorld } = await import('../../src/sim/world.js');
 const { ViewState } = await import('../../src/game/view-state.js');
-const { PLAYER_COLORS, DT } = await import('../../src/config.js');
+const { PLAYER_COLORS } = await import('../../src/config.js');
 
 const W = 1280;
 const H = 720;

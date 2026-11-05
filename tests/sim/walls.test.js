@@ -4,7 +4,7 @@ import { BUILDINGS, BUILD_MENU } from '../../src/data/index.js';
 import { isWallType, wallUpgradeOf, wallLine, wallMask, WALL_N, WALL_E, WALL_S, WALL_W } from '../../src/data/walls.js';
 import { MAX_WALL_LINE, WALL_PLACE_RANGE } from '../../src/config.js';
 import { WALL_TOO_FAR } from '../../src/sim/construction.js';
-import { findTarget, findBreach } from '../../src/sim/combat.js';
+import { findTarget } from '../../src/sim/combat.js';
 import { makeWorld, run, runCollect, runUntil, place, spawn, clearUnits, eventsOf, errorsOf } from './helpers.js';
 
 const workers = (w, p = 0) => w.unitsOf(p).filter((u) => u.type === 'worshipper');

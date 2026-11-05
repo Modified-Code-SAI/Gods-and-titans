@@ -1020,7 +1020,7 @@ export function humanoidItems(v) {
 }
 
 function humanoidTemplate(ctx, profileName) {
-  const { v, pal, ex } = ctx;
+  const { v } = ctx;
   const P = { ...PROFILES[profileName] };
   if (ctx.grand && profileName === 'humanoid') {
     P.chestW *= 1.08;

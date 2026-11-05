@@ -7,11 +7,11 @@ import { shadeC, mixC, TEAM, withMat } from './unit-geo.js';
 import { WEAPON_INFO } from './unit-parts.js';
 import { holdsAloft } from './unit-bodies.js';
 import { MeshKit, rigid, alongPath, mixBind, smoothstep, ps } from './rich-kit.js';
-import { creatureSpec, pathStations, frameMatrix, headToModel, pathOf, bonesOf, atJoint, TAIL_KEYS } from './rich-creature-kit.js';
+import { creatureSpec, pathStations, frameMatrix, headToModel, pathOf, bonesOf, TAIL_KEYS } from './rich-creature-kit.js';
 import { reptileHead, reptileMetrics } from './rich-reptile-heads.js';
 import { scalesPaint, ring, dorsal, glowEye, underside } from './rich-serpent.js';
 import { paw, spike } from './rich-creature-parts.js';
-import { barrelAt, legStations, saddle } from './rich-quadruped.js';
+import { legStations, saddle } from './rich-quadruped.js';
 import { tint } from './rich-paint.js';
 
 /** The head kinds this plan builds (the unit's visual.head) and the build each one rides on. */

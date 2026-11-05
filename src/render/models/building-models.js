@@ -34,7 +34,7 @@ import {
   PLINTH, DEPTH, MARGIN, PI, BUCKETS, DEFAULT_STYLE,
   DEFAULT_COLORS, C, mix, shade, tint, SURF,
   made, prep, box, bevelBox, courseLoft, courseCone, frustum, cyl, cone,
-  ball, dome, octa, dodeca, torus, strut,
+  ball, octa, dodeca, torus, strut,
   pole, extrude, fromTris, soft, solid, hipLoft,
   GLOW, Kit, finishKit,
 } from './building-core.js';
@@ -47,7 +47,7 @@ import {
   barrel, sack, logPile, goldPile, brazier, firePit,
   idol, steps, stair, column, obelisk, carvedPost,
   torii, stoneLantern, hangingLantern, serpentHead, standingStone, lamassu,
-  pinnacle, ornament, ornamentPair, isRound, door, frieze,
+  pinnacle, ornament, ornamentPair, isRound, frieze,
   rectWalls, roundWalls, roofH, roofOver, roofGable, roofLonghouse,
   roofPyramid, roofPagoda, roofCurved, roofShikhara, roofStepped, roofFlatDome,
   roofFlat, rectRoof, roundRoof, bx, bfr, domeCuts, postLamp,

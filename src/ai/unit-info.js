@@ -3,7 +3,7 @@
 // pantheon without per-pantheon code).
 import { getUnitType, godsFor, creaturesFor, titanFor, eliteFor } from '../data/index.js';
 import { rankBonus } from '../data/ranks.js';
-import { GOD_LEVEL_HP, GOD_LEVEL_DAMAGE } from '../config.js';
+import { GOD_LEVEL_DAMAGE } from '../config.js';
 
 const infoCache = new Map();
 

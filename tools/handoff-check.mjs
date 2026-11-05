@@ -5,10 +5,8 @@
 // Serve the repo first (python3 -m http.server 8321), then:
 //   node tools/handoff-check.mjs [--base=http://localhost:8321] [--out=dir]
 // Prints what each step saw and exits non-zero on a failed check. Software GL is slow: allow minutes.
-import { createRequire } from 'node:module';
+import { chromium } from './browser.mjs';
 
-const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
 const arg = (k, d) => (process.argv.find((a) => a.startsWith(`--${k}=`)) || '').split('=')[1] || d;
 const BASE = arg('base', 'http://localhost:8321');
 const OUT = arg('out', '');

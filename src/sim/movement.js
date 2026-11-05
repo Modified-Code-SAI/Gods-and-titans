@@ -313,6 +313,23 @@ function trafficAhead(world, u) {
   return false;
 }
 
+/** True when an ally of the same layer, moving or standing, touches u. */
+function allyTouching(world, u) {
+  const tmp = world._tmpSteer;
+  tmp.length = 0;
+  world.hash.query(u.x, u.y, u.radius + world.maxRadius + 0.3, tmp);
+  for (let i = 0; i < tmp.length; i++) {
+    const o = tmp[i];
+    if (o === u || o.dead || o.ghost || o.air !== u.air) continue;
+    if (world.areEnemies(u.owner, o.owner)) continue;
+    const r = u.radius + o.radius + 0.3;
+    const dx = o.x - u.x;
+    const dy = o.y - u.y;
+    if (dx * dx + dy * dy <= r * r) return true;
+  }
+  return false;
+}
+
 function stepUnit(world, u) {
   u.moving = false;
   if (u.forced) {
@@ -487,11 +504,18 @@ function stepUnit(world, u) {
         // jam, not a blockage: count it as a fraction of a stuck step.
         const before = mv.stuck;
         const jam = trafficAhead(world, u);
+        // Pressed against an ally, moving or not: an idle ally on the only way out (a god standing on
+        // the one open tile between water and buildings) holds u there just as well as a queue does.
+        const pressed = jam || allyTouching(world, u);
         mv.stuck += jam ? 0.25 : 1;
-        mv.jams = jam ? (mv.jams || 0) + 1 : 0;
-        if (mv.jams >= JAM_CHECKS) {
-          mv.jams = 0;
+        // Counted on the unit, not the move: a new order (the AI repeats one every few seconds) keeps the count.
+        u.jams = pressed ? (u.jams || 0) + 1 : 0;
+        if (u.jams >= JAM_CHECKS || (pressed && mv.stuck >= 4 && !mv.squeezed)) {
+          // Squeeze through allies for a moment instead of giving up the move.
+          u.jams = 0;
           u.jamT = world.tickCount + JAM_PASS_TICKS;
+          mv.squeezed = true;
+          mv.stuck = Math.min(mv.stuck, 2);
         }
         if (mv.stuck >= 4) {
           mv.failed = true;
@@ -502,7 +526,7 @@ function stepUnit(world, u) {
       }
     } else {
       mv.stuck = 0;
-      mv.jams = 0;
+      u.jams = 0;
     }
     mv.checkT = world.tickCount;
     mv.checkX = u.x;

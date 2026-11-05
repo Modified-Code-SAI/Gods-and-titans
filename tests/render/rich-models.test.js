@@ -1619,7 +1619,7 @@ test('the apkallu wears the head and the skin of a fish: a blunt snout and stari
   assert.ok(b.max.z - b.min.z > 0.22 * hs, 'the eyes stand out at the sides');
   assert.ok(b.max.y > headCY + 0.1 * hs, 'over the crown of the head');
   assert.ok(Math.abs(b.min.z + b.max.z) < 1e-6, 'a pair of eyes, even on both sides');
-  assert.ok(teamShare(hood.geo) > 0.04 && teamShare(hood.geo) < 0.3, `only the crest is the team\'s (${teamShare(hood.geo).toFixed(2)})`);
+  assert.ok(teamShare(hood.geo) > 0.04 && teamShare(hood.geo) < 0.3, `only the crest is the team's (${teamShare(hood.geo).toFixed(2)})`);
   const cloak = (opts) => {
     const { kit, D, bind } = dressing(mesopotamian('mesopotamian_apkallu'));
     addFishCloak(kit, D, bind, { color: fish, belly, fin: TEAM(0.95, 'cloth'), ...opts });
@@ -1634,7 +1634,7 @@ test('the apkallu wears the head and the skin of a fish: a blunt snout and stari
   assert.ok(c.min.x < -full.D.chestD - 0.06, 'it hangs clear of the back');
   assert.ok(boxOf(short.geo).min.y > c.min.y + 0.15, 'len sets how far it hangs');
   assert.ok(few.geo.userData.triangles < full.geo.userData.triangles - 50, 'every row is a strip of scales of its own');
-  assert.ok(teamShare(full.geo) > 0.25, `the spine and the forked tail are the team\'s, to be seen from behind (${teamShare(full.geo).toFixed(2)})`);
+  assert.ok(teamShare(full.geo) > 0.25, `the spine and the forked tail are the team's, to be seen from behind (${teamShare(full.geo).toFixed(2)})`);
 });
 
 test('Enki\'s streams run from each shoulder past the hip to the ground, outside the arms, all of them glowing water', async () => {

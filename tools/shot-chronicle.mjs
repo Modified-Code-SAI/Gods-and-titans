@@ -2,7 +2,7 @@
 // The after-game chronicle: a 2v2 vs AI game, a made-up 24-minute history written into the
 // chronicle and the players' stats, then the victory screen on each of its four tabs.
 //   node tools/shot-chronicle.mjs [--port 8303] [--out DIR] [--quality low]
-import { chromium } from 'playwright';
+import { chromium } from './browser.mjs';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -19,7 +19,6 @@ mkdirSync(out, { recursive: true });
 const server = spawn(join(root, 'node_modules/.bin/http-server'), ['.', '-p', String(port), '-c-1', '--silent'], { cwd: root, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const launch = { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] };
-if (process.env.CHROMIUM_PATH) launch.executablePath = process.env.CHROMIUM_PATH;
 const browser = await chromium.launch(launch);
 const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
 page.on('pageerror', (e) => console.log('pageerror', e.message));

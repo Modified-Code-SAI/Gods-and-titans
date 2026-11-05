@@ -147,7 +147,6 @@ test('a learner who follows every objective wins and earns a medal', () => {
   assert.ok(vs.gameOver && vs.gameOver.winningTeam === 1, 'the learner won');
   assert.equal(director.finished, true);
   assert.equal(director.medal.id, 'gold', `won at ${Math.round(director.finishedAt)} s`);
-  // eslint-disable-next-line no-console
   if (process.env.TUTORIAL_TIMES) console.log(Object.entries(times).map(([k, t]) => `${k} ${Math.round(t)}s`).join(', '));
 });
 
