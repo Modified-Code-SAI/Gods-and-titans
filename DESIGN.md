@@ -1481,6 +1481,10 @@ r.dispose();
 `pickEntity` first syncs building and mine views to the latest snapshot, so a building placed
 between two frames is clickable at once. Units coming into sight are built within a 3 ms
 per-frame budget, so a revealed army appears over a few frames.
+- Hit reaction (render only): a `hit` event that lands on a unit (when its spark shows) makes the view flinch
+  (`UnitView.flinch(dx, dy, share)`): the root is pushed up to 0.09 tiles away from the attacker and leans away
+  (0.16 rad at most) over 0.26 s, a fast push and a slow settle (`flinchCurve`). Harder blows (damage over full health)
+  push further; big bodies less (1/√scale, titans 0.3, rams 0.35). A death clears it so the fall starts upright.
 - Models: `src/render/models/unit-models.js` exports `buildUnitModel(unitType, teamColor) → UnitModel`
   (`{ root: THREE.Group, height, animate(state, timeSec, dt, extra) }`, where `state` is the
   EntityView `st` plus `'dead'` for the death animation; `extra = { moving, attackPhase (0..1 after an attack event), level }`)
