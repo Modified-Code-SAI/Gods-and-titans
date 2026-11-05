@@ -1481,6 +1481,10 @@ r.dispose();
 `pickEntity` first syncs building and mine views to the latest snapshot, so a building placed
 between two frames is clickable at once. Units coming into sight are built within a 3 ms
 per-frame budget, so a revealed army appears over a few frames.
+- Hit reaction (render only): a `hit` event that lands on a unit (when its spark shows) makes the view flinch
+  (`UnitView.flinch(dx, dy, share)`): the root is pushed up to 0.09 tiles away from the attacker and leans away
+  (0.16 rad at most) over 0.26 s, a fast push and a slow settle (`flinchCurve`). Harder blows (damage over full health)
+  push further; big bodies less (1/√scale, titans 0.3, rams 0.35). A death clears it so the fall starts upright.
 - Models: `src/render/models/unit-models.js` exports `buildUnitModel(unitType, teamColor) → UnitModel`
   (`{ root: THREE.Group, height, animate(state, timeSec, dt, extra) }`, where `state` is the
   EntityView `st` plus `'dead'` for the death animation; `extra = { moving, attackPhase (0..1 after an attack event), level }`)
@@ -2419,6 +2423,11 @@ per-frame budget, so a revealed army appears over a few frames.
   Names: click, select, move, attack_melee, attack_ranged, hit, death, build, building_complete,
   train, summon_god, summon_titan, lightning, fire, magic, heal, error, victory, defeat,
   tier_up, chop, mine, pray, horn, ping, ping_urgent.
+  Impacts by material and size (`src/audio/sfx-impacts.js`): hit_armor (a melee blow on armor 2+ or a god), hit_pierce
+  (an arrow, spear or stone), hit_wood (a wooden wall), hit_stone (any other building), hit_heavy (a titan); deaths:
+  death_big (a god, a creature of 3+ population), death_titan, collapse (any building; walls quieter). `impactSound(dst, src)`
+  and `deathSound(ev, def)` pick the name and volume from the `hit` and `death` events; a spell's hit keeps the soft `hit`
+  under the spell's own sound, and a worker or light soldier still gets the old `hit` and `death`.
   The `AudioContext` is made, and asked to run, as the page loads (`sfx.init`, from `initAudio`). A browser that allows
   sound with no input (a site set to "Sound: Allow" in its site settings, Chrome's `--autoplay-policy=no-user-gesture-required`,
   a page reached by a click on a link of the site) runs it at once, and everything is heard from the
@@ -2431,7 +2440,7 @@ per-frame budget, so a revealed army appears over a few frames.
   `src/audio/audio.js`, and `src/game/music-director.js`): background music for the title screen and for matches,
   composed and synthesized live with WebAudio (no audio files). It shares the sound effects' `AudioContext` and master
   limiter (`sfx.shared`), so the browser's audio unlock (above) happens once for both, and it steps back
-  under the stingers in `DUCKS` (`summon_god`, `summon_titan`, `victory`, `defeat`, `tier_up`, `horn`; heard through
+  under the stingers in `DUCKS` (`summon_god`, `summon_titan`, `victory`, `defeat`, `tier_up`, `horn`, `death_titan`; heard through
   `sfx.onPlay`). `initAudio(settings)` and `syncAudio(settings, changed)` (`main.js`) start both engines and carry the
   settings over; `playTitleMusic()` is what each menu screen calls (a no-op while it already plays);
   `quietMusic()` clears whatever plays as the intro film (11.1) starts (the film starts a score of its own when its first

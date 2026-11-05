@@ -71,6 +71,11 @@ const SCALE_UP_WAIT_MAX = 3600;
 const MAX_VSYNC_MS = 34; // no display or browser cap runs slower than 30 Hz: longer is the GPU
 const AIR_RING_LIFT = AIR_HOVER_HEIGHT - 0.14; // flyers' rings: just under the hovering body
 const DEATH_SECONDS = 1.65; // keep animating 'dead' this long (topple + sink)
+// A struck unit flinches: knocked back a little away from the blow and leaning with it, then settling (render only).
+const FLINCH_SECONDS = 0.26;
+const FLINCH_PEAK = 0.22; // the push peaks at this share of the flinch, then eases back
+const FLINCH_PUSH = 0.09; // tiles, for a man-sized unit at an ordinary blow
+const FLINCH_LEAN = 0.16; // radians
 const COLLAPSE_SECONDS = 1.6; // destroyed buildings sink this long
 const EVENT_STALE = 1.5; // seconds of real time: queued VFX events older than this are dropped (hidden tab)
 // Unit animation CPU budget per frame (ms). Past it, small on-screen units
@@ -1064,7 +1069,12 @@ export class GameRenderer {
         const melee = srcDef && srcDef.attack && !srcDef.attack.projectile && src.k === 'u';
         const el = this.attackElement(ev.src);
         const delay = melee ? 0.1 : 0;
-        this.pendingHits.push({ t: this.time + delay, id: ev.dst, el });
+        // where the blow came from (the attacker, else nowhere: the flinch then only dips) and how hard, for the flinch
+        const sx = src ? src.ix ?? src.x : x;
+        const sy = src ? src.iy ?? src.y : y;
+        const dstDef = dst.k === 'u' ? UNITS[dst.t] : null;
+        const share = dstDef && dstDef.hp > 0 ? Math.min(1, (ev.amount || 0) / dstDef.hp) : 0;
+        this.pendingHits.push({ t: this.time + delay, id: ev.dst, el, sx, sy, share });
         break;
       }
       case 'death': {
@@ -1253,6 +1263,10 @@ export class GameRenderer {
         y += (Math.random() - 0.5) * b.size * 0.4 + b.size * 0.15;
       }
       this.vfx.spawnHit({ x, y, h: this.aimHeight(h.id, b ? 0.45 : 0.55), el: h.el });
+      if (!b) {
+        const v = this.units.get(h.id);
+        if (v) v.flinch(x - (h.sx ?? x), y - (h.sy ?? y), h.share || 0);
+      }
     }
     list.length = j;
   }
@@ -1449,6 +1463,7 @@ export class GameRenderer {
       const root = v.model.root;
       root.position.set(x, gh, y);
       root.rotation.y = -(e.if ?? e.f ?? 0);
+      if (v.flinchT < FLINCH_SECONDS) v.applyFlinch(dt);
       // screen position for culling, picking, bars
       const footY = gh + (v.air ? AIR_HOVER_HEIGHT - 0.25 : 0.05);
       const headY = gh + v.height * 0.92;
@@ -1547,6 +1562,7 @@ export class GameRenderer {
       this.units.delete(id);
       if (v.visible && this.deaths.has(id)) {
         v.dyingT = 0;
+        v.clearFlinch(); // the fall starts upright
         // (a marker no more: the death plays on the model)
         if (v.far) {
           v.far = false;
@@ -2484,6 +2500,17 @@ export class GameRenderer {
 // entity views
 // ---------------------------------------------------------------------------
 
+/** The flinch's shape over its life u = 0..1: a fast push out to 1 at FLINCH_PEAK, then an eased settle back to 0. */
+export function flinchCurve(u) {
+  if (u <= 0 || u >= 1) return 0;
+  if (u < FLINCH_PEAK) {
+    const p = u / FLINCH_PEAK;
+    return p * (2 - p);
+  }
+  const q = 1 - (u - FLINCH_PEAK) / (1 - FLINCH_PEAK);
+  return q * q * (3 - 2 * q);
+}
+
 class UnitView {
   constructor(e, def, model, relation) {
     this.id = e.id;
@@ -2502,6 +2529,8 @@ class UnitView {
     this.seen = 0;
     this.skipped = 0;
     this.dyingT = 0;
+    this.flinchT = FLINCH_SECONDS; // at rest
+    this.flinchX = this.flinchZ = 0; // the push direction (unit length) times its strength
     this.x = e.ix ?? e.x;
     this.y = e.iy ?? e.y;
     this.gh = 0;
@@ -2541,6 +2570,51 @@ class UnitView {
       return undefined;
     }
     return p < 0 ? 0 : p;
+  }
+
+  /**
+   * Start a flinch: (dx, dy) points from the blow's source to this unit (tiles, any length; zero picks a random way),
+   * share is the blow's damage over the unit's full health. Big bodies barely move: a titan or a ram only shudders.
+   */
+  flinch(dx, dy, share) {
+    let len = Math.hypot(dx, dy);
+    if (len < 1e-3) {
+      const a = Math.random() * Math.PI * 2;
+      dx = Math.cos(a);
+      dy = Math.sin(a);
+      len = 1;
+    }
+    const cls = this.def.class;
+    const body = cls === 'titan' ? 0.3 : cls === 'siege' ? 0.35 : 1 / Math.sqrt(Math.max(1, (this.def.visual && this.def.visual.scale) || 1));
+    const k = Math.min(1.6, 0.55 + share * 1.8) * body;
+    // a second blow while still flinching pushes from where it already is, never less than now
+    const cur = this.flinchT < FLINCH_SECONDS ? Math.hypot(this.flinchX, this.flinchZ) * flinchCurve(this.flinchT / FLINCH_SECONDS) : 0;
+    if (k < cur) return;
+    this.flinchX = (dx / len) * k;
+    this.flinchZ = (dy / len) * k;
+    this.flinchT = 0;
+    if (this.model.root.rotation.order !== 'ZXY') this.model.root.rotation.order = 'ZXY'; // the lean tips in world axes, after the facing
+  }
+
+  /** Offset and lean the root for this frame of the flinch (after its position and facing are set). */
+  applyFlinch(dt) {
+    this.flinchT += dt;
+    const root = this.model.root;
+    if (this.flinchT >= FLINCH_SECONDS) {
+      root.rotation.x = root.rotation.z = 0;
+      return;
+    }
+    const a = flinchCurve(this.flinchT / FLINCH_SECONDS);
+    root.position.x += this.flinchX * a * FLINCH_PUSH;
+    root.position.z += this.flinchZ * a * FLINCH_PUSH;
+    // the top tips away from the blow: +x on rotation.x moves the head toward +z, +z on rotation.z toward -x
+    root.rotation.x = this.flinchZ * a * FLINCH_LEAN;
+    root.rotation.z = -this.flinchX * a * FLINCH_LEAN;
+  }
+
+  clearFlinch() {
+    this.flinchT = FLINCH_SECONDS;
+    this.model.root.rotation.x = this.model.root.rotation.z = 0;
   }
 
   setCastShadow(on) {

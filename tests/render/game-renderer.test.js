@@ -268,6 +268,43 @@ test('GameRenderer: events become effects, deaths play out, quality changes live
   r.dispose();
 });
 
+test('GameRenderer: a struck unit flinches away from the blow and settles upright', async () => {
+  const { flinchCurve } = await import('../../src/render/game-renderer.js');
+  assert.equal(flinchCurve(0), 0);
+  assert.equal(flinchCurve(1), 0);
+  assert.ok(flinchCurve(0.22) > 0.99, 'peaks early');
+  assert.ok(flinchCurve(0.1) > flinchCurve(0.6), 'out fast, back slowly');
+  const { world, vs, r, step } = makeMatch({ quality: 'high' });
+  step(0.3);
+  const tc = tcOf(vs, 0);
+  const b = world.spawnUnit(1, 'warrior', tc.x + 4, tc.y + 5, { silent: true });
+  step(0.3);
+  const v = r.units.get(b.id);
+  assert.ok(v, 'the target has a view');
+  const e = vs.entities.get(b.id);
+  // a blow from straight west (-x) at a fifth of its health
+  r.pendingHits.push({ t: r.time, id: b.id, el: 'physical', sx: e.ix - 3, sy: e.iy, share: 0.2 });
+  r.flushPendingHits();
+  assert.ok(v.flinchT === 0 && v.flinchX > 0 && Math.abs(v.flinchZ) < 1e-9, 'pushed toward +x, away from the blow');
+  step(2 / 30);
+  const root = v.model.root;
+  assert.ok(root.position.x > e.ix + 0.01, `knocked back east (${(root.position.x - e.ix).toFixed(3)} tiles)`);
+  assert.ok(root.rotation.z < -0.02, 'leaning away from the blow');
+  step(0.5);
+  assert.ok(Math.abs(root.position.x - (vs.entities.get(b.id).ix)) < 1e-6, 'back on its spot');
+  assert.equal(root.rotation.x, 0);
+  assert.equal(root.rotation.z, 0);
+  // a titan only shudders
+  v.def = { ...v.def, class: 'titan' };
+  v.flinch(1, 0, 0.2);
+  const titanPush = v.flinchX;
+  v.def = { ...v.def, class: 'infantry' };
+  v.clearFlinch();
+  v.flinch(1, 0, 0.2);
+  assert.ok(titanPush < v.flinchX * 0.4, 'a titan moves far less');
+  r.dispose();
+});
+
 test('GameRenderer: hundreds of units stay cheap, dispose empties the scene', () => {
   const { world, vs, r, webgl, step } = makeMatch({ myIndex: -1 }); // spectator: everything visible
   const cx = r.camera.target.x;
