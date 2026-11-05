@@ -129,7 +129,7 @@ test('the stylesheet places it at the top centre, larger than the feed, still fo
   assert.match(rule, /left: 50%/);
   assert.match(rule, /translateX\(-50%\)/);
   assert.match(rule, /pointer-events: none/);
-  const size = Number(css.match(/\.hud-taunt-text \{[^}]*font: 700 ([\d.]+)em/)[1]);
+  const size = Number(css.match(/\.hud-taunt-text \{[^}]*font: (?:italic )?\d00 ([\d.]+)em/)[1]);
   assert.ok(size > 1.18, 'larger than a feed card (1.18em)');
   assert.match(css, /prefers-reduced-motion: reduce\)\s*\{\s*\.hud-taunt\.is-on \{ animation: none; \}/);
 });

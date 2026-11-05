@@ -89,7 +89,7 @@ async function shoot(browser, w, h, errors) {
   if (want('title')) {
     await fresh();
     await page.mouse.move(w * 0.5, h * 0.2);
-    await page.hover('.mw-btn--menu:nth-child(2)');
+    await page.hover('.mw-btn--menu:visible >> nth=1');
     await wait(700);
     await snap('title');
   }
