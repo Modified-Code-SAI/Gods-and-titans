@@ -64,6 +64,9 @@ html, body {
 }
 /* between Start Battle and the first frame: covers the empty canvas, under the HUD (z 5) and the menu (z 20) */
 #start-message { z-index: 4; animation: mw-breathe 1.8s ease-in-out infinite; }
+/* the match is ready: the notice dissolves over its first frames (the game's own loading veil does the same) */
+#start-message.is-leaving { animation: none; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #start-message.is-leaving { transition-duration: 0.01s; } }
 
 /* ------------------------------------------------------------ menu root */
 

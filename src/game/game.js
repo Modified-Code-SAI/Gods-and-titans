@@ -17,7 +17,8 @@ import { impactSound, deathSound } from '../audio/sfx-impacts.js';
 import { ambience, ambienceMix, sampleLand } from '../audio/ambience.js';
 import { GAME_SPEEDS, PEACE_NAME, UI_SCALES } from '../config.js';
 import { edgeName } from '../sim/survival.js';
-import { UNITS, BUILDINGS, buildingIcon } from '../data/index.js';
+import { UNITS, BUILDINGS, buildingIcon, getPantheon } from '../data/index.js';
+import { LANDSCAPES } from '../data/landscapes.js';
 import { POWERS, isHarmfulPower } from '../data/powers.js';
 import { MARKS, MARK_SEND_RATE } from '../data/marks.js';
 import { Hud } from '../ui/hud.js';
@@ -111,6 +112,24 @@ export function describeStartFailure(err) {
   if (GRAPHICS_FAILURE.test(detail)) text = 'Your browser could not start 3D graphics. Check that hardware acceleration is on, or try another browser.';
   else if (LOADING_FAILURE.test(detail)) text = 'Some of the game files could not be loaded. Check your internet connection and reload the page.';
   return { text, detail };
+}
+
+/**
+ * The loading screen's matchup line: the sides by team ("Greek & Hindu vs Norse & Celtic"), then the landscape.
+ * Empty for a campaign mission or the guided first match (they have their own briefings).
+ */
+export function matchupLine(setup) {
+  if (!setup || !Array.isArray(setup.players) || !setup.players.length || typeof setup.campaign === 'string' || setup.tutorial) return '';
+  const teams = new Map();
+  for (const p of setup.players) {
+    const key = p.team ?? `solo${p.index}`;
+    const pan = p.pantheon ? getPantheon(p.pantheon) : null;
+    if (!teams.has(key)) teams.set(key, []);
+    teams.get(key).push(pan && pan.name ? pan.name : 'Unknown');
+  }
+  const sides = [...teams.values()].map((names) => names.join(' & ')).join(' vs ');
+  const land = LANDSCAPES.find((l) => l.id === (setup.landscape || 'classic'));
+  return land ? `${sides} · ${land.name}` : sides;
 }
 
 /** The loading screen's tip: "Tip: …" with the keys drawn as <kbd>. */
@@ -487,7 +506,7 @@ export class Game {
     this.stats.rendererInitMs = performance.now() - tr;
     // A match that keeps running slowly above Low quality says once (per device) where to lower it (src/game/slow-hint.js).
     this.slowWatch = this.replay ? null : new SlowFrameWatch();
-    this.setLoading(false);
+    this.setLoading(false, true);
     this.resize();
     this.applyShowAllBars();
     this.applySpeed();
@@ -507,11 +526,23 @@ export class Game {
     this.raf = requestAnimationFrame((t) => this.frame(t));
   }
 
-  /** "Preparing the battlefield…" over the empty canvas while the renderer's code loads and its scene builds. */
-  setLoading(on) {
+  /**
+   * "Preparing the battlefield…" over the empty canvas while the renderer's code loads and its scene builds.
+   * Off with `fade`, the veil dissolves over the first frames of the match (0.8 s) instead of cutting away.
+   */
+  setLoading(on, fade = false) {
     if (!on) {
-      if (this.loadingEl) this.loadingEl.remove();
+      const node = this.loadingEl;
       this.loadingEl = null;
+      if (!node) return;
+      const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!fade || reduced || !node.style || typeof requestAnimationFrame !== 'function') return node.remove();
+      node.style.pointerEvents = 'none';
+      node.style.transition = 'opacity 0.8s ease';
+      requestAnimationFrame(() => {
+        node.style.opacity = '0';
+      });
+      setTimeout(() => node.remove(), 900);
       return;
     }
     const root = this.root;
@@ -519,7 +550,7 @@ export class Game {
     const node = document.createElement('div');
     node.setAttribute('role', 'status');
     node.style.cssText = 'position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6em;'
-      + 'font:600 18px/1.4 var(--mw-font-display);letter-spacing:0.3em;text-transform:uppercase;color:var(--mw-gold);'
+      + 'font:700 18px/1.4 var(--mw-font-display);letter-spacing:0.3em;text-transform:uppercase;color:var(--mw-gold);'
       + 'background:radial-gradient(ellipse at 50% 40%,#121a33,#05070d 70%)';
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:0.9em';
@@ -528,6 +559,15 @@ export class Game {
     const text = document.createElement('span');
     text.textContent = 'Preparing the battlefield…';
     row.append(spin, text);
+    const line = matchupLine(this.launch && this.launch.setup);
+    if (line) {
+      const vs = document.createElement('div');
+      vs.className = 'mw-loading-matchup';
+      vs.style.cssText = 'font:700 clamp(22px, 3.6vmin, 44px)/1.2 var(--mw-font-display);letter-spacing:0.14em;color:var(--mw-gold-hi);'
+        + 'text-shadow:0 0 18px rgba(227,184,79,0.35),0 2px 0 #000;text-align:center;padding:0 1em';
+      vs.textContent = line;
+      node.append(vs);
+    }
     node.append(row);
     const tip = getSettings().hints ? loadingHint() : null;
     if (tip) node.append(loadingTip(tip.text));

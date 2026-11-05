@@ -2231,7 +2231,10 @@ per-frame budget, so a revealed army appears over a few frames.
   length (while the pointer rests on it, and 4 s after), and has ✕ and "Turn tips off" (saves `hints: false`).
   A soft chime goes with it when `alerts` is `'all'`. A tip is text with `[[Key]]` markers drawn as `<kbd>`;
   the hotkeys and numbers it quotes come from the data (`tests/ui/hud-hints.test.js` checks them). The
-  loading screen ("Preparing the battlefield…") shows one general tip under the spinner.
+  loading screen ("Preparing the battlefield…") shows the matchup above the spinner (`matchupLine`: the pantheons
+  by team, then the landscape, as "Greek & Hindu vs Norse & Celtic · Islands"; none for a campaign mission or the
+  guided first match) and one general tip under it. When the scene is ready the loading veil and the start notice
+  dissolve over 0.8 s (`setLoading(false, true)`, `#start-message.is-leaving`; at once with reduced motion or on a failure).
   **Sounds** (`src/audio/sfx-alerts.js`, merged into the tables of `sfx.js`): `nudge` (two soft notes: a
   reminder), `drums` (four war-drum beats), `gong` (the peace is about to end), `research` (an upgrade
   finished), `tip` (a tip appeared) and `milestone` (a short fanfare).
