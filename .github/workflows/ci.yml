@@ -38,7 +38,8 @@ jobs:
 
   # The real UI driven with mouse and keyboard in Chromium on software graphics (no GPU on the runners).
   play:
-    runs-on: ubuntu-latest
+    # Pinned: the repo's Playwright (1.56) has no browser build for newer Ubuntu images.
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
