@@ -785,6 +785,7 @@ class UnitModel {
     this.time = 0;
     this.state = 'idle';
     this.deadTime = 0;
+    this.deathHold = 0.95; // seconds a fallen body lies before it sinks (the renderer keeps the dead longer: remains.js)
     this.sawPhase = false;
     this.lastAp = 1;
     this.punchSide = 1;
@@ -1022,11 +1023,12 @@ class UnitModel {
       const side = this.seed > 3.14 ? 1 : -1;
       rg.rotation.x = side * topple * (this.kind === 'humanoid' || this.kind === 'naga' || this.kind === 'spirit' ? 1.45 : 1.2);
       rg.rotation.z = topple * 0.15;
-      // lie still for a moment, then sink out of sight by ~1.55 s
-      const sink = Math.min(1, Math.max(0, (d - 0.95) / 0.6));
+      // lie still for deathHold seconds, then sink out of sight over 0.6 s
+      const hold = this.deathHold;
+      const sink = Math.min(1, Math.max(0, (d - hold) / 0.6));
       y -= sink * sink * Math.max(0.35, this.height * 0.6);
       if (this.aura) this.aura.scale.setScalar(this.auraBase * Math.max(0.001, 1 - d / 0.8));
-      if (this.shadow) this.shadow.visible = d < 1.2;
+      if (this.shadow) this.shadow.visible = d < hold + 0.25;
     }
     rg.position.y = y;
     if (this.shadow) {

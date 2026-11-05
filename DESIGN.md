@@ -1485,6 +1485,13 @@ per-frame budget, so a revealed army appears over a few frames.
   (`UnitView.flinch(dx, dy, share)`): the root is pushed up to 0.09 tiles away from the attacker and leans away
   (0.16 rad at most) over 0.26 s, a fast push and a slow settle (`flinchCurve`). Harder blows (damage over full health)
   push further; big bodies less (1/√scale, titans 0.3, rams 0.35). A death clears it so the fall starts upright.
+- Remains (render only, `src/render/remains.js`): a dead unit topples, then lies where it fell for 14 s
+  (`CORPSE.hold`; shades and banshees fade at once) before it sinks away over 0.65 s. After 1.3 s the pose is
+  frozen (no animation until the sink). At most `corpseCap(quality)` bodies lie at once (12 / 28 / 44 / 60 from
+  Low to Ultra); past that the oldest sink early. A building that falls in sight leaves a seeded pile of rubble
+  (earth, stones, charred and timber pieces; less for a wall or an unfinished building) and a scorch on the ground
+  (`RubbleLayer`, two instanced meshes plus a blob): 75 s in all, the last 4 s sinking. A new building on the spot
+  clears it. `tools/shot-render.mjs --only remains` shows both.
 - Models: `src/render/models/unit-models.js` exports `buildUnitModel(unitType, teamColor) → UnitModel`
   (`{ root: THREE.Group, height, animate(state, timeSec, dt, extra) }`, where `state` is the
   EntityView `st` plus `'dead'` for the death animation; `extra = { moving, attackPhase (0..1 after an attack event), level }`)
