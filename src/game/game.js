@@ -14,6 +14,7 @@ import { createWorld } from '../sim/world.js';
 import { getSettings, onSettingsChange } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
 import { impactSound, deathSound } from '../audio/sfx-impacts.js';
+import { ambience, ambienceMix, sampleLand } from '../audio/ambience.js';
 import { GAME_SPEEDS, PEACE_NAME, UI_SCALES } from '../config.js';
 import { edgeName } from '../sim/survival.js';
 import { UNITS, BUILDINGS, buildingIcon } from '../data/index.js';
@@ -710,6 +711,7 @@ export class Game {
       const cam = this.renderer.camera;
       if (cam && cam.target) sfx.setListener(cam.target.x, cam.target.y, hearingScale(cam));
       this.ambientSounds(now);
+      this.updateAmbience(now, cam);
     } catch (err) {
       this.frameFault(err);
     }
@@ -1297,6 +1299,8 @@ export class Game {
           const srcDef = s ? (s.k === 'b' ? BUILDINGS[s.t] : UNITS[s.t]) : null;
           const [hName, hVol] = impactSound({ kind: p.e.k, id: p.e.t, def: p.e.k === 'b' ? BUILDINGS[p.e.t] : UNITS[p.e.t] }, srcDef ? { def: srcDef } : null);
           this.worldSound(hName, p.x, p.y, hVol);
+          const cam = this.renderer && this.renderer.camera;
+          if (cam && cam.target && Math.hypot(p.x - cam.target.x, p.y - cam.target.y) < 20 * hearingScale(cam)) this.battleHeat = (this.battleHeat || 0) + 1;
         }
         break;
       }
@@ -1410,6 +1414,37 @@ export class Game {
     if (p) this.worldSound(name, p.x, p.y, volume);
   }
 
+  /**
+   * The world's ambience (src/audio/ambience.js): the land around the camera is sampled twice a second,
+   * the hour comes from the renderer, and fighting in earshot (hits counted in `battleHeat`) quiets the birds.
+   */
+  updateAmbience(now, cam) {
+    if (!ambience.running) {
+      if (!sfx.ready || !sfx.shared) return;
+      ambience.start(sfx.shared);
+    }
+    const last = this.ambienceAt || 0;
+    const dt = Math.min(1, Math.max(0, (now - last) / 1000));
+    this.ambienceAt = now;
+    this.battleHeat = (this.battleHeat || 0) * Math.exp(-dt / 4);
+    if (cam && cam.target && (!this.land || now - this.landAt > 500)) {
+      const vs = this.viewState;
+      const scale = hearingScale(cam);
+      this.land = sampleLand(vs.seenTerrain || vs.map.terrain, vs.width, vs.height, cam.target.x, cam.target.y, Math.round(10 * scale));
+      this.landAt = now;
+    }
+    const tod = this.renderer && this.renderer.timeOfDay;
+    const land = this.land || { water: 0, forest: 0 };
+    ambience.update(ambienceMix({
+      hour: tod ? tod.hour : 12,
+      water: land.water,
+      forest: land.forest,
+      zoom: hearingScale(cam),
+      battle: Math.min(1, this.battleHeat / 10),
+      hidden: typeof document !== 'undefined' && !!document.hidden,
+    }));
+  }
+
   /** Occasional chop / mine / hammer / prayer sounds from own workers working near the camera. */
   ambientSounds(now) {
     if (now - this.lastAmbient < AMBIENT_MS || !this.renderer || this.paused) return;
@@ -1442,6 +1477,7 @@ export class Game {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    ambience.stop();
     cancelAnimationFrame(this.raf);
     this.setLoading(false);
     for (const off of this.offs.splice(0)) {

@@ -2428,6 +2428,13 @@ per-frame budget, so a revealed army appears over a few frames.
   death_big (a god, a creature of 3+ population), death_titan, collapse (any building; walls quieter). `impactSound(dst, src)`
   and `deathSound(ev, def)` pick the name and volume from the `hit` and `death` events; a spell's hit keeps the soft `hit`
   under the spell's own sound, and a worker or light soldier still gets the old `hit` and `death`.
+- Ambience (`src/audio/ambience.js`, driven by `Game.updateAmbience` each frame): a wind bed with gusts, birds by
+  day (more over forest), crickets at night (not over water), and waves that swell and draw back where water is
+  near the camera. Synthesized live through the effects' chain (`sfx.shared`), so the effects volume and mute cover it.
+  `ambienceMix({ hour, water, forest, zoom, battle, hidden })` is pure: the hour comes from the renderer's time of day,
+  the land from `sampleLand` over the seen terrain within 10 tiles × the hearing scale (twice a second), the zoom
+  pulls the land sounds back under the wind, hits near the camera (`battleHeat`) quiet the birds and crickets, and a
+  hidden tab is silent. Levels (`AMBIENCE_LEVEL`) sit about 15 dB under a hit: about −39 dB RMS by a forest lake at noon.
   The `AudioContext` is made, and asked to run, as the page loads (`sfx.init`, from `initAudio`). A browser that allows
   sound with no input (a site set to "Sound: Allow" in its site settings, Chrome's `--autoplay-policy=no-user-gesture-required`,
   a page reached by a click on a link of the site) runs it at once, and everything is heard from the
