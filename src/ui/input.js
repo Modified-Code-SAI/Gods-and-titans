@@ -12,6 +12,7 @@ import { MANOR, houseBlocks } from '../data/houses.js';
 import { MARKS, DEFAULT_MARK } from '../data/marks.js';
 import { getSettings } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
+import { unitBark, BarkGate } from '../audio/sfx-voices.js';
 import { checkPlacement, checkWallLine, footprintAt, peaceAnchors } from '../game/placement.js';
 import { getCommandCard, withCardKeys, buttonForKey, buildCheck, trainCheck, affordReason } from './command-card.js';
 import { normKey, bindingsOf, actionOf, cardKeysOf, PAN_ACTIONS } from './key-bindings.js';
@@ -204,6 +205,25 @@ export class InputController {
 
   ownUnits() {
     return this.sel.ownUnitIds();
+  }
+
+  /**
+   * The selected units answer (sfx-voices.js): 'select' when picked out, 'ack' for an order, 'attack' for an attack
+   * order. The most important unit speaks for the group, one reply at a time.
+   */
+  bark(event) {
+    const ids = this.ownUnits();
+    if (!ids.length) return;
+    const defs = [];
+    for (const id of ids) {
+      const e = this.vs.entities.get(id);
+      if (e) defs.push(UNITS[e.t]);
+    }
+    const name = unitBark(defs, event);
+    if (!name) return;
+    const gate = this.barkGate || (this.barkGate = new BarkGate());
+    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
+    if (gate.allow(now, event)) sfx.play(name);
   }
 
   ownWorkers() {
@@ -466,7 +486,10 @@ export class InputController {
 
   afterSelect() {
     this.menu = 'root';
-    if (this.sel.size) sfx.play('select');
+    if (this.sel.size) {
+      sfx.play('select');
+      this.bark('select');
+    }
     if (this.renderer) this.renderer.setSelection(this.sel.ids);
     this.hud.refreshCard();
   }
@@ -627,6 +650,7 @@ export class InputController {
         this.command(cmd);
         this.marker(relic.x, relic.y, 'gather');
         sfx.play('move');
+        this.bark('ack');
         return;
       }
       if (target && !(target.k === 'u' && units.includes(target.id))) {
@@ -647,6 +671,7 @@ export class InputController {
       const my = target && kind !== 'move' ? target.iy ?? target.y : py;
       this.marker(mx, my, kind);
       sfx.play('move');
+      this.bark(kind === 'attack' ? 'attack' : 'ack');
       return;
     }
     const blds = this.sel.ownBuildings().filter((b) => isComplete(b) && this.produces(b));
@@ -710,6 +735,7 @@ export class InputController {
         } else this.command({ type: 'move', units, x: p.x, y: p.y, queue: !!shift });
         this.marker(p.x, p.y, 'move');
         sfx.play('move');
+        this.bark('ack');
         break;
       }
       case 'attack': {
@@ -726,12 +752,14 @@ export class InputController {
           this.marker(p.x, p.y, 'attack');
         }
         sfx.play('move');
+        this.bark('attack');
         break;
       }
       case 'patrol': {
         this.command({ type: 'patrol', units, x: p.x, y: p.y, queue: !!shift });
         this.marker(p.x, p.y, 'attack');
         sfx.play('move');
+        this.bark('ack');
         break;
       }
       case 'gather': {
@@ -750,6 +778,7 @@ export class InputController {
           this.marker(tree.tx + 0.5, tree.ty + 0.5, 'gather');
         }
         sfx.play('move');
+        this.bark('ack');
         break;
       }
       case 'pray': {
@@ -762,6 +791,7 @@ export class InputController {
         this.command({ type: 'pray', units: this.ownWorkers(), target: target.id, queue: !!shift });
         this.marker(target.x, target.y, 'move');
         sfx.play('move');
+        this.bark('ack');
         break;
       }
       case 'repair': {
@@ -778,6 +808,7 @@ export class InputController {
         this.command({ type: 'repair', units: this.ownWorkers(), target: target.id, queue: !!shift });
         this.marker(target.x, target.y, 'move');
         sfx.play('move');
+        this.bark('ack');
         break;
       }
       case 'rally': {
@@ -909,6 +940,7 @@ export class InputController {
     this.command({ type: 'build', units: [best], building: m.building, tx, ty, queue: !!shift });
     this.marker(cx, cy, 'move');
     sfx.play('move');
+    this.bark('ack');
     if (!shift) {
       this.menu = 'root';
       this.setMode({ kind: 'normal' });
@@ -976,6 +1008,7 @@ export class InputController {
     const mid = line.tiles[Math.floor(line.tiles.length / 2)];
     this.marker(mid.tx + 0.5, mid.ty + 0.5, 'move');
     sfx.play('move');
+    this.bark('ack');
     if (!shift) {
       this.menu = 'root';
       this.setMode({ kind: 'normal' });

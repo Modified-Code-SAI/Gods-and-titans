@@ -2454,6 +2454,15 @@ per-frame budget, so a revealed army appears over a few frames.
   death_big (a god, a creature of 3+ population), death_titan, collapse (any building; walls quieter). `impactSound(dst, src)`
   and `deathSound(ev, def)` pick the name and volume from the `hit` and `death` events; a spell's hit keeps the soft `hit`
   under the spell's own sound, and a worker or light soldier still gets the old `hit` and `death`.
+- Unit replies (`src/audio/sfx-voices.js`): selected units answer, wordless, in a voice synthesized from a buzzing
+  source through three vowel formants. Five voices (`voiceOf`: worker, a man's or a woman's; soldier; god, doubled an
+  octave below in a large hall; creature and minion, a growl; titan, a roar over a ground boom; siege engines are silent)
+  times three moments: `select` (an "mm" of attention, on `afterSelect`), `ack` (a clipped "hah", on a move, gather,
+  build, repair, pray, patrol or smart order) and `attack` (a war cry, three voices for soldiers; workers only
+  acknowledge). `unitBark(defs, event)` lets the most important unit speak for the group and `BarkGate` keeps one reply
+  at a time (0.9 s after a select, 0.45 s after an order, 1.4 s after a war cry), so fast clicking never chatters.
+  Levels (`VOICE_LEVEL`) were set from rendered loudness: a select reply about 2.5 dB under the `select` click, an order
+  about 1.5 dB under it, a war cry about 2 dB over a `hit`, gods and titans a little louder.
 - Ambience (`src/audio/ambience.js`, driven by `Game.updateAmbience` each frame): a wind bed with gusts, birds by
   day (more over forest), crickets at night (not over water), and waves that swell and draw back where water is
   near the camera. Synthesized live through the effects' chain (`sfx.shared`), so the effects volume and mute cover it.

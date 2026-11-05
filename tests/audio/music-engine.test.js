@@ -89,7 +89,9 @@ test('an unknown theme falls back to the title theme; the same theme again chang
 test('bars are composed ahead of the clock, but each note is created only shortly before it sounds', () => {
   const { ctx, engine } = setup();
   const bar = THEMES.greek.bar;
-  engine.play('greek');
+  // a fixed seed: about 1 % of random seeds open with no note after the first 0.6 s inside the horizon,
+  // so nothing would be pending (seeds 60, 123, 275, 318 of 1..400), which this test cannot tell from a bug
+  engine.play('greek', { seed: 7 });
   engine.tick();
   assert.ok(Math.min(...ctx.sources.map((s) => s.started)) >= 0, 'nothing in the past');
   assert.ok(engine.run.nextBar >= 1.6 && engine.run.nextBar < 1.6 + bar, `bars are composed up to the horizon (${engine.run.nextBar})`);
