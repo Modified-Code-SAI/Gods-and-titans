@@ -22,7 +22,7 @@ test('the mix follows the hour, the land, the zoom and the fighting', () => {
   const far = ambienceMix({ hour: 12, forest: 0.6, water: 0.4, zoom: 4.5 });
   assert.ok(far.wind > noon.wind && far.birds < noon.birds * 0.4 && far.shore < 0.4, 'pulled back: wind over the land');
   assert.ok(ambienceMix({ hour: 12, forest: 0.6, battle: 1 }).birds < noon.birds * 0.2, 'birds go quiet in a fight');
-  assert.deepEqual(ambienceMix({ hidden: true }), { wind: 0, shore: 0, birds: 0, insects: 0 }, 'a hidden tab is silent');
+  assert.deepEqual(ambienceMix({ hidden: true }), { wind: 0, shore: 0, birds: 0, insects: 0, rain: 0 }, 'a hidden tab is silent');
 });
 
 test('sampleLand counts water and forest around a point, clipped to the map', () => {
@@ -56,4 +56,28 @@ test('the engine plays through the shared chain, schedules birds, crickets and w
   assert.equal(eng.running, false);
   eng.update({ wind: 1, shore: 1, birds: 1, insects: 1 }); // a no-op once stopped
   new AmbienceEngine().update({ wind: 1 }); // and before it starts
+});
+
+test('rain hisses and patters, and both rain and snow quiet the birds and the crickets', () => {
+  const dry = ambienceMix({ hour: 12, forest: 0.6 });
+  const wet = ambienceMix({ hour: 12, forest: 0.6, rain: 1 });
+  assert.equal(dry.rain, 0);
+  assert.ok(wet.rain > 0.7);
+  assert.ok(wet.birds < dry.birds * 0.1, 'the birds shelter');
+  const snow = ambienceMix({ hour: 12, forest: 0.6, snow: 1 });
+  assert.equal(snow.rain, 0);
+  assert.ok(snow.wind > dry.wind && snow.birds < dry.birds * 0.3);
+  assert.ok(ambienceMix({ hour: 23, rain: 1 }).insects < 0.01);
+  const ctx = new FakeAudioContext();
+  const eng = new AmbienceEngine();
+  eng.start({ ctx, master: ctx.createGain(), noise: ctx.createBuffer(1, 8000, 8000) });
+  const before = ctx.sources ? ctx.sources.length : 0;
+  for (let i = 0; i < 8; i++) {
+    ctx.currentTime += 0.25;
+    eng.update({ wind: 0.5, shore: 0, birds: 0, insects: 0, rain: 1 });
+  }
+  const made = ctx.sources ? ctx.sources.slice(before) : [];
+  assert.ok(made.length > 20, `${made.length} drops in 2 s of heavy rain`);
+  for (const s of made) assert.ok(s.stopped !== null && s.stopped > s.started, 'every drop stops');
+  eng.stop();
 });

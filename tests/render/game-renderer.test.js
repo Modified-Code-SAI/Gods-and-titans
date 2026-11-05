@@ -636,3 +636,23 @@ test('GameRenderer: a building that falls leaves rubble and a scorch, cleared wh
   assert.equal(r.rubble.stats().piles, 0, 'building on the spot clears it');
   r.dispose();
 });
+
+test('GameRenderer: weather follows its mode, dims the sun and shows the rain', () => {
+  const { r, step } = makeMatch();
+  step(0.2);
+  assert.equal(r.weather.mode, 'auto');
+  assert.equal(r.weather.rain, 0, 'a match opens clear');
+  const sun = r.sun.intensity;
+  r.setWeather('rain');
+  step(0.1);
+  assert.equal(r.weather.rain, 1);
+  assert.ok(r.sun.intensity < sun * 0.6, 'overcast');
+  assert.ok(r.weatherLayer.mesh.visible);
+  r.setWeather('off');
+  step(0.1);
+  assert.equal(r.weather.rain, 0);
+  assert.equal(r.weatherLayer.mesh.visible, false);
+  r.setWeather('hail'); // unknown: ignored
+  assert.equal(r.weather.mode, 'off');
+  r.dispose();
+});
