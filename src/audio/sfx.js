@@ -11,6 +11,7 @@
 // Every call is a safe no-op where WebAudio is missing (Node, old browsers).
 import { ALERT_RECIPES, ALERT_LIMITS, ALERT_LEVEL } from './sfx-alerts.js';
 import { IMPACT_RECIPES, IMPACT_LIMITS, IMPACT_LEVEL } from './sfx-impacts.js';
+import { VOICE_RECIPES, VOICE_LIMITS, VOICE_LEVEL } from './sfx-voices.js';
 
 export const SFX_NAMES = [
   'click', 'select', 'move', 'attack_melee', 'attack_ranged', 'hit', 'death', 'build',
@@ -514,6 +515,11 @@ Object.assign(RECIPES, IMPACT_RECIPES);
 Object.assign(LIMITS, ALERT_LIMITS);
 Object.assign(LEVEL, ALERT_LEVEL);
 Object.assign(RECIPES, ALERT_RECIPES);
+// The unit replies (select, order, war cry) are written in sfx-voices.js.
+SFX_NAMES.push(...Object.keys(VOICE_RECIPES));
+Object.assign(LIMITS, VOICE_LIMITS);
+Object.assign(LEVEL, VOICE_LEVEL);
+Object.assign(RECIPES, VOICE_RECIPES);
 
 function audioContextClass() {
   if (typeof globalThis === 'undefined') return null;
