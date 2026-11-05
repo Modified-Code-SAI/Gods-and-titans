@@ -106,6 +106,17 @@ const SHOTS = {
       advance: 0.6,
     }, { advance: 0.4 }],
   },
+  // weather over the base: rain, snow and mist held, then one at dusk
+  weather: {
+    q: 'scenario=base&t=8&weather=rain',
+    frames: [
+      { advance: 0.3, suffix: 'rain' },
+      { js: 'harness.renderer.setWeather("snow")', advance: 0.6, suffix: 'snow' },
+      { js: 'harness.renderer.setWeather("mist")', advance: 0.3, suffix: 'mist' },
+      { js: 'harness.renderer.setWeather("rain"); harness.renderer.setTimeOfDay(19)', advance: 0.3, suffix: 'rain-dusk' },
+      { js: 'harness.renderer.setWeather("off"); harness.renderer.setTimeOfDay("cycle")', advance: 0.3, suffix: 'clear' },
+    ],
+  },
   // what a fight leaves: fallen soldiers lying where they fell, rubble and a scorch where buildings came down
   remains: {
     q: 'scenario=base&t=6',

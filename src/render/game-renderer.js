@@ -13,6 +13,8 @@ import { NEUTRAL_COLOR, PLAYER_COLORS, GOLD_MINE_AMOUNT, EXPANSION_MINE_AMOUNT, 
 import { UNITS, BUILDINGS, PANTHEONS } from '../data/index.js';
 import { rankName, RANK_COLORS } from '../data/ranks.js';
 import { wallConnections } from '../data/walls.js';
+import { resolveLandscape } from '../data/landscapes.js';
+import { weatherAt, forcedWeather, applyWeather, WeatherLayer } from './weather.js';
 import { buildUnitModel, preloadUnitModels, clearUnitModelCache, AIR_HOVER_HEIGHT } from './models/unit-models.js';
 import { unitLook } from './models/unit-looks.js';
 import { RICH_PANTHEONS } from './models/rich-humanoid.js';
@@ -120,6 +122,9 @@ function wallKey(owner, tx, ty) {
   return ((ty * 1024 + tx) << 4) | (owner + 1);
 }
 
+const _wc = { x: 0, y: 0, z: 0 };
+const luminanceOf = (c) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+
 /** A stable small number from an entity id (seeds the rubble of a fallen building). */
 function hashId(id) {
   const t = String(id);
@@ -155,8 +160,9 @@ export class GameRenderer {
    * @param {'low'|'medium'|'high'|'ultra'} [o.quality]
    * @param {THREE.WebGLRenderer} [o.webgl] an existing renderer to draw with (tests / tools)
    * @param {string|number} [o.timeOfDay] 'cycle' (the default: follows the match clock), 'golden' | 'day' | 'dusk' | 'night' | 'dawn', or an hour 0..24
+   * @param {'auto'|'off'|'rain'|'snow'|'mist'} [o.weather] 'auto' (the default: spells drawn from the seed and the clock, weather.js), 'off', or one held (tools)
    */
-  constructor(canvas, { viewState, setup, quality = 'medium', webgl = null, timeOfDay = 'cycle' } = {}) {
+  constructor(canvas, { viewState, setup, quality = 'medium', webgl = null, timeOfDay = 'cycle', weather = 'auto' } = {}) {
     if (!viewState) throw new Error('GameRenderer needs a viewState.');
     this.vs = viewState;
     this.setup = setup || viewState.setup || { players: [] };
@@ -202,6 +208,13 @@ export class GameRenderer {
     // The time of day (atmosphere.js) sets every light, the haze and the grade each frame
     // (updateLook); the values here are only what a frame before the first update would show.
     this.atmo = new Atmosphere({ mode: timeOfDay });
+    // weather (weather.js): the same spells in every browser, from the seed, the landscape and the match clock
+    const ws = setup || viewState.setup || {};
+    this.weatherSeed = ws.seed ?? 0;
+    this.weatherLand = resolveLandscape(ws.landscape || 'classic', ws.seed);
+    this.weatherMode = 'auto';
+    this.weatherNow = { rain: 0, snow: 0, mist: 0 };
+    this.setWeather(weather);
     scene.fog = new THREE.Fog(0xaebfcc, 44, 170);
     this.hemi = new THREE.HemisphereLight(SKY_COLOR, GROUND_COLOR, 0.8);
     scene.add(this.hemi);
@@ -303,6 +316,7 @@ export class GameRenderer {
 
     this.blobs = new BlobLayer(this.groundFxRoot);
     this.rubble = new RubbleLayer(this.groundFxRoot, this.heightFn, { quality: this.quality });
+    this.weatherLayer = new WeatherLayer(this.scene, { quality: this.quality });
     this.rings = new RingLayer(this.overlayRoot);
     this.stars = new StarLayer(this.groundFxRoot);
     this.status = new StatusLayer(this.overlayRoot);
@@ -721,6 +735,7 @@ export class GameRenderer {
     });
     setCloudShadows(Q.clouds);
     this.terrain.setQuality(q);
+    this.weatherLayer.setQuality(q);
     this.forest.setQuality(q);
     this.decor.setQuality(q);
     if (this.undergrowth) this.undergrowth.setQuality(q);
@@ -1332,6 +1347,7 @@ export class GameRenderer {
     this.sacredSites.update(dt, vs.sites, (o) => this.colorOf(o));
     this.updateOverlays(dt);
     this.updateLook();
+    this.updateWeather();
     this.updateLamps();
     this.updateShadowCamera();
 
@@ -2209,7 +2225,11 @@ export class GameRenderer {
    */
   updateLook(force = false) {
     const vs = this.vs;
-    const s = this.atmo.update(Number.isFinite(vs.renderTime) ? vs.renderTime : vs.time);
+    const clock = Number.isFinite(vs.renderTime) ? vs.renderTime : vs.time;
+    const s = this.atmo.update(clock);
+    const wm = this.weatherMode;
+    this.weatherNow = wm === 'auto' ? weatherAt(clock, this.weatherSeed, this.weatherLand) : forcedWeather(wm);
+    applyWeather(s, this.weatherNow);
     applyAtmosphere(s);
     // low draws without the post pipeline, so the grade (warm highlights, cool shadows) goes into the lights
     const graded = !!(this.post && this.post.enabled);
@@ -2250,6 +2270,30 @@ export class GameRenderer {
       look.glowColor[2] = s.skyHorizon.b;
     }
     if (this.env && this.env.update(s, force)) this.scene.environment = this.env.texture;
+  }
+
+  /** 'auto' (spells from the seed and the clock), 'off', or 'rain' | 'snow' | 'mist' held (tools). Unknown values are ignored. */
+  setWeather(mode) {
+    if (!['auto', 'off', 'rain', 'snow', 'mist'].includes(mode)) return;
+    this.weatherMode = mode;
+  }
+
+  /** The weather showing now: { mode, rain, snow, mist } (0..1 each). */
+  get weather() {
+    return { mode: this.weatherMode, ...this.weatherNow };
+  }
+
+  /** The falling rain or snow around the camera's target, lit by the sky. */
+  updateWeather() {
+    const layer = this.weatherLayer;
+    if (!layer || !this.camera) return;
+    const s = this.atmo.state;
+    const t = this.camera.target;
+    _wc.x = t.x;
+    _wc.z = t.y;
+    _wc.y = heightAt(this.map, t.x, t.y);
+    const light = Math.min(1, s.hemiIntensity * luminanceOf(s.hemiSky) * 0.9 + s.keyIntensity * 0.06);
+    layer.update(this.weatherNow, _wc, this.camera.distance, this.time, light);
   }
 
   /**
@@ -2481,6 +2525,7 @@ export class GameRenderer {
     this.placement.dispose();
     this.blobs.dispose();
     this.rubble.dispose();
+    this.weatherLayer.dispose();
     this.stars.dispose();
     this.status.dispose();
     this.fires.dispose();

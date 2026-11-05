@@ -1,5 +1,5 @@
 // The world's ambience under a match: a wind bed, birds by day, crickets at night and waves where there is
-// shore, synthesized live with WebAudio (no audio files) through the sound effects' chain (`sfx.shared`), so
+// shore, rain when the weather turns (render/weather.js), synthesized live with WebAudio (no audio files) through the sound effects' chain (`sfx.shared`), so
 // the effects volume and mute cover it. DESIGN 9.
 //   ambienceMix(o)              pure: how loud each layer should be for the hour, the land around the camera,
 //                               the zoom and the fighting nearby (0..1 each)
@@ -13,7 +13,7 @@ const TERRAIN_WATER = 2;
 const TERRAIN_FOREST = 3;
 
 /** Overall level of each layer at mix 1 (linear gain into the effects' master). Background: well under the effects. */
-export const AMBIENCE_LEVEL = { wind: 0.1, shore: 0.12, birds: 0.07, insects: 0.025 };
+export const AMBIENCE_LEVEL = { wind: 0.1, shore: 0.12, birds: 0.07, insects: 0.025, rain: 0.085 };
 const GLIDE = 1.2; // seconds: the time constant the layers glide with (a camera move fades the land in, never cuts)
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -30,23 +30,27 @@ export function daylight(hour) {
 
 /**
  * How loud each layer should be.
- * @param {{ hour?: number, water?: number, forest?: number, zoom?: number, battle?: number, hidden?: boolean }} o
+ * @param {{ hour?: number, water?: number, forest?: number, zoom?: number, battle?: number, rain?: number, snow?: number, hidden?: boolean }} o
  *   water, forest: shares 0..1 of the land around the camera; zoom: hearingScale (0.8 close, 1 default, 4.5 far);
- *   battle: 0..1, how much fighting is in earshot (birds go quiet, crickets stop)
- * @returns {{ wind: number, shore: number, birds: number, insects: number }}
+ *   battle: 0..1, how much fighting is in earshot (birds go quiet, crickets stop);
+ *   rain, snow: 0..1, the weather (weather.js weatherAt): rain hisses and patters, both quiet the birds and crickets
+ * @returns {{ wind: number, shore: number, birds: number, insects: number, rain: number }}
  */
-export function ambienceMix({ hour = 12, water = 0, forest = 0, zoom = 1, battle = 0, hidden = false } = {}) {
-  if (hidden) return { wind: 0, shore: 0, birds: 0, insects: 0 };
+export function ambienceMix({ hour = 12, water = 0, forest = 0, zoom = 1, battle = 0, rain = 0, snow = 0, hidden = false } = {}) {
+  if (hidden) return { wind: 0, shore: 0, birds: 0, insects: 0, rain: 0 };
   const day = daylight(hour);
   const night = 1 - day;
   const far = smooth(1.2, 3.5, zoom); // pulled back: the land's small sounds give way to the wind
   const near = 1 - far * 0.75;
   const calm = 1 - clamp01(battle) * 0.85;
+  const wet = clamp01(rain);
+  const hush = 1 - Math.max(wet, clamp01(snow) * 0.8); // the birds shelter from rain and snow
   return {
-    wind: clamp01(0.45 + 0.4 * far + 0.15 * night),
+    wind: clamp01(0.45 + 0.4 * far + 0.15 * night + 0.25 * clamp01(snow) + 0.1 * wet),
     shore: clamp01(smooth(0.02, 0.3, water) * near),
-    birds: clamp01(day * (0.3 + 0.7 * smooth(0.05, 0.5, forest)) * near * calm),
-    insects: clamp01(night * (1 - smooth(0.3, 0.8, water)) * near * calm),
+    birds: clamp01(day * (0.3 + 0.7 * smooth(0.05, 0.5, forest)) * near * calm * hush),
+    insects: clamp01(night * (1 - smooth(0.3, 0.8, water)) * near * calm * hush),
+    rain: wet * (0.8 + 0.2 * far),
   };
 }
 
@@ -79,11 +83,12 @@ class AmbienceEngine {
     this.ctx = null;
     this.out = null;
     this.layers = null;
-    this.mix = { wind: 0, shore: 0, birds: 0, insects: 0 };
+    this.mix = { wind: 0, shore: 0, birds: 0, insects: 0, rain: 0 };
     this.nextBird = 0;
     this.nextCricket = 0;
     this.nextWave = 0;
     this.nextGust = 0;
+    this.nextDrop = 0;
     this.random = Math.random;
   }
 
@@ -96,6 +101,7 @@ class AmbienceEngine {
     if (this.layers || !shared || !shared.ctx || !shared.master || !shared.noise) return this;
     const ctx = shared.ctx;
     this.ctx = ctx;
+    this.noise = shared.noise;
     const out = ctx.createGain();
     out.gain.value = 1;
     out.connect(shared.master);
@@ -133,12 +139,16 @@ class AmbienceEngine {
       g.connect(out);
       return g;
     };
-    this.layers = { wind, whistle, shore, wash, birds: bus(), insects: bus() };
+    // rain: a broad hiss and a soft roar under it; drops patter on the rain bus (update)
+    const hiss = loop('bandpass', 2800, 0.45);
+    const roar = loop('lowpass', 650, 0.5);
+    this.layers = { wind, whistle, shore, wash, hiss, roar, birds: bus(), insects: bus(), rain: bus() };
     const t = ctx.currentTime;
     this.nextBird = t + 1.5;
     this.nextCricket = t + 0.5;
     this.nextWave = t;
     this.nextGust = t;
+    this.nextDrop = t;
     return this;
   }
 
@@ -158,6 +168,10 @@ class AmbienceEngine {
     set(L.shore.g.gain, mix.shore * AMBIENCE_LEVEL.shore);
     set(L.birds.gain, mix.birds * AMBIENCE_LEVEL.birds);
     set(L.insects.gain, mix.insects * AMBIENCE_LEVEL.insects);
+    const rain = mix.rain || 0;
+    set(L.hiss.g.gain, rain * AMBIENCE_LEVEL.rain);
+    set(L.roar.g.gain, rain * AMBIENCE_LEVEL.rain * 0.7);
+    set(L.rain.gain, rain * AMBIENCE_LEVEL.rain * 1.6);
     const AHEAD = 0.6;
     // gusts: every few seconds the wind's band rises and swells a little, then falls back
     while (this.nextGust < t + AHEAD) {
@@ -196,6 +210,42 @@ class AmbienceEngine {
         this.nextCricket = s + 0.35 + this.random() * 0.5;
       }
     } else this.nextCricket = t + 0.5;
+    // drops: quick ticks on leaves, roofs and shields, thicker the heavier the rain
+    if (rain > 0.03) {
+      while (this.nextDrop < t + AHEAD) {
+        const s = Math.max(t, this.nextDrop);
+        this.drop(s);
+        this.nextDrop = s + (0.02 + this.random() * 0.09) / (0.3 + rain);
+      }
+    } else this.nextDrop = t + 0.3;
+  }
+
+  /** One raindrop: a 10 to 25 ms tick of filtered noise, placed left or right. */
+  drop(t) {
+    const ctx = this.ctx;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noise;
+    const fl = ctx.createBiquadFilter();
+    fl.type = 'bandpass';
+    fl.frequency.value = 1800 + this.random() * 3800;
+    fl.Q.value = 2 + this.random() * 4;
+    const g = ctx.createGain();
+    const len = 0.01 + this.random() * 0.015;
+    const peak = 0.3 + this.random() * 0.7;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(peak, t + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.001, t + len);
+    const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+    src.connect(fl);
+    fl.connect(g);
+    if (pan) {
+      pan.pan.value = (this.random() * 2 - 1) * 0.9;
+      g.connect(pan);
+      pan.connect(this.layers.rain);
+    } else g.connect(this.layers.rain);
+    src.start(t, this.random() * 1.2);
+    src.stop(t + len + 0.02);
+    if (pan) this.release(pan, t + len + 0.1);
   }
 
   /** One bird phrase: two to five quick whistled notes with glides, placed left or right. */
@@ -281,7 +331,7 @@ class AmbienceEngine {
     const t = ctx.currentTime;
     out.gain.setTargetAtTime(0, t, Math.max(0.01, fade / 4));
     const end = t + Math.max(0.05, fade);
-    for (const l of [L.wind, L.whistle, L.shore]) l.src.stop(end);
+    for (const l of [L.wind, L.whistle, L.shore, L.hiss, L.roar]) l.src.stop(end);
     this.release(out, end + 0.05);
     this.layers = null;
     this.ctx = null;

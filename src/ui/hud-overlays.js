@@ -173,6 +173,7 @@ export class Overlays {
     const edge = toggleRow('Edge scrolling', 'Move the camera when the mouse touches the screen edge.', s.edgeScroll, (v) => saveSettings({ edgeScroll: v }));
     const tips = toggleRow('Getting-started tips', 'The checklist in the top-right corner.', !s.tipsDismissed, (v) => saveSettings({ tipsDismissed: !v }));
     const sky = choiceRow('Time of day', TIME_OF_DAY_OPTIONS, s.timeOfDay, (v) => saveSettings({ timeOfDay: v }));
+    const weather = toggleRow('Weather', 'Passing rain, snow and mist.', s.weather, (v) => saveSettings({ weather: v }));
     // Graphics quality changes live (game.js onSettings → renderer.setQuality), so a laggy match need not be left to lower it.
     const quality = choiceRow('Graphics quality', QUALITY_OPTIONS, s.quality, (v) => saveSettings({ quality: v }));
     // Game speed only in a match against the computer: an online game runs at one pace for everyone.
@@ -290,6 +291,7 @@ export class Overlays {
         speed && speed.row,
         quality.row,
         sky.row,
+        weather.row,
         uiScale.row,
         teamColors.row,
         cardKeys.row,

@@ -1921,6 +1921,17 @@ per-frame budget, so a revealed army appears over a few frames.
   Fog of war (`src/render/fog.js`, installed after the other material patches): remembered
   ground dimmed and desaturated toward a cool grey, unexplored land under a drifting dark mist;
   enemy units hidden when not visible; enemy buildings shown as last seen.
+- Weather (`src/render/weather.js`, render-only like the time of day): the match clock is cut into 200 s windows and
+  each may hold one spell of rain, snow or mist, drawn from `hashSeed(seed:weather:window)` and the landscape's climate
+  (`CLIMATES`: snow only on the Highlands, most mist in the Great Forest, most rain on the Islands), so every client sees
+  the same sky. Nothing before 240 s (`WEATHER.calm`); a spell fills 55 to 95 % of its window and comes in and clears
+  over 30 s. `applyWeather` runs on the resolved atmosphere state before it reaches the uniforms: up to 62 % less key
+  light, a greyer sky and grade at its own brightness, a nearer haze (mist most), less bloom and no light shafts.
+  `WeatherLayer` draws the rain (thin additive streaks, two-sided quads) or the snow (soft flakes that sway) in a box
+  that follows the camera's target, one draw call moved on the GPU (1400 / 2600 / 4200 / 6000 drops from Low to Ultra),
+  thinned by the spell's strength and gone past a 55 to 105 tile zoom. The `weather` setting (default on) turns it off;
+  `GameRenderer.setWeather('auto'|'off'|'rain'|'snow'|'mist')`, the harness's `weather=` and
+  `tools/shot-render.mjs --only weather` hold one for checks.
 - Time of day (`src/render/atmosphere.js`, render-only: no sim or protocol change). The match clock
   in every snapshot (`vs.renderTime`, sim seconds) maps to an hour (`DAY_SECONDS` = 900 a day, the
   match opens at 08:00, the dark of the night passes faster than the day) and the hour to a *look*:
@@ -2450,6 +2461,9 @@ per-frame budget, so a revealed army appears over a few frames.
   the land from `sampleLand` over the seen terrain within 10 tiles × the hearing scale (twice a second), the zoom
   pulls the land sounds back under the wind, hits near the camera (`battleHeat`) quiet the birds and crickets, and a
   hidden tab is silent. Levels (`AMBIENCE_LEVEL`) sit about 15 dB under a hit: about −39 dB RMS by a forest lake at noon.
+  In rain (the renderer's `weather`, weather.js) a hiss, a soft roar and scattered drops (10 to 25 ms ticks of filtered
+  noise, thicker the heavier the rain) come in at `AMBIENCE_LEVEL.rain`; rain and snow quiet the birds and the crickets,
+  snow raises the wind. The rain level is a judgement call, not yet measured against the hit.
   The `AudioContext` is made, and asked to run, as the page loads (`sfx.init`, from `initAudio`). A browser that allows
   sound with no input (a site set to "Sound: Allow" in its site settings, Chrome's `--autoplay-policy=no-user-gesture-required`,
   a page reached by a click on a link of the site) runs it at once, and everything is heard from the

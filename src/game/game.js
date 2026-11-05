@@ -502,7 +502,7 @@ export class Game {
     if (this.loadingEl) await nextPaint();
     if (this.disposed) return;
     const tr = performance.now();
-    this.renderer = new RendererClass(this.canvas, { viewState: this.viewState, setup: session.setup, quality: this.settings.quality, timeOfDay: queryTimeOfDay() || this.settings.timeOfDay });
+    this.renderer = new RendererClass(this.canvas, { viewState: this.viewState, setup: session.setup, quality: this.settings.quality, timeOfDay: queryTimeOfDay() || this.settings.timeOfDay, weather: this.settings.weather === false ? 'off' : 'auto' });
     this.stats.rendererInitMs = performance.now() - tr;
     // A match that keeps running slowly above Low quality says once (per device) where to lower it (src/game/slow-hint.js).
     this.slowWatch = this.replay ? null : new SlowFrameWatch();
@@ -906,6 +906,7 @@ export class Game {
       this.needsRender = true;
     }
     // (the renderer rebuilt its models in the new team colours when the palette changed, src/team-colors.js)
+    if (changed.includes('weather') && this.renderer && typeof this.renderer.setWeather === 'function') this.renderer.setWeather(s.weather === false ? 'off' : 'auto');
     if (changed.includes('teamColors')) this.needsRender = true;
   }
 
@@ -1474,6 +1475,7 @@ export class Game {
       this.landAt = now;
     }
     const tod = this.renderer && this.renderer.timeOfDay;
+    const weather = this.renderer && this.renderer.weather;
     const land = this.land || { water: 0, forest: 0 };
     ambience.update(ambienceMix({
       hour: tod ? tod.hour : 12,
@@ -1481,6 +1483,8 @@ export class Game {
       forest: land.forest,
       zoom: hearingScale(cam),
       battle: Math.min(1, this.battleHeat / 10),
+      rain: weather ? weather.rain : 0,
+      snow: weather ? weather.snow : 0,
       hidden: typeof document !== 'undefined' && !!document.hidden,
     }));
   }
