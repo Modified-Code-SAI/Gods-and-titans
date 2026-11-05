@@ -34,5 +34,10 @@ test('the page loads the faces before its own styles, and each font stack starts
 });
 
 test('the Pages deploy copies the vendor folder the fonts live in', async () => {
-  assert.match(await read('.github/workflows/pages.yml'), /cp -r [^\n]*\bvendor\b/);
+  // either the workflow copies it itself, or it runs a site build script that does
+  const wf = await read('.github/workflows/pages.yml');
+  if (/cp -r [^\n]*\bvendor\b/.test(wf)) return;
+  const script = wf.match(/node (tools\/[\w.-]+\.mjs)/);
+  assert.ok(script, 'the workflow neither copies vendor nor runs a build script');
+  assert.match(await read(script[1]), /'vendor'/);
 });
