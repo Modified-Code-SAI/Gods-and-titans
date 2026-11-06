@@ -12,6 +12,7 @@ import { readSave, saveInfo } from './game/save-store.js';
 import { dailyLaunch } from './game/daily.js';
 import { setTeamPalette } from './team-colors.js';
 import { watchIcons, iconVar } from './ui/icons.js';
+import { installHoverTips } from './ui/hover-tip.js';
 
 export { showMenu, hideMenu };
 
@@ -296,6 +297,8 @@ function boot() {
   });
   // Painted icons in place of the emoji in every menu and HUD line (DESIGN 9, "Icons"), and the same bolt for the tab.
   watchIcons(document.body);
+  // Hover text everywhere as the game's own tip card, not the browser's grey box (DESIGN 9, "Hover tips").
+  installHoverTips(document);
   const tabIcon = document.querySelector('link[rel="icon"]');
   const bolt = iconVar('⚡');
   if (tabIcon && bolt) tabIcon.href = bolt.slice(5, -2);
