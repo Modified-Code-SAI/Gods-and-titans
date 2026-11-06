@@ -1198,6 +1198,32 @@ kbd {
 
 /* Career screen (src/ui/menu-career.js) */
 .mw-career-panel .mw-scroll > .mw-label { margin: 1.4em 0 0.6em; }
+/* the renown banner: a crest with the favourite pantheon's emblem and the title's level, the title, a bar to the next */
+.mw-renown {
+  display: flex; align-items: center; gap: 1.1em; margin-bottom: 0.9em; padding: 0.9em 1.2em;
+  border: 1px solid rgba(220, 176, 90, 0.45); border-radius: 10px;
+  background: radial-gradient(120% 160% at 0% 50%, rgba(160, 112, 40, 0.35), rgba(0, 0, 0, 0) 60%), linear-gradient(180deg, rgba(48, 36, 20, 0.85), rgba(14, 11, 8, 0.85));
+  box-shadow: inset 0 1px 0 rgba(255, 230, 170, 0.12), 0 8px 22px rgba(0, 0, 0, 0.35);
+}
+.mw-renown-crest {
+  position: relative; flex: none; display: grid; place-items: center; width: 4.4em; height: 4.4em; border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #4a3820, #1a130b 70%);
+  border: 2px solid #d7ac55; box-shadow: 0 0 0 4px rgba(215, 172, 85, 0.16), 0 0 22px rgba(255, 196, 80, 0.25), inset 0 0 14px rgba(0, 0, 0, 0.7);
+}
+.mw-renown-emblem { font-size: 2em; line-height: 1; font-family: var(--mw-emoji); }
+.mw-renown-level {
+  position: absolute; bottom: -0.45em; left: 50%; transform: translateX(-50%); min-width: 1.6em; padding: 0.1em 0.4em;
+  border-radius: 1em; border: 1px solid #d7ac55; background: #20170d; color: #f3d68c; text-align: center;
+  font: 700 max(0.75em, var(--mw-min-text))/1.2 var(--mw-font-display);
+}
+.mw-renown-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25em; }
+.mw-renown-kicker { font: 600 max(0.72em, var(--mw-min-text))/1 var(--mw-font-ui); letter-spacing: 0.2em; text-transform: uppercase; color: var(--mw-ink-mute); }
+.mw-renown-title { font: 700 1.7em/1.1 var(--mw-font-display); letter-spacing: 0.06em; color: var(--mw-gold-hi); text-shadow: 0 0 16px rgba(227, 184, 79, 0.35), 0 2px 0 rgba(0, 0, 0, 0.6); }
+.mw-renown-bar { display: block; height: 7px; margin: 0.2em 0 0.1em; border-radius: 4px; overflow: hidden; background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 0 0 1px rgba(215, 172, 85, 0.3); }
+.mw-renown-bar i { display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, #9c6b22, #f0c860 70%, #fff0b8); box-shadow: 0 0 10px rgba(255, 200, 80, 0.6); }
+.mw-renown-line { font-size: max(0.85em, var(--mw-min-text)); color: var(--mw-ink-dim); }
+.mw-renown-line b { color: var(--mw-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mw-renown.is-level-7 .mw-renown-crest, .mw-renown.is-level-8 .mw-renown-crest { border-color: #fff0b8; box-shadow: 0 0 0 4px rgba(255, 240, 184, 0.2), 0 0 30px rgba(255, 220, 120, 0.5), inset 0 0 14px rgba(0, 0, 0, 0.7); }
 .mw-car-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5em, 1fr)); gap: 0.6em; }
 .mw-car-stat { display: flex; flex-direction: column; gap: 0.15em; padding: 0.7em 0.9em; border: 1px solid var(--mw-line); border-radius: 6px; background: rgba(0, 0, 0, 0.22); }
 .mw-car-stat-value { font: 700 1.35em/1.15 var(--mw-font-display); color: var(--mw-ink); }

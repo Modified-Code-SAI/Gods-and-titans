@@ -2622,7 +2622,7 @@ so long outlines don't drift). `src/ui/icons.js`:
   `src/data`, `src/ui` or `src/game` use a pictograph the map lacks (typographic marks such as ✓ ✕ ★ are text).
   `tools/gallery-icons.html` shows every emoji beside its icon.
 
-### 9.1 Career and achievements (src/game/career.js, src/game/career-tracker.js, src/data/achievements.js, src/ui/menu-career.js)
+### 9.1 Career and achievements (src/game/career.js, src/game/career-tracker.js, src/data/achievements.js, src/game/renown.js, src/ui/menu-career.js)
 
 Client only: nothing goes over the wire and the sim does not know about it. The career lives in
 localStorage under `mythicwar-career` (guarded like the settings; a damaged value is cleaned by
@@ -2664,6 +2664,12 @@ achievements with the time, and the ones not yet seen.
   unseen unlocks) opens the Career screen: profile tiles, wins by pantheon (at most five cards to a row, each
   name on one line), the last games as chips and
   the gallery (locked ones dimmed, progress bars for counted ones, "New" on the unseen, cleared on opening).
+- Renown (src/game/renown.js, worked out from the career, never stored): 5 for every game played to the end, 20
+  for every win, 25 for every achievement, 1 for every 50 enemies slain. It earns a commander's title: Initiate,
+  Warrior (60), Captain (200), Warlord (450), Hero (900), Champion of the Gods (1600), Demigod (2800), Ascended
+  (4500). The Career screen opens on a banner: a gold crest with the favourite pantheon's emblem and the title's
+  number, "Commander", the title, a bar to the next one and "N renown · M more to <next>" (how renown is earned
+  in its tooltip).
 - The guided first match (9.2) is not a game of the career: no tracker runs in it. Its victory keeps the best
   medal (`best.medal`, 1 bronze … 3 gold, `recordTutorial`) and unlocks First Lessons (any medal) and Top of
   the Class (gold), which with the Trial's two and Brutal's one makes 40 achievements; the career screen lists the medal.
