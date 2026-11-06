@@ -2697,7 +2697,11 @@ left click, or, with own units selected and the tap not on another own unit, the
 One finger dragged at once pans (the middle-button drag); a finger that rests `HOLD_MS` (420 ms, timed by the
 events' timestamps, with a 12 ms buzz where the phone has one) and then moves draws a selection box. Two fingers
 pinch the zoom and pan by their midpoint. A finger lifting clears the pointer, so no edge scroll or hover tag stays
-behind. HUD buttons are DOM and take taps as clicks. Not done: hover tooltips, the god-power ring before a tap.
+behind. HUD buttons are DOM and take taps as clicks. A finger held on a command button (`CARD_HOLD_MS`, 450 ms) or
+on any titled element (`TIP_HOLD` in hover-tip.js) shows its tooltip while it stays down, and that hold is not a
+press: its click is swallowed, a long press never toggles autocast, and the hover a tap emulates opens no tip.
+Whether a press was a hold is judged on the events' timestamps at release. Not done: the god-power ring before a
+tap.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).
