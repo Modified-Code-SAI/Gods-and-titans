@@ -59,3 +59,25 @@ test('Restart Mission is only in a mission still being played', () => {
     assert.ok(!buttons(root).includes('Restart Mission'), JSON.stringify(Object.keys(o)));
   }
 });
+
+test('a match against the computer offers Restart Match, which says when leaving counts as a loss', () => {
+  const { ov, root, calls } = setup({ mission: null });
+  ov.openMenu();
+  assert.ok(buttons(root).includes('Restart Match'));
+  root.button('Restart Match').click();
+  assert.match(root.textContent, /same players and settings, on a fresh map of the same kind\. This one counts as a loss/);
+  root.button('Restart').click();
+  assert.equal(calls.rematches, 1);
+  const early = setup({ mission: null });
+  early.ov.game.viewState.time = 20;
+  early.ov.openMenu();
+  early.root.button('Restart Match').click();
+  assert.ok(!/counts as a loss/.test(early.root.textContent), 'in the first minute it does not count');
+});
+
+test('an online game has no Restart Match while it is played (it rematches once over)', () => {
+  const { ov, root } = setup({ mission: null });
+  ov.game.online = true;
+  ov.openMenu();
+  assert.ok(!buttons(root).includes('Restart Match'));
+});

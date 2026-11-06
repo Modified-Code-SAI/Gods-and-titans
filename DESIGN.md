@@ -2667,10 +2667,13 @@ per-frame budget, so a revealed army appears over a few frames.
   today's. `tools/music-lab.html` plays any theme at any intensity.
 
 **Game menu** (F10 or Esc; `src/ui/hud-overlays.js` `openMenu`, `optionPages`). The buttons (Resume, Save Game,
-Load Game, Surrender, Save & Quit, Quit to Menu, and the online and mission ones) stand in a column on the left; the
+Load Game, Restart Match, Surrender, Save & Quit, Quit to Menu, and the online and mission ones) stand in a column on the left. Restart
+Match (Restart Mission in the campaign) is in any match without other people, still being played: after a confirm it
+starts the same lobby again on a fresh seed (`Game.rematch`), and the confirm says when leaving counts as a loss (after
+the first minute, as Quit to Menu does). The
 options sit beside them on four tabs, so the menu fits the screen without scrolling: Gameplay (game speed, tips,
 alerts, the background-tab choice, edge scrolling, health bars), Graphics (quality, time of day, weather, interface
-size, team colours), Audio (sound effects and music) and Keys (the command-key layout, Controls, Change keys). The
+size, team colours, frame rate limit and counter), Audio (sound effects, voices and music) and Keys (the command-key layout, Controls, Change keys). The
 tab looked at last opens next time (for the visit). Phone widths stack the buttons above the tabs.
 The title screen's Settings uses the same four tabs (`src/ui/menu.js` `settingsPages`): General (name, game speed,
 the gameplay toggles, alerts, the background-tab choice, the intro film), Graphics (quality, time of day, weather, the
