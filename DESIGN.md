@@ -2567,6 +2567,10 @@ options sit beside them on four tabs, so the menu fits the screen without scroll
 alerts, the background-tab choice, edge scrolling, health bars), Graphics (quality, time of day, weather, interface
 size, team colours), Audio (sound effects and music) and Keys (the command-key layout, Controls, Change keys). The
 tab looked at last opens next time (for the visit). Phone widths stack the buttons above the tabs.
+The title screen's Settings uses the same four tabs (`src/ui/menu.js` `settingsPages`): General (name, game speed,
+the gameplay toggles, alerts, the background-tab choice, the intro film), Graphics (quality, time of day, weather, the
+live title screen, interface size, team colours), Audio (sound effects, music and its Listen row) and Keys (the
+command-key layout and the key panel).
 
 **Group selection** (`src/ui/hud-info.js` `buildMulti`, `buildSummary`). Several selected: the portraits (up to 24,
 two rows of 12, each with its health bar and rank) on the left, and a summary column beside them: how many are
