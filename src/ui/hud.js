@@ -134,6 +134,16 @@ export class Hud {
     this.marketBtn.title = 'Market — send gold, wood or faith to a teammate';
     this.marketBtn.hidden = true;
     this.marketBtn.addEventListener('click', () => this.toggleMarket());
+    // A phone or tablet has no Enter key to open the chat (DESIGN 9 "Touch"): a Chat button does, in online games.
+    this.touchOnly = isTouchOnly();
+    this.chatBtn = el('button', 'hud-menu-btn hud-chat-btn', el('span', 'hud-menu-ico', '💬'), el('span', null, 'Chat'));
+    this.chatBtn.type = 'button';
+    this.chatBtn.tabIndex = -1;
+    this.chatBtn.title = 'Chat with the other players';
+    this.chatBtn.hidden = true;
+    // keep the focus in the chat box, so a second tap closes it rather than the box's blur racing the tap
+    for (const t of ['pointerdown', 'mousedown']) this.chatBtn.addEventListener(t, (e) => e.preventDefault());
+    this.chatBtn.addEventListener('click', () => (this.chatOpen ? this.closeChat() : this.openChat()));
     this.clock = el('span', 'hud-clock');
     // Decade of Peace: counts down to the first moment players may attack each other; gone once it is over.
     this.peaceClock = el('span', 'hud-clock');
@@ -184,7 +194,7 @@ export class Hud {
     this.rRelics.n.hidden = true;
     this.relicSig = '';
     this.top = el('div', 'hud-top hud-panel',
-      el('div', 'hud-top-left', this.menuBtn, this.marketBtn, el('div', 'hud-time', el('i', 'hud-res-i', '⏳'), this.clock), this.peaceChip, this.siteChip, this.waveChip, this.twistChip, this.ping, this.rPantheon.n, this.rRelics.n),
+      el('div', 'hud-top-left', this.menuBtn, this.marketBtn, this.chatBtn, el('div', 'hud-time', el('i', 'hud-res-i', '⏳'), this.clock), this.peaceChip, this.siteChip, this.waveChip, this.twistChip, this.ping, this.rPantheon.n, this.rRelics.n),
       this.topRight = el('div', 'hud-top-right', this.rGold.n, this.rWood.n, this.rFaith.n, this.rPop.n, this.rTier.n));
     // The sky dial in the banner at the centre of the bar: the hour of the day/night cycle (hud-sky.js).
     this.sky = new SkyDial();
@@ -499,6 +509,7 @@ export class Hud {
       this.lastIdle = now;
       this.updateIdle();
       this.updateMarket();
+      this.updateChatButton();
     }
 
     this.infoView.update();
@@ -746,6 +757,14 @@ export class Hud {
     if (!canTrade && this.market.isOpen) this.market.close();
     setClass(this.marketBtn, 'is-on', this.market.isOpen);
     this.market.update();
+  }
+
+  /** The touch Chat button: on a touch-only device, in an online game that is not over (no chat offline or in a replay). */
+  updateChatButton() {
+    const g = this.game;
+    const show = !!this.touchOnly && !!g && !!g.online && !g.replay && !g.ended;
+    setHidden(this.chatBtn, !show);
+    setClass(this.chatBtn, 'is-on', show && this.chatOpen);
   }
 
   toggleMarket() {

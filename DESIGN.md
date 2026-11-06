@@ -2712,7 +2712,9 @@ first puts its ring where the finger was (with a line saying so), the second wit
 and a tap elsewhere moves the ring; a power that needs no spot, and every other order, is one tap. Two fingers
 tapped together (down under `TWO_TAP_MS`, 320 ms from the first finger, and barely moving) are Esc for the map: a
 placement or targeted order is called off, otherwise the selection is cleared, since a tap on the ground with units
-selected is always an order. A pinch, a third finger or a drag the second finger joined is never that tap.
+selected is always an order. A pinch, a third finger or a drag the second finger joined is never that tap. In an online game a Chat
+button in the top bar (`hud.chatBtn`, shown only on a touch-only device, which has no Enter key) opens the chat box
+and with it the phone's keyboard; a second tap closes it.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).
