@@ -50,3 +50,11 @@ test('Controls shows the player\'s rebound camera keys and, in the Grid layout, 
   ov.escape();
   assert.equal(ov.name, 'menu', 'Esc goes back to the game menu');
 });
+
+test('Controls ends with the touch screen and the controller', () => {
+  saveSettings({ keyBindings: {}, cardKeys: 'classic' });
+  const { root } = controls();
+  assert.ok(root.textContent.includes('Touch screen') && root.textContent.includes('Controller'));
+  assert.deepEqual(keysOf(rowOf(root, 'Clear the selection, or call off a building or an aimed order')), ['Two-finger tap']);
+  assert.deepEqual(keysOf(rowOf(root, 'Zoom out and in')), ['LT', 'RT']);
+});
