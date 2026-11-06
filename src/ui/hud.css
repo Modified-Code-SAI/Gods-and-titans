@@ -1154,6 +1154,19 @@
   overflow: hidden;
 }
 .hi-portrait:hover { box-shadow: 0 0 0 1px #000, inset 0 0 1.4em rgba(0, 0, 0, 0.6), 0 0 1em rgba(227, 184, 79, 0.45); }
+.hi-portrait-3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.25s; }
+/* the live portrait (src/render/portrait.js): the canvas over the icon, with the frame's vignette drawn on top of it */
+.hi-portrait.is-live .hi-portrait-3d { opacity: 1; }
+.hi-portrait.is-live .hi-portrait-icon { visibility: hidden; }
+.hi-portrait.is-live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55));
+  box-shadow: inset 0 0 1.2em rgba(0, 0, 0, 0.6), inset 0 -1.6em 1.2em -1em color-mix(in srgb, var(--team) 45%, transparent);
+}
+.hi-portrait .hi-level { z-index: 1; }
 .hi-portrait-icon {
   position: absolute;
   inset: 0;

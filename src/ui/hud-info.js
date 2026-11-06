@@ -197,6 +197,12 @@ export class InfoView {
     if (this.multi) this.updateMulti();
   }
 
+  /** The live portrait wanted this frame: the panel's canvas and the entity id, or null. */
+  get portraitTarget() {
+    const s = this.single;
+    return s && s.pcanvas ? { canvas: s.pcanvas, id: s.e.id } : null;
+  }
+
   // ---------------------------------------------------------------- single
 
   buildSingle(e) {
@@ -210,7 +216,10 @@ export class InfoView {
     setStyle(portrait, '--team', teamColor(vs, e.o));
     const picon = el('span', 'hi-portrait-icon', iconOf(e, vs));
     const lvl = el('span', 'hi-level');
-    portrait.append(picon, lvl);
+    // units and buildings get a live 3D portrait drawn by the renderer (src/render/portrait.js); the icon shows
+    // until the first one lands, and stays for anything else
+    const pcanvas = e.k === 'u' || e.k === 'b' ? el('canvas', 'hi-portrait-3d') : null;
+    portrait.append(...(pcanvas ? [pcanvas] : []), picon, lvl);
     const hpBar = el('div', 'hi-bar is-hp', el('i', 'hi-bar-fill'), el('i', 'hi-bar-shield'));
     const hpText = el('div', 'hi-hp-text');
     const left = el('div', 'hi-left', portrait, hpBar, hpText);
@@ -223,7 +232,7 @@ export class InfoView {
     const wrap = el('div', 'hi-single', left, right);
     this.root.appendChild(wrap);
 
-    const s = { e, def, nameEl: name, portrait, lvl, hpBar, hpFill: hpBar.children[0], shFill: hpBar.children[1], hpText, sub, stats, extra, parts: {} };
+    const s = { e, def, nameEl: name, portrait, pcanvas, lvl, hpBar, hpFill: hpBar.children[0], shFill: hpBar.children[1], hpText, sub, stats, extra, parts: {} };
     this.single = s;
 
     // Subtitle.
@@ -391,6 +400,7 @@ export class InfoView {
     // Never the live entity of a fogged enemy building: its remembered copy.
     const e = vs.knownEntity(s.e.id) || s.e;
     const def = s.def;
+    if (s.pcanvas) setClass(s.portrait, 'is-live', !!(this.o.portraitLive && this.o.portraitLive()));
     // hp
     if (e.k !== 'm') {
       const f = e.mhp > 0 ? e.hp / e.mhp : 0;

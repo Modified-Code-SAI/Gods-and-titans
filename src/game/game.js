@@ -727,6 +727,7 @@ export class Game {
         this.selection.prune();
         this.input.update(dt);
         this.renderer.update(this.paused || this.netPause ? 0 : dt);
+        if (this.renderer.setPortrait) this.renderer.setPortrait(this.hud && this.hud.infoView ? this.hud.infoView.portraitTarget : null);
         this.renderer.render(now);
         const slow = this.slowWatch ? this.slowWatch.frame(now, this.settings.quality) : null;
         if (slow && this.hud) this.hud.message(slow, 'system', { icon: '🐢' });

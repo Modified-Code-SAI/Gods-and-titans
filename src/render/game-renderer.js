@@ -26,6 +26,7 @@ import { VFXSystem } from './vfx.js';
 import { CameraController, CAMERA_DEFAULTS } from './camera.js';
 import { hazeStretch, shadowShare, aoShare, overlayScale, crowdScale, ringLineScale, ringRadiusScale, detailPixels, terrainStride, forestFar, unitFar, NEAR_RANGE } from './zoom-lod.js';
 import { FarUnits } from './far-units.js';
+import { Portrait } from './portrait.js';
 import { FogOfWar, patchFowObject, FOW_UNIFORMS } from './fog.js';
 import { createTerrain, WATER_LEVEL } from './terrain.js';
 import { CORPSE, corpseCap, corpseHold, corpseSink, hurryCorpses, RubbleLayer } from './remains.js';
@@ -190,6 +191,11 @@ export class GameRenderer {
     this.renderer.shadowMap.enabled = Q.shadows;
     this.renderer.shadowMap.type = THREE.PCFShadowMap; // soft: vogel-disk taps scaled by shadow.radius
     this.renderer.shadowMap.autoUpdate = true;
+    // the selection panel's live portrait (portrait.js); not with a test's stand-in WebGL
+    this.portrait = null; // made at the first selection (setPortrait)
+    this.portraitOk = this.ownsWebgl;
+    this.portraitLive = false;
+    this.portraitAt = 0;
     if (this.renderer.info) this.renderer.info.autoReset = false; // several render() calls per frame
     // the post pipeline needs a real WebGLRenderer (tests draw through a stub)
     this.post = typeof this.renderer.setRenderTarget === 'function' ? new PostFX(this.renderer, this.quality) : null;
@@ -2353,6 +2359,7 @@ export class GameRenderer {
       // the ~50% brightness of low quality)
       FOW_UNIFORMS.uFowPow.value = 1.4;
       this.post.render(this.scene, this.threeCamera, this.overlayScene, now());
+      this.drawPortrait();
       return;
     }
     // low: straight to the canvas, tone mapped in the material shaders; then the overlays, untouched
@@ -2366,6 +2373,53 @@ export class GameRenderer {
     r.render(this.overlayScene, this.threeCamera);
     r.autoClear = prevAuto;
     r.toneMapping = prevTone;
+    this.drawPortrait();
+  }
+
+  /**
+   * The selection panel's portrait for this frame: `want` is { canvas, id } from the HUD (null for none). The
+   * entity's own model is drawn (portrait.js), so a unit not on the field (dead, or not drawn) shows no portrait.
+   */
+  setPortrait(want) {
+    if (!this.portrait && this.portraitOk && want) this.portrait = new Portrait(this.renderer, this.scene);
+    const p = this.portrait;
+    if (!p) return;
+    if (!want) {
+      p.setCanvas(null);
+      p.setTarget(null);
+      return;
+    }
+    p.setCanvas(want.canvas);
+    const u = this.units.get(want.id);
+    if (u) {
+      p.setTarget({ kind: 'unit', id: want.id, root: u.model.root, height: u.height * (u.model.root.scale.y || 1), radius: u.radius, color: this.colorOf(u.e.o) });
+      return;
+    }
+    const b = this.buildings.get(want.id);
+    if (b) {
+      p.setTarget({ kind: 'building', id: want.id, root: b.model.root, height: b.height, radius: (b.size || 2) * 0.62, color: this.colorOf(b.e.o) });
+      return;
+    }
+    p.setTarget(null);
+  }
+
+  drawPortrait() {
+    if (!this.portrait) return;
+    try {
+      // 30 a second is plenty for a thumbnail (the panel's canvas keeps the last picture between)
+      const ms = now();
+      if (this.portraitLive && this.portrait.target && ms - this.portraitAt < 33) return;
+      this.portraitAt = ms;
+      const post = this.post && this.post.enabled ? this.post : null;
+      this.portraitLive = this.portrait.draw(ms / 1000, post, post && post.look ? post.look.exposure : 1);
+    } catch (err) {
+      // a portrait is never worth the frame: stop drawing it and keep the icon
+      console.error('[render] portrait failed', err);
+      this.portrait.dispose();
+      this.portrait = null;
+      this.portraitOk = false;
+      this.portraitLive = false;
+    }
   }
 
   // ------------------------------------------------------------------ picking
@@ -2505,6 +2559,8 @@ export class GameRenderer {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    if (this.portrait) this.portrait.dispose();
+    this.portrait = null;
     if (this.sizeTimer) clearTimeout(this.sizeTimer);
     this.sizeTimer = 0;
     for (const off of this.unsub) off();
