@@ -1722,7 +1722,7 @@ kbd {
   filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 16px rgba(227, 184, 79, 0.3));
   animation: mw-ld-rise 0.7s 0.2s cubic-bezier(0.2, 0.8, 0.25, 1) both;
 }
-.mw-ld-place { font: italic 400 1em/1.4 var(--mw-font-body); color: var(--mw-ink); animation: mw-ld-fade 0.6s 0.45s both; }
+.mw-ld-place { font: italic 400 1em/1.4 var(--mw-font-body); color: var(--mw-ink); text-align: center; animation: mw-ld-fade 0.6s 0.45s both; }
 .mw-ld-mapframe {
   width: 100%; margin-top: 0.9em; padding: 5px; box-sizing: border-box; border-radius: 12px;
   background: linear-gradient(180deg, #3b2a14, #1a1209);
@@ -1745,3 +1745,18 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   .mw-ld-kicker, .mw-ld-title, .mw-ld-place, .mw-ld-mapframe, .mw-ld-goal { animation: none; }
 }
+/* The guided first match's steps on its loading card (buildTutorialCard): a numbered path, two columns */
+.mw-ld-steps { list-style: none; margin: 1.1em 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 15em)); grid-template-rows: repeat(var(--rows, 6), auto); grid-auto-flow: column; gap: 0.4em 1.4em; }
+.mw-ld-step {
+  display: flex; align-items: center; gap: 0.55em; font: 600 0.84em/1.3 var(--mw-font-body); color: var(--mw-ink);
+  animation: mw-ld-rise 0.45s cubic-bezier(0.2, 0.8, 0.25, 1) both; animation-delay: calc(var(--i, 0) * 55ms + 500ms);
+}
+.mw-ld-step-n {
+  flex: none; display: grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%;
+  font: 700 0.78em/1 var(--mw-font-display); color: #f3dfa8; background: radial-gradient(circle at 50% 35%, #3b2c18, #17110a);
+  border: 1px solid rgba(214, 170, 90, 0.75); box-shadow: 0 0 8px rgba(227, 184, 79, 0.25);
+}
+.mw-ld-step-icon { font-size: 1.1em; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)); }
+.mw-ld-step:last-child .mw-ld-step-n { border-color: #ff9a6a; color: #ffc9a8; box-shadow: 0 0 10px rgba(255, 110, 60, 0.4); }
+@media (max-width: 720px) { .mw-ld-steps { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; } }
+@media (prefers-reduced-motion: reduce) { .mw-ld-step { animation: none; } }

@@ -1,7 +1,7 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { installFakeDom } from './fake-dom.js';
-import { matchSides, matchTerms, buildMatchup, missionCardSpec, buildMissionCard } from '../../src/ui/match-loading.js';
+import { matchSides, matchTerms, buildMatchup, missionCardSpec, buildMissionCard, tutorialCardSpec, buildTutorialCard } from '../../src/ui/match-loading.js';
 import { CHAPTERS } from '../../src/data/campaign.js';
 
 before(() => installFakeDom());
@@ -69,4 +69,17 @@ test('the mission card shows the title and one row per objective', () => {
   assert.ok(card.className.includes(`is-${CHAPTERS[1].id}`));
   assert.equal(card.find('mw-ld-title').textContent, m.title);
   assert.equal(card.findAll('mw-ld-goal').length, missionCardSpec({ campaign: m.id }).objectives.length);
+});
+
+test('the guided first match gets its own card: every step in order, numbered', () => {
+  const spec = tutorialCardSpec({ tutorial: true, players: [pl(0, 1, 'greek')] });
+  assert.ok(spec.steps.length >= 5);
+  assert.deepEqual(spec.steps.map((s) => s.n), spec.steps.map((_, i) => i + 1));
+  assert.ok(spec.steps.every((s) => s.text && s.icon));
+  assert.match(spec.place, new RegExp(`^${spec.steps.length} steps`));
+  assert.equal(tutorialCardSpec({ players: [pl(0, 1, 'greek')] }), null);
+  assert.equal(tutorialCardSpec({ campaign: CHAPTERS[0].missions[0].id }), null);
+  const card = buildTutorialCard({ tutorial: true });
+  assert.equal(card.findAll('mw-ld-step').length, spec.steps.length);
+  assert.equal(buildTutorialCard({}), null);
 });

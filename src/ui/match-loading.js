@@ -3,11 +3,13 @@
 // sides, the landscape and the rules under them, and a tip at the foot. Campaign missions and the tutorial keep
 // the plain veil. A campaign mission gets its own card instead (buildMissionCard): the chapter and the mission's
 // number, its title and place, the chapter map with the road walked so far and this stop lit, and the objectives
-// known at the start. game.js setLoading puts either over the empty canvas.
+// known at the start. The guided first match gets its own too (buildTutorialCard): its steps as a numbered path.
+// game.js setLoading puts one of them over the empty canvas.
 import { getPantheon } from '../data/index.js';
 import { MISSION_BY_ID, chapterOf } from '../data/campaign.js';
 import { getProgress, isUnlocked } from '../game/campaign-progress.js';
 import { buildChapterMap } from './campaign-map.js';
+import { TUTORIAL_STEPS } from '../game/tutorial.js';
 import { landscapeInfo } from '../data/landscapes.js';
 import { PANTHEON_EMBLEMS } from './menu-model.js';
 import { displayColor } from '../team-colors.js';
@@ -155,5 +157,35 @@ export function buildMissionCard(setup) {
     });
     wrap.append(list);
   }
+  return wrap;
+}
+
+/** What the guided first match's card shows: { kicker, title, place, steps: [{ n, icon, text }] }, or null. */
+export function tutorialCardSpec(setup) {
+  if (!setup || !setup.tutorial) return null;
+  const steps = TUTORIAL_STEPS.map((s, i) => ({ n: i + 1, icon: s.icon || '•', text: s.title }));
+  return {
+    kicker: 'Learn to Play · A guided first match',
+    title: 'Your First Battle',
+    place: `${steps.length} steps, one at a time, against a sleeping camp of raiders`,
+    steps,
+  };
+}
+
+/** The guided first match's card, or null for any other setup. */
+export function buildTutorialCard(setup) {
+  const spec = tutorialCardSpec(setup);
+  if (!spec) return null;
+  const wrap = el('div', 'mw-ld-mission is-tutorial');
+  wrap.append(el('div', 'mw-ld-kicker', spec.kicker), el('div', 'mw-ld-title', spec.title), el('div', 'mw-ld-place', spec.place));
+  const list = el('ol', 'mw-ld-steps');
+  list.style.setProperty('--rows', String(Math.ceil(spec.steps.length / 2))); // two columns, read down each
+  spec.steps.forEach((st, i) => {
+    const li = el('li', 'mw-ld-step');
+    li.style.setProperty('--i', String(i));
+    li.append(el('span', 'mw-ld-step-n', String(st.n)), el('span', 'mw-ld-step-icon', st.icon), el('span', 'mw-ld-step-text', st.text));
+    list.append(li);
+  });
+  wrap.append(list);
   return wrap;
 }
