@@ -11,7 +11,7 @@
 // from import.meta.url ('../../vendor/peerjs.min.js', '../../assets/narration/...') still resolve.
 // The stylesheets get a ?v=<hash> so they are refetched after a change. The unbundled src/ is copied too.
 import { build } from 'esbuild';
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,7 +24,7 @@ const bundle = !args.includes('--no-bundle');
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
-for (const p of ['index.html', 'manifest.webmanifest', 'style.css', 'src', 'vendor', 'assets']) cpSync(join(root, p), join(out, p), { recursive: true });
+for (const p of ['index.html', 'manifest.webmanifest', 'sw.js', 'style.css', 'src', 'vendor', 'assets']) cpSync(join(root, p), join(out, p), { recursive: true });
 writeFileSync(join(out, '.nojekyll'), '');
 
 const hashOf = (file) => createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 10);
@@ -72,4 +72,18 @@ if (bundle) {
   console.log(`bundled into ${files.length} files, ${(bytes / 1e6).toFixed(2)} MB minified; entry ${entryUrl}`);
 }
 writeFileSync(join(out, 'index.html'), html);
+// What the service worker (sw.js) fetches on install so the next start works offline: the page, everything its
+// <link>s and <script>s name (the bundle's entry and chunks, the stylesheets with their ?v=, fonts, PeerJS),
+// the rest of the bundle (its lazily loaded chunks) and the manifest's icons. Sounds and the narration are
+// cached as they are first played.
+const precache = new Set(['index.html', 'manifest.webmanifest']);
+for (const m of html.matchAll(/(?:href|src)="([^"#:]+)"/g)) precache.add(m[1]);
+if (bundle) {
+  for (const f of readdirSync(join(out, 'src', 'app'))) if (f.endsWith('.js')) precache.add(`src/app/${f}`);
+}
+for (const icon of JSON.parse(readFileSync(join(root, 'manifest.webmanifest'), 'utf8')).icons || []) precache.add(icon.src);
+const missing = [...precache].filter((u) => !existsSync(join(out, u.split('?')[0])));
+if (missing.length) throw new Error(`precache names files the site does not have: ${missing.join(', ')}`);
+writeFileSync(join(out, 'precache.json'), JSON.stringify([...precache].sort(), null, 1));
+console.log(`precache: ${precache.size} files`);
 console.log(`site in ${relative(root, out) || '.'}`);
