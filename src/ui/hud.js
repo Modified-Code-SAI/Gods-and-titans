@@ -926,8 +926,8 @@ export class Hud {
   }
 
   /** My god or Titan has arrived: the arrival card, which takes the banner's place while it shows. */
-  showArrival(def) {
-    return this.takeBanner(this.arrival.show(def));
+  showArrival(def, opts) {
+    return this.takeBanner(this.arrival.show(def, opts));
   }
 
   /** My settlement reached `tier`: the same card, with the tier's name and what it opens. */

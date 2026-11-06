@@ -2137,7 +2137,9 @@ per-frame budget, so a revealed army appears over a few frames.
   Its tooltip names the hour and the part of the day ("14:30 · Afternoon"). When one of my gods arrives or my Titan
   rises, the arrival card (`src/ui/hud-arrival.js`, `Hud.showArrival`) slides down under the top bar for 5 s in the
   banner's place: the icon in a glowing ring, "A god answers your call" or "Your Titan has risen", the name in carved
-  gold (violet for a Titan), the title and pantheon, and its powers; the feed keeps its message. The same card, in green, marks my settlement growing into a Town or a
+  gold (violet for a Titan), the title and pantheon, and its powers; the feed keeps its message. An enemy's Titan
+  rising ("Ishtar's Titan has risen") and a Trial of the Titans wave's boss ("Wave 7 · It leads 6 monsters") get the
+  same card in red, so the powers to watch for are on screen. The same card, in green, marks my settlement growing into a Town or a
   City (`ageSpec`, `Hud.showAge`): "Your Village has grown", "A Town", "Age 2 of 3", and under "Now open" up to five
   things the tier opens (the god power of that tier, then units, then buildings of my pantheon). Bottom panel: minimap (left), selection (center: single unit
   portrait/icon, name, hp, armor, damage, level/xp bar, statuses, queue with progress and

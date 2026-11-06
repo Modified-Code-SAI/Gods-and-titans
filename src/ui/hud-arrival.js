@@ -1,7 +1,8 @@
 // The arrival card (DESIGN 9, battle HUD): when one of my gods answers the call or my Titan rises, a carved plate
 // slides down under the top bar for a few seconds: the hero's icon in a glowing ring, "Answers your call" or "Has
 // risen", the name in carved gold, the title, and the powers it brings. The feed keeps its message (the log for screen
-// readers); the card is the moment. An enemy Titan keeps the red banner (game.js). The same card marks my
+// readers); the card is the moment. An enemy's Titan, and the boss of a Trial of the Titans wave, get the same card
+// in red (arrivalSpec's foe and wave), with the powers to watch out for. The same card marks my
 // settlement growing into a Town or a City (ageSpec): the new tier's name and what it opens (units, buildings, the
 // god power of that tier).
 import { el } from './hud-dom.js';
@@ -13,16 +14,22 @@ const AGE_ICONS = ['🏘️', '🏘️', '🏰'];
 export const ARRIVAL_MS = 5200;
 
 /**
- * What the card shows for a unit type: { kind: 'god'|'titan', kicker, name, title, pantheon, icon, powers: [{ icon, name }] },
- * or null for anything but a god or a Titan.
+ * What the card shows for a unit type: { kind: 'god'|'titan'|'foe', kicker, name, title, pantheon, icon, powers: [{ icon, name }] },
+ * or null for anything but a god or a Titan. `foe` (an enemy's name) makes it the red card of an enemy Titan;
+ * `wave` (a number, with the wave's `count`) the red card of the Trial of the Titans' boss, which may be any monster.
  */
-export function arrivalSpec(def) {
-  if (!def || (def.class !== 'god' && def.class !== 'titan')) return null;
+export function arrivalSpec(def, { foe = null, wave = null, count = 1 } = {}) {
+  if (!def) return null;
+  const boss = Number.isFinite(wave);
+  if (!boss && def.class !== 'god' && def.class !== 'titan') return null;
   const titan = def.class === 'titan';
   const pan = def.pantheon && Object.hasOwn(PANTHEONS, def.pantheon) ? PANTHEONS[def.pantheon] : null;
+  let kicker = titan ? 'Your Titan has risen' : 'A god answers your call';
+  if (boss) kicker = count > 1 ? `Wave ${wave} · It leads ${count - 1} monsters` : `Wave ${wave} · The Titans send their champion`;
+  else if (foe) kicker = titan ? `${foe}'s Titan has risen` : `${foe} calls a god`;
   return {
-    kind: titan ? 'titan' : 'god',
-    kicker: titan ? 'Your Titan has risen' : 'A god answers your call',
+    kind: boss || foe ? 'foe' : titan ? 'titan' : 'god',
+    kicker,
     name: String(def.name || ''),
     title: String(def.title || ''),
     pantheon: pan && pan.name ? pan.name : '',
@@ -65,8 +72,8 @@ export class ArrivalCard {
   }
 
   /** Shows the card for a god or Titan type; returns whether it showed. */
-  show(def) {
-    return this.showSpec(arrivalSpec(def));
+  show(def, opts) {
+    return this.showSpec(arrivalSpec(def, opts));
   }
 
   /** Shows a card spec (arrivalSpec, ageSpec); returns whether it showed. */

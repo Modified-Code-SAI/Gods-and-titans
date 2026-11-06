@@ -2464,6 +2464,8 @@
 }
 .hud-arrival.is-on { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .hud-arrival.is-titan { --ac: #b48cff; --ac-glow: rgba(170, 110, 255, 0.6); }
+.hud-arrival.is-foe { --ac: #ff7a5a; --ac-glow: rgba(255, 80, 50, 0.55); }
+.hud-arrival.is-foe .hud-arrival-name { background-image: linear-gradient(180deg, #fff2e8 0%, #ffab8a 55%, #b8401f 100%); }
 .hud-arrival.is-age { --ac: #8fd08a; --ac-glow: rgba(140, 220, 130, 0.45); }
 .hud-arrival-opens { margin-top: 0.4em; font: 600 0.6em/1.2 var(--mw-font-body); letter-spacing: 0.24em; text-transform: uppercase; color: color-mix(in srgb, var(--ac) 70%, #fff); }
 .hud-arrival-opens + .hud-arrival-powers { margin-top: 0.15em; }
