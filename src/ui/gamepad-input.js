@@ -255,8 +255,11 @@ export class GamepadInput {
 
   /** A fresh kick of the screen shake rumbles the pad, as hard as the screen shakes (no motor, no rumble). */
   rumble(gp) {
-    const vfx = this.input.renderer && this.input.renderer.vfx;
-    const shake = vfx && Number.isFinite(vfx.shake) ? vfx.shake : 0;
+    const r = this.input.renderer;
+    const vfx = r && r.vfx;
+    // as strong as the screen shakes: the Screen shake setting (renderer.shakeScale) turns it down or off too
+    const scale = r && Number.isFinite(r.shakeScale) ? r.shakeScale : 1;
+    const shake = vfx && Number.isFinite(vfx.shake) ? vfx.shake * scale : 0;
     const kick = shake - this.lastShake;
     this.lastShake = shake;
     const act = gp && gp.vibrationActuator;

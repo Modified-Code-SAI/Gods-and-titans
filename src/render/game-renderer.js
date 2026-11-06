@@ -1369,7 +1369,8 @@ export class GameRenderer {
     const vs = this.vs;
 
     // camera first so projections (culling, picking) use this frame's view
-    const shake = this.vfx.shake;
+    // the Screen shake setting scales it (game.js applyShake); 'off' holds the camera still
+    const shake = this.vfx.shake * (this.shakeScale ?? 1);
     if (shake > 0) {
       const t = this.time;
       this.camera.setShake(shake * (Math.sin(t * 41.3) * 0.6 + Math.sin(t * 73.1 + 1.7) * 0.4), shake * (Math.sin(t * 37.7 + 0.6) * 0.6 + Math.sin(t * 67.9 + 2.9) * 0.4));

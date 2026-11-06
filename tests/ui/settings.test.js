@@ -68,7 +68,7 @@ test('clamps volume and limits the name to 20 characters', () => {
 test('loads stored settings and ignores corrupt or hostile values', () => {
   globalThis.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ name: 'Athena', volume: 0.3, quality: 'high', edgeScroll: false, showAllBars: true, extra: 1 }));
   _resetSettingsForTests();
-  assert.deepEqual({ ...getSettings() }, { name: 'Athena', volume: 0.3, quality: 'high', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: false, showAllBars: true, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: {} });
+  assert.deepEqual({ ...getSettings() }, { name: 'Athena', volume: 0.3, quality: 'high', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: false, showAllBars: true, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: 'full', cardKeys: 'classic', keyBindings: {} });
   globalThis.localStorage.setItem(SETTINGS_KEY, '{not json');
   _resetSettingsForTests();
   assert.equal(getSettings().volume, 0.7);
@@ -250,4 +250,23 @@ test('rosterOpen: true by default, only booleans accepted', () => {
   assert.equal(saveSettings({ rosterOpen: false }).rosterOpen, false);
   _resetSettingsForTests();
   assert.equal(getSettings().rosterOpen, false, 'remembered across reloads');
+});
+
+test('screenShake: full, reduced or off; reduced by default when the system asks for less motion', async () => {
+  const { SCREEN_SHAKE_OPTIONS, SHAKE_SCALE } = await import('../../src/ui/speed-options.js');
+  assert.deepEqual(SCREEN_SHAKE_OPTIONS.map((o) => o[0]), Object.keys(SHAKE_SCALE));
+  assert.equal(SHAKE_SCALE.off, 0);
+  assert.equal(getSettings().screenShake, 'full');
+  assert.equal(saveSettings({ screenShake: 'wobbly' }).screenShake, 'full', 'an unknown value is ignored');
+  assert.equal(saveSettings({ screenShake: 'off' }).screenShake, 'off');
+  _resetSettingsForTests();
+  assert.equal(getSettings().screenShake, 'off', 'remembered across reloads');
+  const prev = globalThis.matchMedia;
+  globalThis.matchMedia = (q) => ({ matches: q === '(prefers-reduced-motion: reduce)' });
+  try {
+    assert.equal(defaultSettings().screenShake, 'reduced');
+  } finally {
+    if (prev) globalThis.matchMedia = prev;
+    else delete globalThis.matchMedia;
+  }
 });

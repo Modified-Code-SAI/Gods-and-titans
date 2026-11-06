@@ -185,6 +185,13 @@ test('a fresh kick of the screen shake rumbles a pad that has a motor, as hard a
   a.input.renderer.vfx.shake = 0.55;
   a.ctl.update(0.016);
   assert.equal(played.length, 1, 'a shake dying away does not rumble again');
+  a.input.renderer.shakeScale = 0; // Screen shake: Off
+  a.input.renderer.vfx.shake = 0;
+  a.ctl.update(0.016);
+  a.input.renderer.vfx.shake = 1;
+  a.ctl.update(0.016);
+  assert.equal(played.length, 1, 'Screen shake off: no rumble either');
+  a.input.renderer.shakeScale = 1;
   a.gp.vibrationActuator = null;
   a.input.renderer.vfx.shake = 1;
   assert.doesNotThrow(() => a.ctl.update(0.016), 'a pad without a motor');
