@@ -181,6 +181,15 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
     const b = e.target.closest && e.target.closest('button');
     if (b && !b.disabled && !b.classList.contains('mw-silent')) sfx.play('click');
   });
+  // Moving onto a button gets a faint tick (once per button entered; not on touch, not on disabled ones).
+  let hovered = null;
+  root.addEventListener('pointerover', (e) => {
+    if (e.pointerType === 'touch') return;
+    const b = e.target.closest && e.target.closest('button');
+    if (b === hovered) return;
+    hovered = b;
+    if (b && !b.disabled && !b.classList.contains('mw-silent')) sfx.play('hover');
+  });
   document.addEventListener('keydown', (e) => {
     if (root.hidden || e.key !== 'Escape' || e.repeat || !current || !current.onEscape) return;
     if (root.querySelector('.mw-overlay, .mw-popover')) return;

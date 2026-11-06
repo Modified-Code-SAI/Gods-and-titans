@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sfx, SFX_NAMES, distanceGain } from '../../src/audio/sfx.js';
 
-const DESIGN_NAMES = ['click', 'select', 'move', 'attack_melee', 'attack_ranged', 'hit', 'death', 'build', 'building_complete',
+const DESIGN_NAMES = ['click', 'hover', 'select', 'move', 'attack_melee', 'attack_ranged', 'hit', 'death', 'build', 'building_complete',
   'train', 'summon_god', 'summon_titan', 'lightning', 'fire', 'magic', 'heal', 'error', 'victory', 'defeat', 'tier_up',
   'chop', 'mine', 'pray', 'horn', 'ping', 'ping_urgent'];
 

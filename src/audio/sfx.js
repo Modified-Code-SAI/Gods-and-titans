@@ -14,7 +14,7 @@ import { IMPACT_RECIPES, IMPACT_LIMITS, IMPACT_LEVEL } from './sfx-impacts.js';
 import { VOICE_RECIPES, VOICE_LIMITS, VOICE_LEVEL } from './sfx-voices.js';
 
 export const SFX_NAMES = [
-  'click', 'select', 'move', 'attack_melee', 'attack_ranged', 'hit', 'death', 'build',
+  'click', 'hover', 'select', 'move', 'attack_melee', 'attack_ranged', 'hit', 'death', 'build',
   'building_complete', 'train', 'summon_god', 'summon_titan', 'lightning', 'fire', 'magic',
   'heal', 'error', 'victory', 'defeat', 'tier_up', 'chop', 'mine', 'pray', 'horn', 'ping', 'ping_urgent',
 ];
@@ -28,6 +28,7 @@ const MIN_GAIN = 0.0001; // exponential ramps cannot reach 0
 // `ui` sounds bypass the global voice cap.
 const LIMITS = {
   click: { gap: 0.03, voices: 3, ui: true },
+  hover: { gap: 0.05, voices: 2, ui: true },
   select: { gap: 0.06, voices: 2, ui: true },
   move: { gap: 0.08, voices: 2, ui: true },
   error: { gap: 0.25, voices: 1, ui: true },
@@ -58,7 +59,7 @@ const DEFAULT_LIMIT = { gap: 0.05, voices: 4 };
 
 // Overall loudness per sound, balanced by measuring rendered peaks.
 const LEVEL = {
-  click: 1.3, select: 1.0, move: 1.15, attack_melee: 0.45, attack_ranged: 1.1, hit: 0.85,
+  click: 1.3, hover: 1.1, select: 1.0, move: 1.15, attack_melee: 0.45, attack_ranged: 1.1, hit: 0.85,
   death: 0.5, build: 0.5, building_complete: 0.8, train: 1.2, summon_god: 1, summon_titan: 1,
   lightning: 0.9, fire: 0.7, magic: 1.2, heal: 0.85, error: 0.65, victory: 0.9, defeat: 0.9,
   tier_up: 1.1, chop: 0.85, mine: 1.0, pray: 1.0, horn: 1.0, ping: 1.0, ping_urgent: 1.0,
@@ -226,6 +227,12 @@ const RECIPES = {
     k.osc(out, t, { type: 'triangle', f: 1900, f2: 950, glide: 0.035, a: 0.001, r: 0.045, peak: 0.35 });
     k.noise(out, t, { type: 'highpass', f: 3500, a: 0.001, r: 0.018, peak: 0.12 });
     return t + 0.07;
+  },
+  // The pointer moving onto a menu button: a faint, short wooden tick, far under the click.
+  hover(k, t, out) {
+    k.noise(out, t, { type: 'bandpass', f: 2600, q: 2.2, a: 0.001, r: 0.022, peak: 0.14 });
+    k.osc(out, t, { type: 'sine', f: 1400, f2: 1150, glide: 0.02, a: 0.001, r: 0.03, peak: 0.1 });
+    return t + 0.04;
   },
   select(k, t, out) {
     k.osc(out, t, { f: 660, a: 0.004, r: 0.08, peak: 0.28 });
