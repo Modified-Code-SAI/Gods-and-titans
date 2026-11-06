@@ -2561,6 +2561,13 @@ per-frame budget, so a revealed army appears over a few frames.
   sources sounding at once and of nodes made per second, the two things that load tracks, inside limits above
   today's. `tools/music-lab.html` plays any theme at any intensity.
 
+**Realm panel** (`src/ui/hud-realm.js`). With nothing selected, the selection panel shows the realm, not an empty
+stone: the pantheon's crest, name and culture, and the age ("Village · age 1 of 3"); a card for the next age with its
+cost (a resource you lack in red) and one line on what it waits on ("Build a Shrine first.", "Gather more gold.",
+"Ready: select the Town Center to grow.", or a bar while the Town Center grows); and the counts of soldiers, gods and
+creatures, and buildings. A click on the card selects the Town Center. A spectator or a replay seen by everyone keeps
+"Select a unit or building".
+
 **Live title backdrop** (`src/intro/menu-scene.js`, `src/ui/menu-live.js`). Behind the menus the intro film's Greek
 village works on in 3D: the film's stage built peaceful (no armies, no cues), drawn by the real renderer at a held
 golden hour (17.4) under the film's sky dome. The camera circles it once every four minutes and breathes in and out

@@ -18,6 +18,7 @@ import {
   workText, mineTripText, relicIcon, relicLine, relicCarryText, templeRelicsText,
 } from './hud-data.js';
 import { MAX_SELECTION } from './hud-selection.js';
+import { RealmPanel } from './hud-realm.js';
 import { displayColor, teamPalette } from '../team-colors.js';
 
 const STATUS = {
@@ -174,6 +175,7 @@ export class InfoView {
     this.sig = null;
     this.single = null;
     this.multi = null;
+    this.realm = null;
   }
 
   update() {
@@ -181,7 +183,7 @@ export class InfoView {
     const ents = selection.entities();
     const active = selection.activeGroup();
     let sig;
-    if (ents.length === 0) sig = 'empty';
+    if (ents.length === 0) sig = vs.me ? 'realm' : 'empty';
     else if (ents.length === 1) sig = `1:${shapeOf(ents[0], vs)}`;
     else sig = `n:${ents.map((e) => e.id).join(',')}:${active ? active.type : ''}:${typeMix(ents)}`;
     if (sig !== this.sig) {
@@ -189,10 +191,13 @@ export class InfoView {
       this.root.textContent = '';
       this.single = null;
       this.multi = null;
+      this.realm = null;
       if (ents.length === 1) this.buildSingle(ents[0]);
       else if (ents.length > 1) this.buildMulti(ents, active);
+      else if (vs.me) this.realm = new RealmPanel(this.root, { onSelect: (id) => this.o.onSelectOnly && this.o.onSelectOnly(id) });
       else this.root.appendChild(el('div', 'hi-empty', el('div', 'hi-empty-crest', '⚜'), el('div', 'hi-empty-text', 'Select a unit or building')));
     }
+    if (this.realm) this.realm.update(vs);
     if (this.single) this.updateSingle();
     if (this.multi) this.updateMulti();
   }
