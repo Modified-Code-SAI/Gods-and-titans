@@ -26,6 +26,7 @@ import { peaceNotice } from '../sim/peace.js';
 import { POWERS, powersFor, powerRadius, isHarmfulPower } from '../data/powers.js';
 import { powerState } from './hud-powers.js';
 import { SCROLL_SCALE } from './speed-options.js';
+import { CameraSpots, cameraSpotKey, cameraSpotLine } from './camera-spots.js';
 
 const DRAG_THRESHOLD = 5; // px before a left press becomes a box
 const DOUBLE_MS = 350;
@@ -76,6 +77,7 @@ export class InputController {
     this.leftDown = null;
     this.midDown = null;
     this.keys = new Set();
+    this.cameraSpots = new CameraSpots(); // F6..F9 (camera-spots.js), for this match
     this.altHeld = false;
     this.lastClick = null;
     this.lastGroup = { n: -1, t: 0 };
@@ -1453,6 +1455,19 @@ export class InputController {
     if (tc && this.renderer) this.renderer.camera.centerOn(tc.x, tc.y);
   }
 
+  /** F6..F9: back to a kept camera spot; with Ctrl (or Shift) keep the view there. True when the key was one of theirs. */
+  cameraSpot(e) {
+    const k = cameraSpotKey(e);
+    if (!k) return false;
+    e.preventDefault();
+    if (e.repeat === true || !this.renderer) return true;
+    const cam = this.renderer.camera;
+    const ok = k.save ? this.cameraSpots.save(k.slot, cam) : this.cameraSpots.recall(k.slot, cam);
+    const line = cameraSpotLine(k.slot, k.save, ok);
+    if (line) this.hud.message(line, 'info', { icon: '⛰️' });
+    return true;
+  }
+
   onKeyDown(e) {
     if (this.disposed) return;
     const hud = this.hud;
@@ -1529,6 +1544,7 @@ export class InputController {
       }
       return;
     }
+    if (this.cameraSpot(e)) return;
     if (key === 'F1' || key === 'F2' || key === 'F3') {
       e.preventDefault();
       if (!rep) this.selectGod(Number(key[1]) - 1, false, e.shiftKey);

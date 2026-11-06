@@ -2481,6 +2481,9 @@ per-frame budget, so a revealed army appears over a few frames.
   tiles to 170, where a whole medium map is in view), middle-drag pan (a middle click that does not move
   pings the team instead), minimap click/drag, Space centers on selection or last alert, F1–F3 select gods,
   Alt shows all health bars (Alt+click pings the team, see Team pings and markers above).
+  **Camera spots** (`src/ui/camera-spots.js`): Ctrl+F6..F9 (Shift works too, for systems that keep Ctrl with a
+  function key) keeps where the camera is going and how far out it is; F6..F9 brings it back at once, and an empty
+  spot says how to fill it. Four spots for the match, not saved; F5 stays the browser's reload.
   **Army keys**: Ctrl+A (Cmd+A) selects the whole army, every own unit but the Worshippers, gods and Titans
   first (`armyIds` in hud-data.js); a second tap within 350 ms centers on it. A whole-army selection (Ctrl+A,
   Ctrl+Alt+A, Shift+,: `Selection.set(ids, { army: true })`, `sel.army`) is not held to the 24 of `MAX_SELECTION`
