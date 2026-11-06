@@ -13,7 +13,7 @@ import { PANTHEON_LIST } from '../data/index.js';
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
 import { getSettings, saveSettings, onSettingsChange } from '../settings.js';
 import { TIME_OF_DAY_OPTIONS, timeOfDayNote } from './time-of-day-options.js';
-import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, SCROLL_SPEED_OPTIONS, optionNote } from './speed-options.js';
+import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, SCROLL_SPEED_OPTIONS, FRAME_CAP_OPTIONS, optionNote } from './speed-options.js';
 import { buildKeyPanel } from './key-panel.js';
 import { sfx } from '../audio/sfx.js';
 import { playTitleMusic, previewMusic, PREVIEW_MOODS } from '../audio/audio.js';
@@ -1690,6 +1690,8 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
           h('div.mw-field', h('span.mw-label', 'Weather'), toggle('weather', 'Weather', 'Passing showers, snow in the Highlands and mist over the woods, the same for every player. Off keeps the sky clear.')),
           h('div.mw-field', h('span.mw-label', 'Live title screen'), toggle('liveMenu', 'Live title screen', 'The village at work in 3D behind the menus. Off shows the painted night sky, which is lighter on a slow machine.')),
           h('div.mw-field', h('span.mw-label', 'Screen shake'), ...segField('screenShake', SCREEN_SHAKE_OPTIONS)),
+          h('div.mw-field', h('span.mw-label', 'Frame rate limit'), ...segField('frameCap', FRAME_CAP_OPTIONS)),
+          h('div.mw-field', h('span.mw-label', 'Show frame rate'), toggle('showFps', 'Show frame rate', 'A small counter in the top right corner of a match: frames a second and how long each takes.')),
           h('div.mw-field', h('span.mw-label', 'Interface size'), ...segField('uiScale', UI_SCALE_OPTIONS)),
           h('div.mw-field', h('span.mw-label', 'Team colours'), ...segField('teamColors', TEAM_COLOR_OPTIONS)),
       ]],

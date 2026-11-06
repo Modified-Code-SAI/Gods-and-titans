@@ -101,6 +101,21 @@
   background: linear-gradient(90deg, transparent, rgba(227, 184, 79, 0.65) 18%, rgba(255, 231, 163, 0.85) 50%, rgba(227, 184, 79, 0.65) 82%, transparent);
   pointer-events: none;
 }
+/* Show frame rate (src/game/frame-pace.js): a quiet counter under the top bar's right end. */
+.hud-fps {
+  position: absolute;
+  top: 2.75em;
+  right: 0.6em;
+  padding: 0.15em 0.45em;
+  border-radius: 0.3em;
+  background: rgba(8, 10, 16, 0.62);
+  font: 600 max(0.78em, var(--mw-min-text))/1.2 var(--mw-font-ui);
+  font-variant-numeric: tabular-nums;
+  color: #cfe9b0;
+  text-shadow: 0 1px 0 #000;
+  pointer-events: none;
+  white-space: nowrap;
+}
 .hud-top-left, .hud-top-right { display: flex; align-items: center; gap: 0.5em; height: 100%; }
 .hud-top-right { gap: 0.35em; }
 
