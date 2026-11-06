@@ -2043,6 +2043,16 @@ per-frame budget, so a revealed army appears over a few frames.
   mine. Construction sites are clipped at their build height and show a dark plank interior
   (back faces, and horizontal surfaces just below the cut) instead of the finished
   building's walls and ceiling.
+- Selection portrait (`portrait.js`): a lone selected unit or building shows itself, live, in the selection
+  panel's portrait (the icon shows until the first draw and for resources). After the frame, the entity's own
+  model is drawn again by a portrait camera that sees only `PORTRAIT_LAYER`: the model's meshes join the layer for
+  the draw and every scene light is on it, so the field's sun, sky, fog, shadow map and shader programs serve (a
+  scene of its own would compile a new program per material on first selection). With post-processing it draws
+  into a small target of the field's own kind, tone-mapped by one quad; on Low straight to the screen. Either way
+  it lands in a scissored corner of the canvas under the panel, and `drawImage` copies it into the panel's canvas
+  (no second context, no readback). Units are framed chest-up, three-quarter from the front (`portraitCamera`;
+  a unit faces +x at `rotation.y` 0); buildings turn slowly (`TURN_SECONDS`). The backdrop is the owner's colour
+  deep in shadow. A failure stops the portrait for the match and keeps the icon.
 - Selection rings colored: own green, ally yellow-green, enemy red, neutral yellow.
   Health bars over damaged/selected/hovered units (all with Alt held).
 - Order paths (`overlays.js` `OrderPaths`): a selected own unit with a path in its view (`wp`, `pe`, 6.3)

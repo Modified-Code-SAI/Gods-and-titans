@@ -317,6 +317,7 @@ export class Hud {
       onSelectType: (type) => sel.selectType(type),
       onCancelQueue: (building, index, count = 1) => game.command(count > 1 ? { type: 'cancelTrain', building, index, count } : { type: 'cancelTrain', building, index }),
       onPortrait: () => game.input && game.input.centerOnSelection(),
+      portraitLive: () => !!(game.renderer && game.renderer.portraitLive),
     });
     this.overlays = new Overlays(this.overlayRoot, game);
     this.minimap = new Minimap({
