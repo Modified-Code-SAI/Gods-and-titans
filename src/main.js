@@ -13,6 +13,7 @@ import { dailyLaunch } from './game/daily.js';
 import { setTeamPalette } from './team-colors.js';
 import { watchIcons, iconVar } from './ui/icons.js';
 import { installHoverTips } from './ui/hover-tip.js';
+import { installSelectMenus } from './ui/select-menu.js';
 
 export { showMenu, hideMenu };
 
@@ -299,6 +300,8 @@ function boot() {
   watchIcons(document.body);
   // Hover text everywhere as the game's own tip card, not the browser's grey box (DESIGN 9, "Hover tips").
   installHoverTips(document);
+  // The lobby's and the replay bar's drop-downs open the game's own list, not the system's (DESIGN 9).
+  installSelectMenus(document);
   const tabIcon = document.querySelector('link[rel="icon"]');
   const bolt = iconVar('⚡');
   if (tabIcon && bolt) tabIcon.href = bolt.slice(5, -2);

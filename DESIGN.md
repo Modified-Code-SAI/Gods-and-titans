@@ -2660,6 +2660,15 @@ title of several lines heads with its first, one plain line is all body. Code ke
 wins over the stored one, a title rewritten while its card is up redraws it, and a click, the wheel, a key, the
 window losing focus, or the element being removed or hidden closes it. `[data-native-tip]` opts a subtree out.
 
+**Drop-down lists.** The lobby's slot and team pickers and the replay bar's vision picker are `<select>`s, and a
+native select opens the operating system's list. `installSelectMenus(document)` (`src/ui/select-menu.js`, main.js at
+boot) catches the mouse press on a `select.mw-select` or `select.hud-rp-vision` (and Enter, Space, Alt+Down or F4 on
+a focused one), stops the native list and opens `.mw-selmenu` under it (over it when there is more room above): the
+options as rows, the current one gold with a tick, disabled ones dimmed. Arrows, Home and End move, Enter or Space
+picks, Escape (refocusing the select) or Tab closes, as do a press outside, a scroll, a resize and the window losing
+focus. The select stays the source of truth: a pick sets its `value` and fires `input` and `change`, so menu code
+and tests are unchanged. Touch keeps the native picker.
+
 ### 9.1 Career and achievements (src/game/career.js, src/game/career-tracker.js, src/data/achievements.js, src/game/renown.js, src/ui/menu-career.js)
 
 Client only: nothing goes over the wire and the sim does not know about it. The career lives in
