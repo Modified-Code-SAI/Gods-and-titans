@@ -368,7 +368,7 @@ test('zoom: a selection ring keeps a line a few pixels wide when the camera is f
   const ringAt = (x, z) => {
     for (let i = 0; i < r.rings.mesh.count; i++) {
       r.rings.mesh.getMatrixAt(i, m);
-      if (Math.abs(m.elements[12] - x) < 1e-6 && Math.abs(m.elements[14] - z) < 1e-6) return { radius: Math.hypot(m.elements[0], m.elements[1], m.elements[2]), line: r.rings.aRing.array[i * 3 + 1] };
+      if (Math.abs(m.elements[12] - x) < 1e-6 && Math.abs(m.elements[14] - z) < 1e-6) return { radius: Math.hypot(m.elements[0], m.elements[1], m.elements[2]), line: r.rings.aRing.array[i * 4 + 1] };
     }
     return null;
   };

@@ -19,10 +19,10 @@ const _c = new THREE.Color();
 // ---------------------------------------------------------------------------
 
 const RING_VS = `
-attribute vec3 aRing; // alpha, thickness (world), pulse
+attribute vec4 aRing; // alpha, thickness (world), pulse, shape (0 circle, 1 rounded square)
 varying vec2 vUv;
 varying vec3 vCol;
-varying vec3 vRing;
+varying vec4 vRing;
 varying float vRadius;
 void main() {
   vUv = uv * 2.0 - 1.0;
@@ -36,10 +36,12 @@ const RING_FS = `
 uniform float uTime;
 varying vec2 vUv;
 varying vec3 vCol;
-varying vec3 vRing;
+varying vec4 vRing;
 varying float vRadius;
 void main() {
-  float r = length( vUv );
+  // a building's ring follows its square footprint: a superellipse (p = 8) with softly rounded corners
+  vec2 q = abs( vUv );
+  float r = vRing.w > 0.5 ? pow( pow( q.x, 8.0 ) + pow( q.y, 8.0 ), 0.125 ) : length( vUv );
   float t = clamp( vRing.y / vRadius, 0.02, 0.5 );
   float aa = fwidth( r ) * 1.3;
   float outer = 1.0 - smoothstep( 1.0 - aa, 1.0, r );
@@ -60,7 +62,7 @@ export class RingLayer {
     this.max = max;
     const geo = new THREE.PlaneGeometry(2, 2);
     geo.rotateX(-Math.PI / 2);
-    this.aRing = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
+    this.aRing = new THREE.InstancedBufferAttribute(new Float32Array(max * 4), 4);
     this.aRing.setUsage(THREE.DynamicDrawUsage);
     geo.setAttribute('aRing', this.aRing);
     this.uniforms = { uTime: { value: 0 } };
@@ -102,8 +104,9 @@ export class RingLayer {
    * @param {number} alpha
    * @param {number} thickness world units
    * @param {number} pulse 0..1
+   * @param {number} shape 0 = circle, 1 = rounded square (a building's footprint; radius is half the side)
    */
-  add(x, y, z, normal, radius, color, alpha, thickness, pulse = 0) {
+  add(x, y, z, normal, radius, color, alpha, thickness, pulse = 0, shape = 0) {
     if (this.n >= this.max) return;
     const i = this.n++;
     if (normal) _q.setFromUnitVectors(UP, normal);
@@ -114,9 +117,10 @@ export class RingLayer {
     this.mesh.setMatrixAt(i, _m);
     this.mesh.setColorAt(i, color);
     const a = this.aRing.array;
-    a[i * 3] = alpha;
-    a[i * 3 + 1] = thickness;
-    a[i * 3 + 2] = pulse;
+    a[i * 4] = alpha;
+    a[i * 4 + 1] = thickness;
+    a[i * 4 + 2] = pulse;
+    a[i * 4 + 3] = shape;
   }
 
   end() {
@@ -129,7 +133,7 @@ export class RingLayer {
       this.mesh.instanceColor.addUpdateRange(0, this.n * 3);
       this.mesh.instanceColor.needsUpdate = true;
       this.aRing.clearUpdateRanges();
-      this.aRing.addUpdateRange(0, this.n * 3);
+      this.aRing.addUpdateRange(0, this.n * 4);
       this.aRing.needsUpdate = true;
     }
   }

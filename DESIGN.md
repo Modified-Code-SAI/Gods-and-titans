@@ -2061,6 +2061,8 @@ per-frame budget, so a revealed army appears over a few frames.
   a unit faces +x at `rotation.y` 0); buildings turn slowly (`TURN_SECONDS`). The backdrop is the owner's colour
   deep in shadow. A failure stops the portrait for the match and keeps the icon.
 - Selection rings colored: own green, ally yellow-green, enemy red, neutral yellow.
+  A unit's ring is a circle; a building's is a rounded square just outside its footprint (`RingLayer.add` shape 1,
+  a p = 8 superellipse in the ring shader), so it hugs the plinth instead of spilling into the yard.
   Health bars over damaged/selected/hovered units (all with Alt held).
 - Order paths (`overlays.js` `OrderPaths`): a selected own unit with a path in its view (`wp`, `pe`, 6.3)
   shows it as faint marching dots on the ground, from the unit through each point, then back along a
