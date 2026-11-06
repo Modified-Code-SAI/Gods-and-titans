@@ -38,6 +38,16 @@ export const SCREEN_SHAKE_OPTIONS = [
 ];
 export const SHAKE_SCALE = { full: 1, reduced: 0.35, off: 0 };
 
+// "Camera speed" (setting `scrollSpeed`): how fast the arrow keys, edge scrolling and a controller's stick move the
+// camera, times SCROLL_SCALE. Dragging the map follows the finger or the mouse whatever it is.
+export const SCROLL_SPEED_OPTIONS = [
+  ['slow', 'Slow', 'The camera glides: easier to follow on a small screen.'],
+  ['normal', 'Normal', 'The arrow keys and the screen edge move the camera at the usual pace.'],
+  ['fast', 'Fast', 'Half again as fast: across the map in a few seconds.'],
+  ['faster', 'Faster', 'Over twice as fast, for a big map.'],
+];
+export const SCROLL_SCALE = { slow: 0.6, normal: 1, fast: 1.5, faster: 2.2 };
+
 /** The explanation of one option id ('' for an unknown one). */
 export function optionNote(options, id) {
   const o = options.find((x) => x[0] === id);

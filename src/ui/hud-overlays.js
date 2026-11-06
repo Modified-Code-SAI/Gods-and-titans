@@ -9,7 +9,7 @@ import { el } from './hud-dom.js';
 import { chronicleView } from './hud-chronicle.js';
 import { formatClock } from './hud-data.js';
 import { TIME_OF_DAY_OPTIONS } from './time-of-day-options.js';
-import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS } from './speed-options.js';
+import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, SCROLL_SPEED_OPTIONS } from './speed-options.js';
 import { buildKeyPanel } from './key-panel.js';
 import { bindingsOf, gridKeys, keyLabel } from './key-bindings.js';
 import { renderControls } from './menu-howto.js';
@@ -221,6 +221,7 @@ export class Overlays {
     const quality = choiceRow('Graphics quality', QUALITY_OPTIONS, s.quality, (v) => saveSettings({ quality: v }));
     // Game speed only in a match against the computer: an online game runs at one pace for everyone.
     const speed = game.solo ? choiceRow('Game speed', GAME_SPEED_OPTIONS, s.gameSpeed, (v) => saveSettings({ gameSpeed: v })) : null;
+    const scroll = choiceRow('Camera speed', SCROLL_SPEED_OPTIONS, s.scrollSpeed, (v) => saveSettings({ scrollSpeed: v }));
     const shake = choiceRow('Screen shake', SCREEN_SHAKE_OPTIONS, s.screenShake, (v) => saveSettings({ screenShake: v }));
     const uiScale = choiceRow('Interface size', UI_SCALE_OPTIONS, s.uiScale, (v) => saveSettings({ uiScale: v }));
     const teamColors = choiceRow('Team colours', TEAM_COLOR_OPTIONS, s.teamColors, (v) => saveSettings({ teamColors: v }));
@@ -331,7 +332,7 @@ export class Overlays {
     // The options sit on four pages behind tabs beside the buttons; every row stays in the page (hidden on the
     // other tabs), and the last tab looked at comes back next time.
     const pages = optionPages([
-      ['play', 'Gameplay', [speed && speed.row, tips.row, hints.row, aiChat.row, alerts.row, tabAlerts.row, edge.row, bars.row]],
+      ['play', 'Gameplay', [speed && speed.row, tips.row, hints.row, aiChat.row, alerts.row, tabAlerts.row, scroll.row, edge.row, bars.row]],
       ['look', 'Graphics', [quality.row, sky.row, weather.row, shake.row, uiScale.row, teamColors.row]],
       ['sound', 'Audio', [el('label', 'hud-vol', el('span', null, 'Sound effects'), vol, volText), musicOn.row, el('label', 'hud-vol', el('span', null, 'Music volume'), musicVol, musicText)]],
       ['keys', 'Keys', [cardKeys.row, el('div', 'hud-keys-btns', controlsBtn, keysBtn)]],

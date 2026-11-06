@@ -13,7 +13,7 @@ import { PANTHEON_LIST } from '../data/index.js';
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
 import { getSettings, saveSettings, onSettingsChange } from '../settings.js';
 import { TIME_OF_DAY_OPTIONS, timeOfDayNote } from './time-of-day-options.js';
-import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, optionNote } from './speed-options.js';
+import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, SCROLL_SPEED_OPTIONS, optionNote } from './speed-options.js';
 import { buildKeyPanel } from './key-panel.js';
 import { sfx } from '../audio/sfx.js';
 import { playTitleMusic, previewMusic, PREVIEW_MOODS } from '../audio/audio.js';
@@ -1652,6 +1652,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       ['general', 'General', [
           h('label.mw-field', h('span.mw-label', 'Player name'), nameInput, h('span.mw-field-note', 'Shown to other players in online lobbies.')),
           h('div.mw-field', h('span.mw-label', 'Game speed'), ...segField('gameSpeed', GAME_SPEED_OPTIONS)),
+          h('div.mw-field', h('span.mw-label', 'Camera speed'), ...segField('scrollSpeed', SCROLL_SPEED_OPTIONS)),
           h('div.mw-field', h('span.mw-label', 'Gameplay'),
             toggle('edgeScroll', 'Edge scrolling', 'Move the camera when the mouse touches the screen edge.'),
             toggle('showAllBars', 'Always show health bars', 'Otherwise hold Alt to see them all.'),

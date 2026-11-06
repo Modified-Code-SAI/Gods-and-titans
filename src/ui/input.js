@@ -25,6 +25,7 @@ import { deletePlan, DELETE_CONFIRM_MS } from './delete-key.js';
 import { peaceNotice } from '../sim/peace.js';
 import { POWERS, powersFor, powerRadius, isHarmfulPower } from '../data/powers.js';
 import { powerState } from './hud-powers.js';
+import { SCROLL_SCALE } from './speed-options.js';
 
 const DRAG_THRESHOLD = 5; // px before a left press becomes a box
 const DOUBLE_MS = 350;
@@ -1679,10 +1680,11 @@ export class InputController {
       }
     }
     this.markEdge(this.edgeDir);
+    const panSpeed = PAN_SPEED * (SCROLL_SCALE[getSettings().scrollSpeed] ?? 1); // the Camera speed setting
     if ((dx || dy) && !overlay) {
       const len = Math.hypot(dx, dy) || 1;
-      const sx = (dx / len) * PAN_SPEED * dt;
-      const sy = (dy / len) * PAN_SPEED * dt;
+      const sx = (dx / len) * panSpeed * dt;
+      const sy = (dy / len) * panSpeed * dt;
       if (typeof r.camera.scroll === 'function') r.camera.scroll(sx, sy);
       else r.camera.pan(sx, sy);
     }
@@ -1690,8 +1692,8 @@ export class InputController {
     const pad = this.pad.update(dt);
     if ((pad.panX || pad.panY) && !overlay) {
       const k = Math.min(1, Math.hypot(pad.panX, pad.panY)) / (Math.hypot(pad.panX, pad.panY) || 1);
-      const sx = pad.panX * k * PAN_SPEED * dt;
-      const sy = pad.panY * k * PAN_SPEED * dt;
+      const sx = pad.panX * k * panSpeed * dt;
+      const sy = pad.panY * k * panSpeed * dt;
       if (typeof r.camera.scroll === 'function') r.camera.scroll(sx, sy);
       else r.camera.pan(sx, sy);
     }
