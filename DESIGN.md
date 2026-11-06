@@ -2215,6 +2215,9 @@ per-frame budget, so a revealed army appears over a few frames.
   `GameRenderer.setSpeed` scales the animations' dt but not the camera's. Online games always run at Normal and their
   F10 menu leaves the row out. The interface size multiplies the HUD's base font size (`--hud-scale` on #hud-root):
   Small 0.85, Normal 1, Large 1.15, Larger 1.3; every HUD panel is sized in em, so all of it follows.
+  The base is clamp(11px, min(1.48vh, 0.84vw), 28px); in a window under 520 px tall (a phone held sideways) the
+  floor is 8.5 px and the smallest text 8 px instead (`--mw-min-text`), so the bottom console keeps to about a
+  quarter of the height rather than two fifths.
   Graphics quality (`QUALITY_OPTIONS`, same file) is in both places too: `GameRenderer.setQuality` applies it live.
   **Team colours, keys and readable text** (settings `teamColors`, `cardKeys`, `keyBindings`; all per device, in
   Settings and the F10 menu). *Colour-blind safe* (`src/team-colors.js`) draws each lobby colour as a stand-in from a set
