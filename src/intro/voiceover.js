@@ -69,9 +69,11 @@ export class RecordedSpeech {
    * @param {(file: string) => Promise<ArrayBuffer>} [o.fetchClip] downloads one clip
    * @param {{ synth: object, Utterance: Function }|null} [o.fallback] the browser's voice, for a line with no clip
    * @param {(fn: Function, ms: number) => unknown} [o.later] setTimeout (tests pass their own)
+   * @param {number} [o.lead] seconds between the hand-over and the first word (a taunt waits for its drums)
    */
-  constructor({ audio = sfx, clips = VOICE_CLIPS, fetchClip = defaultFetch, fallback = browserSpeech(), later = (fn, ms) => setTimeout(fn, ms) } = {}) {
+  constructor({ audio = sfx, clips = VOICE_CLIPS, fetchClip = defaultFetch, fallback = browserSpeech(), later = (fn, ms) => setTimeout(fn, ms), lead = LEAD } = {}) {
     this.audio = audio;
+    this.lead = lead;
     this.fallback = fallback;
     this.later = later;
     this.buffers = new Map(); // text → AudioBuffer, or null when it failed
@@ -149,7 +151,7 @@ export class RecordedSpeech {
     if (!sh) return this.handOff(u);
     try {
       const ctx = sh.ctx;
-      const at = Math.max(ctx.currentTime + LEAD, this.endsAt > ctx.currentTime ? this.endsAt + GAP : 0);
+      const at = Math.max(ctx.currentTime + this.lead, this.endsAt > ctx.currentTime ? this.endsAt + GAP : 0);
       const src = ctx.createBufferSource();
       src.buffer = buffer;
       const g = ctx.createGain();

@@ -9,6 +9,10 @@
 //           warp of the type borders, macro color variation, anti-tiling).
 //   fx      FX_SIZE² RGBA: RG a rippled water height field's slope (x, z),
 //           B a caustic network, A foam / sparkle noise.
+//   detail  DataArrayTexture, DETAIL_SIZE² × 4 (grass, soil, sand, rock): fine detail from
+//           CC0 photographs (assets/textures/ground-detail.png, tools/cc0/bake.py), R the
+//           photo's light and shade and G its height, both around 0.5. It starts flat (0.5)
+//           and fills in once the picture has downloaded; high and ultra quality draw it.
 //
 // The pixel data is shared (built on first use); textures wrap it and are
 // owned (disposed) by whoever made them.
@@ -20,6 +24,10 @@ export const LAYER_COUNT = 8;
 export const GROUND_SIZE = 256;
 export const NOISE_SIZE = 128;
 export const FX_SIZE = 256;
+export const DETAIL_SIZE = 256;
+export const DETAIL_LAYERS = 4;
+/** Where the photo detail comes from, beside index.html. */
+export const DETAIL_URL = 'assets/textures/ground-detail.png';
 
 // ---------------------------------------------------------------------------
 // noise helpers (all periodic over the texture size, so the results tile)
@@ -653,7 +661,7 @@ function repeatLinear(tex, name, mips = true) {
 /**
  * New textures over the shared data.
  * @param {number} [anisotropy] ground texture anisotropic filtering
- * @returns {{ ground: THREE.DataArrayTexture, noise: THREE.DataTexture, fx: THREE.DataTexture, dispose: () => void }}
+ * @returns {{ ground: THREE.DataArrayTexture, noise: THREE.DataTexture, fx: THREE.DataTexture, detail: THREE.DataArrayTexture, dispose: () => void }}
  */
 export function createTerrainTextures(anisotropy = 4) {
   const d = terrainTextureData();
@@ -669,14 +677,61 @@ export function createTerrainTextures(anisotropy = 4) {
   const fx = new THREE.DataTexture(d.fx, FX_SIZE, FX_SIZE, THREE.RGBAFormat, THREE.UnsignedByteType);
   fx.colorSpace = THREE.NoColorSpace;
   repeatLinear(fx, 'terrain-fx');
+  // flat (0.5) until the photo detail arrives, at its full size so the upload later only replaces texels
+  const detail = new THREE.DataArrayTexture(new Uint8Array(DETAIL_SIZE * DETAIL_SIZE * DETAIL_LAYERS * 4).fill(128), DETAIL_SIZE, DETAIL_SIZE, DETAIL_LAYERS);
+  detail.format = THREE.RGBAFormat;
+  detail.type = THREE.UnsignedByteType;
+  detail.colorSpace = THREE.NoColorSpace;
+  detail.anisotropy = anisotropy;
+  repeatLinear(detail, 'terrain-detail');
+  let gone = false;
+  if (typeof document !== 'undefined' && typeof Image !== 'undefined') {
+    loadGroundDetail(detail).catch((err) => {
+      if (!gone) console.warn('[render] ground detail unavailable', err);
+    });
+  }
   return {
     ground,
     noise,
     fx,
+    detail,
     dispose() {
+      gone = true;
       ground.dispose();
       noise.dispose();
       fx.dispose();
+      detail.dispose();
     },
   };
+}
+
+/** Pixels of the stacked detail picture (DETAIL_SIZE wide, DETAIL_LAYERS tiles tall) → the texture's layers. */
+export function fillGroundDetail(tex, rgba, width, height) {
+  if (width !== DETAIL_SIZE || height !== DETAIL_SIZE * DETAIL_LAYERS || rgba.length !== width * height * 4) return false;
+  tex.image.data.set(rgba);
+  tex.needsUpdate = true;
+  return true;
+}
+
+/** Download the photo detail and put it in the texture (browser only). */
+export function loadGroundDetail(tex, url = new URL(`../../${DETAIL_URL}`, import.meta.url).href) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        const g = c.getContext('2d', { willReadFrequently: true });
+        g.drawImage(img, 0, 0);
+        const px = g.getImageData(0, 0, c.width, c.height).data;
+        resolve(fillGroundDetail(tex, px, c.width, c.height));
+      } catch (err) {
+        reject(err);
+      }
+    };
+    img.onerror = () => reject(new Error(`could not load ${url}`));
+    img.src = url;
+  });
 }

@@ -74,13 +74,17 @@ LAYER_PARAMS[LAYER.BED] = [1 / 3.5, 0, 0.04, 0.7];
 LAYER_PARAMS[LAYER.FACE] = [1 / 3, 0.1, 0.035, 0.8];
 /** Wall texture repeats per world unit of height (a texture tile of strata is 1.5 units tall). */
 const FACE_V = 1 / 1.5;
+/** Photo detail (high and ultra): repeats per tile, how much it shades the colour, how much it adds to the bump height. */
+const DETAIL_REPEAT = '0.7';
+const DETAIL_SHADE = '0.5';
+const DETAIL_BUMP = '0.05';
 
 /** Shader detail per quality tier (GLSL defines). */
 const QUALITY_DEFINES = {
   low: {},
   medium: { TERRAIN_BUMP: '', TERRAIN_CAUSTICS: '', TERRAIN_FACE: '' },
-  high: { TERRAIN_BUMP: '', TERRAIN_CAUSTICS: '', TERRAIN_ANTITILE: '', TERRAIN_FACE: '' },
-  ultra: { TERRAIN_BUMP: '', TERRAIN_CAUSTICS: '', TERRAIN_ANTITILE: '', TERRAIN_FACE: '' },
+  high: { TERRAIN_BUMP: '', TERRAIN_CAUSTICS: '', TERRAIN_ANTITILE: '', TERRAIN_FACE: '', TERRAIN_DETAIL: '' },
+  ultra: { TERRAIN_BUMP: '', TERRAIN_CAUSTICS: '', TERRAIN_ANTITILE: '', TERRAIN_FACE: '', TERRAIN_DETAIL: '' },
 };
 const ANISOTROPY = { low: 2, medium: 4, high: 8, ultra: 16 };
 
@@ -301,6 +305,7 @@ vTerrainN = normalize( mat3( modelMatrix ) * objectNormal );`;
 
 const TERRAIN_PARS_FRAGMENT = /* glsl */ `
 uniform sampler2DArray uGround;
+uniform sampler2DArray uTDetail;
 uniform sampler2D uTNoise;
 uniform sampler2D uTFx;
 uniform sampler2D uTiles;
@@ -328,6 +333,14 @@ int layerOf( vec4 k ) {
 // corner: roads (dirt) first, then beaches and fords (sand).
 int connectRank( int layer ) {
   return layer == ${LAYER.DIRT} ? 2 : layer == ${LAYER.SAND} ? 1 : 0;
+}
+
+// Which photo detail (terrain-textures.js: grass, soil, sand, rock) a ground layer takes.
+vec4 detailOne( int layer ) {
+  if ( layer == ${LAYER.DIRT} || layer == ${LAYER.BED} ) return vec4( 0.0, 1.0, 0.0, 0.0 );
+  if ( layer == ${LAYER.SAND} ) return vec4( 0.0, 0.0, 1.0, 0.0 );
+  if ( layer == ${LAYER.ROCK} || layer == ${LAYER.FACE} ) return vec4( 0.0, 0.0, 0.0, 1.0 );
+  return vec4( 1.0, 0.0, 0.0, 0.0 );
 }
 
 // One ground layer at world point p (tiles), with explicit gradients so it can
@@ -494,6 +507,25 @@ tbR *= tbs;
 vec3 tAlbedo = s0.rgb * tb.x + s1.rgb * tb.y + s2.rgb * tb.z + s3.rgb * tb.w + sR.rgb * tbR;
 float tBump = dot( tb, vec4( s0.a * L0.z, s1.a * L1.z, s2.a * L2.z, s3.a * L3.z ) ) + tbR * sR.a * LR.z * ( 1.0 - 0.96 * tWall );
 float tRough = dot( tb, vec4( L0.w, L1.w, L2.w, L3.w ) ) + tbR * LR.w;
+#ifdef TERRAIN_DETAIL
+{
+  // fine detail from CC0 photographs (grass, soil, sand, rock: terrain-textures.js): their light and
+  // shade darkens and lifts the painted colour a little, their height roughens the bump. Both are
+  // centred on 0.5, so the mip chain fades them out by itself as the camera pulls back.
+  vec4 dw = detailOne( c0 ) * tb.x + detailOne( c1 ) * tb.y + detailOne( c2 ) * tb.z + detailOne( c3 ) * tb.w;
+  dw.w += tbR * ( 1.0 - tWall ); // (seen from above only: the walls keep their strata)
+  vec2 dq = tp * ${DETAIL_REPEAT};
+  vec2 ddx = tdx * ${DETAIL_REPEAT};
+  vec2 ddy = tdy * ${DETAIL_REPEAT};
+  vec2 dd = vec2( 0.5 ) * max( 0.0, 1.0 - dw.x - dw.y - dw.z - dw.w );
+  if ( dw.x > 0.01 ) dd += dw.x * textureGrad( uTDetail, vec3( dq, 0.0 ), ddx, ddy ).rg;
+  if ( dw.y > 0.01 ) dd += dw.y * textureGrad( uTDetail, vec3( dq + 0.31, 1.0 ), ddx, ddy ).rg;
+  if ( dw.z > 0.01 ) dd += dw.z * textureGrad( uTDetail, vec3( dq + 0.57, 2.0 ), ddx, ddy ).rg;
+  if ( dw.w > 0.01 ) dd += dw.w * textureGrad( uTDetail, vec3( dq + 0.83, 3.0 ), ddx, ddy ).rg;
+  tAlbedo *= 1.0 + ( dd.x - 0.5 ) * ${DETAIL_SHADE};
+  tBump += ( dd.y - 0.5 ) * ${DETAIL_BUMP};
+}
+#endif
 // share of the pixel that is soil / meadow (by layer), and of the border band
 // between them (from the plain weights, before the texel heights roughen it)
 float tDirtShow = ( c0 == ${LAYER.DIRT} ? tb.x : 0.0 ) + ( c1 == ${LAYER.DIRT} ? tb.y : 0.0 ) + ( c2 == ${LAYER.DIRT} ? tb.z : 0.0 ) + ( c3 == ${LAYER.DIRT} ? tb.w : 0.0 );
@@ -609,6 +641,7 @@ function terrainMaterial(textures, tiles, gdata, field, map, time, quality) {
   mat.name = 'terrain';
   const uniforms = {
     uGround: { value: textures.ground },
+    uTDetail: { value: textures.detail || null },
     uTNoise: { value: textures.noise },
     uTFx: { value: textures.fx },
     uTiles: { value: tiles },
@@ -633,7 +666,7 @@ function terrainMaterial(textures, tiles, gdata, field, map, time, quality) {
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${TERRAIN_BUMP}`)
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${TERRAIN_CAUSTICS}`);
   };
-  mat.customProgramCacheKey = () => 'mythicwar-terrain-v5';
+  mat.customProgramCacheKey = () => 'mythicwar-terrain-v6';
   setTerrainQuality(mat, quality);
   // order matters: the fog-of-war patch keeps the hooks installed before it
   patchWorldMaterial(mat, { cloud: true });
@@ -889,6 +922,8 @@ export function createTerrain(map, { quality = 'medium' } = {}) {
       if (textures.ground.anisotropy !== ANISOTROPY[next]) {
         textures.ground.anisotropy = ANISOTROPY[next];
         textures.ground.needsUpdate = true;
+        textures.detail.anisotropy = ANISOTROPY[next];
+        textures.detail.needsUpdate = true;
       }
     },
     dispose() {

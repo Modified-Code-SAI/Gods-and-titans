@@ -1930,6 +1930,10 @@ per-frame budget, so a revealed army appears over a few frames.
   a per-sample data texture (shore distance, outcrop rise, forest share, cavity) lets the shader
   follow the field: procedural texture array with height blending and bump, pale sand rim with a
   damp band and sand shelf, sandstone with strata on the faces, cliff-foot shade and sunlit tops.
+  On High and Ultra a fine photo detail (`TERRAIN_DETAIL`: grass, soil, sand and rock tiles baked by
+  `tools/cc0/bake.py` from CC0 Poly Haven photographs into `assets/textures/ground-detail.png`, 460 KB)
+  shades the painted colour by up to a quarter either way and roughens the bump; it is centred on 0.5,
+  so it starts flat until the picture arrives and its mips fade it out as the camera pulls back.
   Water: its own mesh over the lake field, depth-colored teal that turns see-through at the edge,
   Fresnel sky reflection, sun glints, moving normals, white foam along the shore, caustics on the
   bed and a cyan glow at night (it reads the shared `WORLD_UNIFORMS` of `shading.js`: sun, sky,
@@ -1963,7 +1967,8 @@ per-frame budget, so a revealed army appears over a few frames.
   address does the same for one page load (screenshots), and `GameRenderer.setTimeOfDay(mode)`
   takes a mode or an hour. `GameRenderer.updateLook` runs each frame: it sets the lights, the haze
   (measured from the point the camera looks at, so zooming out does not fog the middle), the sky
-  environment (rebaked at most every 1.5 s), the post look, and the shared shader uniforms
+  environment (rebaked at most every 1.5 s; its clouds are the shapes of a CC0 sky photograph,
+  `assets/textures/sky-detail.png`, coloured by the hour's own sky), the post look, and the shared shader uniforms
   (`shading.js` `WORLD_UNIFORMS`: `uSunDirW`, `uSunColor`, `uMoonDirW`, `uMoonColor`, `uSkyZenith`,
   `uSkyHorizon`, `uSkyAmbient`, `uGroundAmbient`, `uRimColor`, `uNight` 0..1, `uLamp` 0..1, `uShaft`
   0..1, `uLampSpot[8]`). At low sun the cloud and canopy shadows stretch into long streaks along
@@ -3155,6 +3160,19 @@ defeated, ended) take the top centre: the taunt up goes when one opens, and none
 one is up (`Hud.endScreenUp`). It comes with the
 `taunt` sound (sfx-alerts.js): two war-drum blows under a low brass fifth that bends down into the
 note with a growl, measured at peak -3.6 dB / loudest 400 ms -13.1 dB RMS, next to the war horn's -5.2 / -14.0.
+
+The words are also said aloud (`src/game/taunt-voice.js`, setting `aiVoices`, on by default, under AI chatter in
+Settings), 0.55 s after the card so they land after the drums, and the music steps back under them. Every line is a
+clip rendered offline with Kokoro (the intro narrator's neural voice model), one voice per pantheon
+(`src/ai/taunt-voices.js` `PANTHEON_VOICES`; the narrator's own voice is kept for the narration): 460 clips, 48 kbps
+mono at -20 LUFS, about 8 MB in all under `assets/narration/taunts`, and a match downloads only its AI pantheons'
+clips (about 0.8 MB each) as it starts. A line about a god or Titan has a clip per unit it can name; a line naming the
+other player says it without the name (`spokenText`, `SPOKEN_AS` for the few sentences that need rewording), while
+the card shows it in full. Hard names are respelled for the voice only (`SAY_AS`). The client finds the clip from the
+text as it arrived (`tauntClip`), so nothing new goes over the network; a line with no clip is shown and not said.
+A new taunt cuts off the one being said. `tools/narration/taunt-lines.mjs` lists the lines for `render.py`, and
+`tools/narration/check.py` transcribes every clip with Whisper and lists those whose words came out wrong (on the
+first full pass the mean match was 0.94; the misses were mostly names spelled Whisper's own way).
 
 ## 11. Game controller (src/game/game.js, src/main.js)
 

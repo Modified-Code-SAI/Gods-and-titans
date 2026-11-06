@@ -1633,6 +1633,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
             toggle('tipsDismissed', 'Getting-started tips', 'Show the new-player checklist in your next game.', true),
             toggle('hints', 'Gameplay tips', 'A short tip now and then during a match.'),
             toggle('aiChat', 'AI chatter', 'Computer players greet you, taunt you and beg for mercy in chat, each in the voice of its pantheon.'),
+            toggle('aiVoices', 'AI voices', 'Computer players say their lines aloud, each pantheon in its own voice. It follows the Volume and AI chatter settings.'),
           ),
           h('div.mw-field', h('span.mw-label', 'Alerts'), h('div.mw-segmented', aBtns), aNote),
           h('div.mw-field', h('span.mw-label', 'When this tab is in the background'), h('div.mw-segmented', wBtns), wNote),

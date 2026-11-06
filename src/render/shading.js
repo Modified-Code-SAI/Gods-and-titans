@@ -330,6 +330,8 @@ uniform vec3 uSun;
 uniform vec3 uSunDir;
 uniform vec3 uMoon;
 uniform vec3 uMoonDir;
+uniform sampler2D uClouds;
+uniform float uCloudsOn;
 varying vec3 vDir;
 void main() {
   vec3 d = normalize( vDir );
@@ -337,9 +339,16 @@ void main() {
   vec3 col;
   if ( y >= 0.0 ) {
     col = mix( uHorizon, uZenith, pow( y, 0.55 ) );
-    // a few soft cloud bands so reflections are not a flat gradient
+    // a few soft cloud bands so reflections are not a flat gradient (until the photographed sky is here)
     float band = sin( d.x * 7.0 + d.z * 3.0 ) * sin( d.z * 5.0 - d.x * 2.0 );
-    col = mix( col, uHorizon * 1.15, smoothstep( 0.35, 0.9, band ) * 0.35 * ( 1.0 - y ) );
+    col = mix( col, uHorizon * 1.15, smoothstep( 0.35, 0.9, band ) * 0.35 * ( 1.0 - y ) * ( 1.0 - uCloudsOn ) );
+    // the clouds of a CC0 sky photograph (assets/textures/sky-detail.png): only their shape and shading,
+    // coloured by the time of day's own sky, so they turn gold at dusk and grey-blue at night with it
+    vec2 cuv = vec2( atan( d.z, d.x ) * 0.15915494 + 0.5, acos( clamp( y, 0.0, 1.0 ) ) * 0.63661977 );
+    vec2 cl = texture2D( uClouds, cuv ).rg;
+    float lit = 0.62 + 0.55 * cl.x; // bright tops, darker bellies
+    vec3 cloud = mix( uHorizon, vec3( dot( uHorizon, vec3( 0.2126, 0.7152, 0.0722 ) ) ), 0.35 ) * 1.12 * lit;
+    col = mix( col, cloud, cl.y * 0.85 * uCloudsOn );
   } else {
     col = mix( uGroundFar, uGround, pow( -y, 0.6 ) );
   }
@@ -349,6 +358,9 @@ void main() {
   col += uMoon * ( pow( m, 1400.0 ) * 14.0 + pow( m, 40.0 ) * 0.2 + pow( m, 6.0 ) * 0.03 );
   gl_FragColor = vec4( col, 1.0 );
 }`;
+
+/** The clouds of a CC0 sky photograph (tools/cc0/bake.py), beside index.html. */
+export const SKY_DETAIL_URL = 'assets/textures/sky-detail.png';
 
 /** Size of the baked environment cube (per face): the reflections are soft, so small is plenty. */
 const ENV_SIZE = 128;
@@ -398,8 +410,29 @@ export function createEnvironment(renderer, state = INITIAL) {
       uSunDir: { value: new THREE.Vector3(0, 1, 0) },
       uMoon: { value: new THREE.Color() },
       uMoonDir: { value: new THREE.Vector3(0, 1, 0) },
+      uClouds: { value: null },
+      uCloudsOn: { value: 0 },
     },
   });
+  // the photographed clouds: once they have downloaded, the next update bakes them in
+  let cloudsArrived = false;
+  let cloudTex = null;
+  try {
+    if (typeof THREE.TextureLoader === 'function' && typeof document !== 'undefined') {
+      cloudTex = new THREE.TextureLoader().load(new URL(`../../${SKY_DETAIL_URL}`, import.meta.url).href, () => {
+        if (!mat.uniforms) return;
+        mat.uniforms.uCloudsOn.value = 1;
+        cloudsArrived = true;
+      }, undefined, () => console.warn('[render] sky clouds unavailable; the plain sky stays'));
+      cloudTex.colorSpace = THREE.NoColorSpace;
+      cloudTex.wrapS = THREE.RepeatWrapping;
+      cloudTex.wrapT = THREE.ClampToEdgeWrapping;
+      cloudTex.name = 'sky-clouds';
+      mat.uniforms.uClouds.value = cloudTex;
+    }
+  } catch (err) {
+    console.warn('[render] sky clouds unavailable', err);
+  }
   const sky = new THREE.Scene();
   sky.add(new THREE.Mesh(geo, mat));
   const baked = new Float32Array(18); // what the last bake looked like
@@ -437,6 +470,10 @@ export function createEnvironment(renderer, state = INITIAL) {
     update(st, force = false) {
       if (!pmrem) return false;
       read(st, now);
+      if (cloudsArrived) {
+        cloudsArrived = false;
+        force = true;
+      }
       if (!force) {
         const t = typeof performance !== 'undefined' ? performance.now() : Date.now();
         if (t - lastBake < ENV_MIN_INTERVAL) return false;
@@ -468,6 +505,8 @@ export function createEnvironment(renderer, state = INITIAL) {
       pmrem = null;
       geo.dispose();
       mat.dispose();
+      if (cloudTex) cloudTex.dispose();
+      cloudTex = null;
     },
   };
   env.update(state, true);
