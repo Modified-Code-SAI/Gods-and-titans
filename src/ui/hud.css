@@ -570,6 +570,7 @@
   bottom: calc(var(--hb) + 0.55em);
   width: min(40em, 46vw);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5em;
   padding: 0.3em 0.5em;
@@ -578,6 +579,22 @@
 }
 .hud-chat-to { font: 700 max(0.8em, var(--mw-min-text))/1 var(--mw-font-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mw-gold); white-space: nowrap; background: none; border: 0; padding: 0.2em 0; cursor: pointer; }
 .hud-chat-to:disabled { cursor: default; }
+/* Quick chat (DESIGN 7): the nine set lines as small stone buttons on a second line of the box. */
+.hud-chat-quick { flex: 1 0 100%; display: flex; flex-wrap: wrap; gap: 0.2em; }
+.hud-chat-quick-btn {
+  font: 600 max(0.78em, var(--mw-min-text))/1 var(--mw-font-ui);
+  color: #f1e8d4;
+  background: linear-gradient(#3a2c1a, #24190d);
+  border: 1px solid var(--mw-line);
+  border-radius: 3px;
+  flex: 1 1 auto;
+  padding: 0.3em 0.2em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hud-chat-quick-btn b { color: var(--mw-gold); margin-right: 0.1em; }
+.hud-chat-quick-btn:hover { border-color: var(--mw-gold); color: #fff; }
+.hud-chat.is-team .hud-chat-quick-btn:hover { border-color: var(--hud-ally, #c4f23a); }
 .hud-chat-to:not(:disabled):hover { text-decoration: underline; }
 .hud-chat-input {
   flex: 1;
@@ -601,7 +618,7 @@
 .hud-chatlog {
   position: absolute;
   left: 0.8em;
-  bottom: calc(var(--hb) + 3.5em);
+  bottom: calc(var(--hb) + 6em);
   width: min(40em, 46vw);
   max-height: min(17em, 40vh);
   overflow-y: auto;

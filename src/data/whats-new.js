@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-06-comfort-photo',
+    id: '2026-11-06-comfort-quick',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'Quick chat: type a number 1 to 9 alone, or press a button in the chat box, to send a set line such as Attack now or I need gold.',
       'Photo mode: Alt+H hides the interface so only the world shows, and P saves a picture of it.',
       'Restart Match in the game menu starts a game against the computer again with the same players and settings.',
       'Camera spots: Ctrl+F6 to F9 keeps where you are looking, F6 to F9 brings you back.',

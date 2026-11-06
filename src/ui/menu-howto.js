@@ -96,7 +96,7 @@ export const HOTKEYS = [
     [kbd('Ctrl', 'Alt', 'A'), 'Select the army on screen'],
     [bound('cam_home'), 'Jump to your Town Center (on a Mac laptop: fn + the left arrow)'],
     [kbd('Alt'), 'Show every health bar'],
-    [kbd('Enter'), 'Chat'],
+    [kbd('Enter'), 'Chat (type a number 1 to 9 alone for a quick line: Yes, No, Attack, Help, Gold, Wood, Wait, Ready, GG; the chat box has them as buttons too)'],
     [kbd('F10'), 'Game menu (pauses a game against the AI)'],
     [kbd('Pause'), 'Online: pause the game for everyone (three times a game each; any player can resume, and it goes on by itself after two minutes). Also in the game menu'],
     [bound('cam_up', 'cam_down', 'cam_left', 'cam_right'), 'Move the camera (also the screen edge, a middle-drag or the minimap)'],
