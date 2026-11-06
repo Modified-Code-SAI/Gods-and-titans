@@ -11,6 +11,7 @@ import { isSoloLaunch, saveSkirmish, launchFrom, stepUpSkirmish } from './game/r
 import { readSave, saveInfo } from './game/save-store.js';
 import { dailyLaunch } from './game/daily.js';
 import { setTeamPalette } from './team-colors.js';
+import { watchIcons, iconVar } from './ui/icons.js';
 
 export { showMenu, hideMenu };
 
@@ -293,6 +294,11 @@ function boot() {
     document.documentElement.classList.toggle('cb-teams', s.teamColors === 'colorblind');
     setTeamPalette(s.teamColors);
   });
+  // Painted icons in place of the emoji in every menu and HUD line (DESIGN 9, "Icons"), and the same bolt for the tab.
+  watchIcons(document.body);
+  const tabIcon = document.querySelector('link[rel="icon"]');
+  const bolt = iconVar('⚡');
+  if (tabIcon && bolt) tabIcon.href = bolt.slice(5, -2);
   menu = createMenu({ root: document.getElementById('menu-root'), onStart: startGame, onLoad: loadGame, onIntro: (screen = 'settings') => watchIntro(screen, false), onReplay: (what) => startReplay(what) });
   const msg = document.getElementById('boot-message');
   if (msg) msg.remove();
