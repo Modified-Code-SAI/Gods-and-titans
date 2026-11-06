@@ -69,3 +69,25 @@ test('forestAt: a known tree tile, not grass or off the map', () => {
   assert.equal(input.forestAt(20.5, 20.5), false);
   assert.equal(typeof input.forestAt(5.5, 5.5), 'boolean');
 });
+
+test('edge scroll: the cursor becomes an arrow pointing the way the camera moves', async () => {
+  const { edgeDir } = await import('../../src/ui/input.js');
+  assert.equal(edgeDir(0, 0), '');
+  assert.equal(edgeDir(0, -1), 'n');
+  assert.equal(edgeDir(1, 1), 'se');
+  assert.equal(edgeDir(-1, 0), 'w');
+  const { cursorOver, input, mine } = setup();
+  input.edgeDir = 'ne';
+  assert.equal(cursorOver(mine.id), 'edge-ne', 'the arrow wins over a work or select cursor');
+  input.edgeDir = '';
+  assert.equal(cursorOver(null), '');
+});
+
+test('every edge arrow has a cursor rule in hud.css', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../../src/ui/hud.css', import.meta.url), 'utf8');
+  for (const d of ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']) {
+    assert.match(css, new RegExp(`--mw-cur-edge-${d}: url\\(`), d);
+    assert.match(css, new RegExp(`#game-canvas\\.cur-edge-${d}, body\\[data-edge="${d}"\\] \\.hud \\* \\{ cursor: var\\(--mw-cur-edge-${d}\\)`), d);
+  }
+});
