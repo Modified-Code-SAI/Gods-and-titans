@@ -2264,6 +2264,10 @@ per-frame budget, so a revealed army appears over a few frames.
   and the F10 menu, Graphics): Full 1, Reduced 0.35 or Off 0 times the VFX shake (`Game.applyShake` sets
   `GameRenderer.shakeScale`, read where the camera is offset). It starts at Reduced when the system asks for reduced
   motion (`prefers-reduced-motion`), else Full. A controller's rumble is scaled by the same factor, so Off stills it.
+  **Camera speed** (setting `scrollSpeed`, `SCROLL_SPEED_OPTIONS` and `SCROLL_SCALE` in the same file, in Settings
+  General and the F10 menu Gameplay): Slow 0.6, Normal 1, Fast 1.5 or Faster 2.2 times `PAN_SPEED` (26 tiles a
+  second) for the arrow keys, edge scrolling and a controller's left stick (`InputController.update`). Dragging the
+  map, with the middle button or a finger, keeps to the pointer whatever it is.
   **Team colours, keys and readable text** (settings `teamColors`, `cardKeys`, `keyBindings`; all per device, in
   Settings and the F10 menu). *Colour-blind safe* (`src/team-colors.js`) draws each lobby colour as a stand-in from a set
   that stays apart under protanopia, deuteranopia and tritanopia (Machado 2009 simulation: the worst of the 28 pairs is
