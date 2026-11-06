@@ -32,3 +32,14 @@ test('the career screen lists the profile, the pantheons, the last games and eve
   assert.match(text, /3 \/ 10/, 'Warlord shows its progress');
   assert.equal(formatPlayTime(125), '2 min');
 });
+
+test('the renown banner names the title, the renown and the next title', async () => {
+  const { renownBanner } = await import('../../src/ui/menu-career.js');
+  const c = sanitizeCareer({ games: 5, wins: 3, kills: 140, pantheons: { norse: { games: 4, wins: 3 } }, unlocked: { first_victory: 1 } });
+  const b = renownBanner(c);
+  // 5 games, 3 wins, 1 achievement, 140 slain: 25 + 60 + 25 + 2 = 112, a Warrior on the way to Captain
+  assert.equal(b.find('mw-renown-title').textContent, 'Warrior');
+  assert.match(b.find('mw-renown-line').textContent, /112 renown · 88 more to Captain/);
+  assert.equal(b.find('mw-renown-level').textContent, '2');
+  assert.equal(b.find('mw-renown-bar').getAttribute('aria-valuenow'), String(Math.round(((112 - 60) / 140) * 100)));
+});

@@ -1,13 +1,13 @@
-// The Career screen (DESIGN 9.1): the profile kept on this device (games, wins, win rate,
-// favourite pantheon, records, wins per pantheon, the last games), the replays kept here
-// (src/ui/menu-replays.js) and the achievements
-// gallery, grouped, with the locked ones dimmed and a progress bar where one counts.
+// The Career screen (DESIGN 9.1): the commander's title and renown (src/game/renown.js), the profile kept on this
+// device (games, wins, win rate, favourite pantheon, records, wins per pantheon, the last games), the replays kept
+// here (src/ui/menu-replays.js) and the achievements gallery, grouped, with the locked ones dimmed and a progress bar where one counts.
 import { h } from './menu-dom.js';
 import { pantheonEmblem } from './menu-pantheons.js';
 import { PANTHEON_LIST, PANTHEONS } from '../data/pantheon-list.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_GROUPS } from '../data/achievements.js';
 import { careerSummary } from '../game/career.js';
 import { medalLabel } from '../data/medals.js';
+import { renown, RENOWN_PER } from '../game/renown.js';
 
 const RESULT_TEXT = { victory: ['Won', '🏆'], defeat: ['Lost', '💀'], draw: ['Draw', '⚖️'], survival: ['Trial of the Titans', '🐉'] };
 
@@ -39,6 +39,24 @@ function profile(c) {
     c.best.medal ? stat('Guided first match', medalLabel(c.best.medal)) : null,
     stat('Achievements', `${s.unlocked} / ${s.total}`),
   );
+}
+
+/** The banner over the numbers: the commander's title, the renown that earned it and how far to the next one. */
+export function renownBanner(c) {
+  const r = renown(c);
+  const s = careerSummary(c);
+  const emblem = s.favourite ? pantheonEmblem(s.favourite) : '✦';
+  const how = `Renown: ${RENOWN_PER.game} for every game played to the end, ${RENOWN_PER.win} for every win, ${RENOWN_PER.achievement} for every achievement, 1 for every ${RENOWN_PER.slain} enemies slain.`;
+  const pct = `${Math.round(r.progress * 100)}%`;
+  return h('div.mw-renown', { class: `is-level-${r.level}`, title: how },
+    h('div.mw-renown-crest', { 'aria-hidden': 'true' }, h('span.mw-renown-emblem', emblem), h('span.mw-renown-level', String(r.level))),
+    h('div.mw-renown-text',
+      h('span.mw-renown-kicker', 'Commander'),
+      h('span.mw-renown-title', r.title),
+      h('span.mw-renown-bar', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round(r.progress * 100)), 'aria-label': r.next ? `Progress to ${r.next.title}` : 'Highest title', style: { '--p': pct } }, h('i')),
+      h('span.mw-renown-line',
+        h('b', `${fmt(r.points)} renown`),
+        r.next ? ` · ${fmt(r.next.left)} more to ${r.next.title}` : ' · the highest title of all')));
 }
 
 function pantheonGrid(c) {
@@ -91,6 +109,7 @@ function gallery(c, unseen) {
  */
 export function renderCareerContent(c, unseen = new Set(), replays = null) {
   return [
+    renownBanner(c),
     profile(c),
     h('h3.mw-label', 'Wins by pantheon'),
     pantheonGrid(c),
