@@ -14,6 +14,8 @@ const TIMES_OF_DAY = ['cycle', 'golden', 'day', 'dusk', 'night', 'dawn'];
 // Alerts: how much the game speaks up (src/game/alerts.js). 'important' keeps only the warnings
 // (enemies near, an ally under attack, the Decade of Peace ending); 'off' silences the reminders too.
 const ALERT_LEVELS = ['all', 'important', 'off'];
+// How far the camera shakes (src/ui/speed-options.js SHAKE_SCALE): 'reduced' when the system asks for less motion.
+const SHAKES = ['full', 'reduced', 'off'];
 // What a tab in the background does when the game needs the player (src/ui/tab-attention.js):
 // nothing, flash the tab's title, or also raise a desktop notification (needs the browser's permission).
 const TAB_ALERTS = ['off', 'title', 'notify'];
@@ -24,6 +26,15 @@ const MAX_NAME_LENGTH = 20;
 
 const listeners = new Set();
 let current = null;
+
+/** The system asks for less motion on screen (prefers-reduced-motion). False where it cannot be asked (Node). */
+function reducedMotion() {
+  try {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+}
 
 function randomName() {
   return `Player${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
@@ -46,12 +57,13 @@ function cleanName(name) {
  * (src/intro/narrator.js). `aiChat` shows the computer players' in-character chat lines (src/ai/voice.js), and `aiVoices` has them say those lines aloud (src/game/taunt-voice.js). `volume` is the sound effects; `musicVolume` (0..1) and `musicMuted`
  * are the background music's own (src/audio/music.js). `gameSpeed` is the pace of a match against the
  * computer (online games always run at normal speed) and `uiScale` the size of the in-game interface.
- * `teamColors` draws the teams in the lobby's colours or a colour-blind-safe set (src/team-colors.js),
+ * `screenShake` is how far blasts shake the camera ('full', 'reduced', 'off'; 'reduced' by default when the system asks
+ * for reduced motion). `teamColors` draws the teams in the lobby's colours or a colour-blind-safe set (src/team-colors.js),
  * `cardKeys` is the command card's key layout ('classic' letters or 'grid' by position) and `keyBindings`
  * the keys changed from their defaults (src/ui/key-bindings.js), kept per device like the rest.
  */
 export function defaultSettings() {
-  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: Object.freeze({}) };
+  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: reducedMotion() ? 'reduced' : 'full', cardKeys: 'classic', keyBindings: Object.freeze({}) };
 }
 
 /** Merge a raw object onto base, keeping only valid values. */
@@ -79,6 +91,7 @@ function sanitize(raw, base) {
   if (SPEEDS.includes(raw.gameSpeed)) out.gameSpeed = raw.gameSpeed;
   if (SCALES.includes(raw.uiScale)) out.uiScale = raw.uiScale;
   if (TEAM_PALETTES.includes(raw.teamColors)) out.teamColors = raw.teamColors;
+  if (SHAKES.includes(raw.screenShake)) out.screenShake = raw.screenShake;
   if (CARD_LAYOUTS.includes(raw.cardKeys)) out.cardKeys = raw.cardKeys;
   if (raw.keyBindings && typeof raw.keyBindings === 'object' && raw.keyBindings !== base.keyBindings) {
     const kb = cleanBindings(raw.keyBindings);

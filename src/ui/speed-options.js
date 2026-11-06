@@ -29,6 +29,15 @@ export const CARD_KEY_OPTIONS = [
   ['grid', 'Grid', 'The keys follow the card\'s 4 × 3 layout (Q W E R, A S D F, Z X C V by default), whatever is selected. Tips and How to Play still name the Classic letters.'],
 ];
 
+// "Screen shake" (setting `screenShake`): how far blasts, quakes and Titans shake the camera, times SHAKE_SCALE.
+// A controller's rumble (src/ui/gamepad-input.js) follows the same choice.
+export const SCREEN_SHAKE_OPTIONS = [
+  ['full', 'Full', 'Blasts, quakes and Titans shake the camera.'],
+  ['reduced', 'Reduced', 'A gentle shake, about a third as strong.'],
+  ['off', 'Off', 'The camera holds still. Better if motion on screen bothers you.'],
+];
+export const SHAKE_SCALE = { full: 1, reduced: 0.35, off: 0 };
+
 /** The explanation of one option id ('' for an unknown one). */
 export function optionNote(options, id) {
   const o = options.find((x) => x[0] === id);

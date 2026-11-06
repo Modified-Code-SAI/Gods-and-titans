@@ -2260,6 +2260,10 @@ per-frame budget, so a revealed army appears over a few frames.
   and sky dial, the gold and wood rates, the tier's name, the menu button's label, the pantheon and relic chips and the
   ping are left out there (each is also in a hover text or another panel), and the chips lose their minimum width.
   Graphics quality (`QUALITY_OPTIONS`, same file) is in both places too: `GameRenderer.setQuality` applies it live.
+  **Screen shake** (setting `screenShake`, `SCREEN_SHAKE_OPTIONS` and `SHAKE_SCALE` in the same file, in Settings
+  and the F10 menu, Graphics): Full 1, Reduced 0.35 or Off 0 times the VFX shake (`Game.applyShake` sets
+  `GameRenderer.shakeScale`, read where the camera is offset). It starts at Reduced when the system asks for reduced
+  motion (`prefers-reduced-motion`), else Full. A controller's rumble is scaled by the same factor, so Off stills it.
   **Team colours, keys and readable text** (settings `teamColors`, `cardKeys`, `keyBindings`; all per device, in
   Settings and the F10 menu). *Colour-blind safe* (`src/team-colors.js`) draws each lobby colour as a stand-in from a set
   that stays apart under protanopia, deuteranopia and tritanopia (Machado 2009 simulation: the worst of the 28 pairs is

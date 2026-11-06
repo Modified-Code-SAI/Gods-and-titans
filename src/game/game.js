@@ -12,6 +12,7 @@
 import { HostSession, ClientSession } from '../net/session.js';
 import { createWorld } from '../sim/world.js';
 import { getSettings, onSettingsChange } from '../settings.js';
+import { SHAKE_SCALE } from '../ui/speed-options.js';
 import { sfx } from '../audio/sfx.js';
 import { impactSound, deathSound } from '../audio/sfx-impacts.js';
 import { ambience, ambienceMix, sampleLand } from '../audio/ambience.js';
@@ -537,6 +538,7 @@ export class Game {
     this.setLoading(false, true);
     this.resize();
     this.applyShowAllBars();
+    this.applyShake();
     this.applySpeed();
     if (!(this.saver && this.saver.restoreCamera())) this.centerOnStart();
     if (resumed) this.hud.message('Saved game loaded.', 'system', { icon: '💾' });
@@ -904,6 +906,12 @@ export class Game {
     this.applyShowAllBars();
   }
 
+  /** The Screen shake setting: how far the renderer lets blasts shake the camera (and a controller rumble). */
+  applyShake() {
+    const r = this.renderer;
+    if (r) r.shakeScale = SHAKE_SCALE[getSettings().screenShake] ?? 1;
+  }
+
   applyShowAllBars() {
     const r = this.renderer;
     if (!r) return;
@@ -951,6 +959,7 @@ export class Game {
       this.needsRender = true;
     }
     // (the renderer rebuilt its models in the new team colours when the palette changed, src/team-colors.js)
+    if (changed.includes('screenShake')) this.applyShake();
     if (changed.includes('weather') && this.renderer && typeof this.renderer.setWeather === 'function') this.renderer.setWeather(s.weather === false ? 'off' : 'auto');
     if (changed.includes('teamColors')) this.needsRender = true;
   }
