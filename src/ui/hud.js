@@ -305,7 +305,7 @@ export class Hud {
     this.pauseBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       sfx.play('click');
-      if (game.session && game.session.pause) game.togglePause();
+      if ((game.session && game.session.pause) || game.keyPaused) game.togglePause();
     });
     this.pauseBar = el('div', 'hud-pausebar hud-panel', el('span', 'hud-pause-ico', '⏸'), this.pauseText, this.pauseBtn);
     this.pauseBar.hidden = true;

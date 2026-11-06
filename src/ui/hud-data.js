@@ -199,6 +199,7 @@ export function tauntDwell(text) {
  */
 export function pauseText(pause, nameOf, nowMs = performance.now()) {
   if (!pause) return '';
+  if (pause.solo) return 'Paused · look around, then press Pause or Resume to go on';
   const left = formatClock(Math.ceil(Math.max(0, pause.endsAt - nowMs) / 1000));
   if (pause.reason === 'handoff') return `The new host waits for the players to reconnect · goes on in ${left}`;
   return `Paused by ${pause.by >= 0 ? nameOf(pause.by) : 'the game'} · goes on in ${left}`;

@@ -1465,6 +1465,11 @@ game leaves one base free as a rich guarded expansion. No river center feature.
     Pause key or the game menu's Pause Game for Everyone; a bar under the top bar says who paused
     and when it goes on, with Resume. Check: `tools/handoff-check.mjs` (two tabs: pause and resume,
     the host's tab closes, the client carries on as host, the old host rejoins).
+  - Pause (against the computer): the Pause key (`Game.toggleKeyPause`) stops the match without the
+    game menu. The same pause bar says so, with Resume. The picture keeps drawing at a standstill, so the
+    camera, selection and portraits stay free, and orders given meanwhile are carried out when it goes on.
+    Opening the game menu takes the pause over (`endKeyPause`), so closing the menu goes on as from any
+    menu pause. Not in a replay, after the end, or with an overlay open.
   - `ClientSession({ setup, myIndex, conn })`: decodes full/delta into its `ViewState`;
     `sendCommand(cmd)` → `{t:'cmd', cmd}`; `ready` (promise, first full snapshot), `pingMs`,
     `stalledMs` / `stalled` (host silent for `STALL_NOTICE_MS`), `mapMismatch` (setup `mapHash` differs from the locally generated map). `onEnd({ reason })`:
