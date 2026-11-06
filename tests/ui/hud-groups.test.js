@@ -3,7 +3,7 @@
 // selected, gone when the group is empty; a click picks the group. Fake DOM.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { GroupBar, groupChips, FIGHT_MS } from '../../src/ui/hud-groups.js';
+import { GroupBar, groupChips, saveSlot, FIGHT_MS } from '../../src/ui/hud-groups.js';
 import { Selection } from '../../src/ui/hud-selection.js';
 import { installFakeDom } from './fake-dom.js';
 
@@ -65,4 +65,47 @@ test('the bar draws, clicks, and drops an emptied group', () => {
   entities.delete(3);
   bar.update(2000);
   assert.deepEqual(bar.root.findAll('hud-group').map((c) => c.dataset.group), ['3']);
+});
+
+test('saveSlot: the lowest free digit for a selection of own units that is not already a group', () => {
+  const { vs, sel, entities } = world();
+  const slot = () => saveSlot(sel, vs, groupChips(sel, vs, new Map(), 0));
+  assert.equal(slot(), 0, 'nothing selected');
+  sel.set([3, 5]);
+  assert.equal(slot(), 1);
+  sel.saveGroup(1);
+  assert.equal(slot(), 0, 'the selection already is group 1');
+  sel.set([1]);
+  assert.equal(slot(), 2);
+  for (let n = 2; n <= 9; n++) sel.groups.set(n, [4]);
+  assert.equal(slot(), 0, 'all nine taken');
+  entities.set(9, { id: 9, k: 'u', t: 'greek_hoplite', o: 1, x: 0, y: 0, hp: 100, mhp: 100, st: 'idle' });
+  sel.groups.delete(9);
+  sel.set([9]);
+  assert.equal(slot(), 0, 'an enemy is never saved');
+});
+
+test('touch: a "+" chip after the groups saves the selection as the next free group; none with a mouse', () => {
+  const { vs, sel } = world();
+  const saved = [];
+  const bar = new GroupBar({ selection: sel, viewState: vs, onPick: () => {}, onSave: (n) => { saved.push(n); sel.saveGroup(n); }, touch: true });
+  bar.update(0);
+  assert.equal(bar.root.hidden, true, 'nothing selected, no groups: no bar');
+  sel.set([3, 5]);
+  bar.update(1000);
+  assert.equal(bar.root.hidden, false);
+  const plus = bar.root.find('is-new');
+  assert.equal(plus.hidden, false);
+  assert.match(plus.title, /group 1/);
+  plus.click();
+  assert.deepEqual(saved, [1]);
+  assert.equal(plus.hidden, true, 'the selection is group 1 now: nothing to save');
+  sel.set([1, 2]);
+  bar.update(2000);
+  const kids = bar.root.children;
+  assert.deepEqual(kids.map((c) => c.dataset.group || '+'), ['1', '+'], 'the "+" comes after the groups');
+  assert.match(plus.title, /group 2/);
+  const mouse = new GroupBar({ selection: sel, viewState: vs, onPick: () => {}, onSave: () => {} });
+  mouse.update(0);
+  assert.equal(mouse.root.find('is-new'), null);
 });
