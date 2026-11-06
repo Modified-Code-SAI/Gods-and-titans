@@ -2043,6 +2043,12 @@ per-frame budget, so a revealed army appears over a few frames.
   mine. Construction sites are clipped at their build height and show a dark plank interior
   (back faces, and horizontal surfaces just below the cut) instead of the finished
   building's walls and ceiling.
+- Range rings (`range-ring.js`): a building that shoots (the Watch Tower) shows its reach as a dashed band
+  draped on the terrain, with a faint wash inside: under its placement ghost (warm white, dimmer while the spot
+  is refused) and while it is selected (in the relation's colour, finished buildings only, up to six). The
+  reach is the attack range plus the owner's range upgrades plus half the footprint, as the sim measures from
+  the building's edge. The placement ghost glides from tile to tile, and whenever it is red the tip beside the
+  cursor says why, in the words the sim refuses the order with.
 - Selection portrait (`portrait.js`): a lone selected unit or building shows itself, live, in the selection
   panel's portrait (the icon shows until the first draw and for resources). After the frame, the entity's own
   model is drawn again by a portrait camera that sees only `PORTRAIT_LAYER`: the model's meshes join the layer for

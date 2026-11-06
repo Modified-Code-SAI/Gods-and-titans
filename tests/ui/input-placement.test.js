@@ -187,3 +187,17 @@ test('Decade of Peace: a renderer without zones (older stubs) still places', () 
   assert.equal(input.wallTip.hidden, false, 'the tip does not need the zone');
   input.dispose();
 });
+
+test('the tip beside the cursor says why any red ghost is red, in the sim\'s words, and leaves when it turns green', () => {
+  const { world, input, ghostAt } = setup({}, true);
+  input.setMode({ kind: 'place', building: 'house' });
+  // Over player 0's own Town Center (tiles 6..9 by default start): a building is in the way.
+  const red = ghostAt(8, 8);
+  assert.equal(red.valid, false);
+  assert.equal(input.wallTip.hidden, false);
+  assert.equal(input.wallTip.textContent, world.placementError(0, 'house', red.tx, red.ty));
+  assert.ok(input.wallTip.classList.contains('is-bad'));
+  assert.equal(ghostAt(8, 13).valid, true);
+  assert.equal(input.wallTip.hidden, true);
+  input.dispose();
+});

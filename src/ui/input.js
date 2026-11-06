@@ -1030,10 +1030,13 @@ export class InputController {
     r.setNoBuildZones(anchors);
   }
 
-  /** The tip beside the cursor says why the ghost is red when it is the peace's kept-clear ground (the sim says the same). */
-  peaceTip(chk) {
+  /**
+   * The tip beside the cursor says why the ghost is red (trees, a building, unexplored ground, the peace's
+   * kept-clear ground…), in the words the sim refuses the order with; none while the ghost is green.
+   */
+  placeTip(chk) {
     const tip = this.wallTip;
-    if (!chk.peace) {
+    if (chk.valid || !chk.message) {
       tip.hidden = true;
       return;
     }
@@ -1701,7 +1704,7 @@ export class InputController {
               this.placeSig = sig;
               r.showPlacement(this.mode.building, tx, ty, chk.valid, chk.tiles);
             }
-            this.peaceTip(chk);
+            this.placeTip(chk);
           }
           this.placeAt = now;
         }

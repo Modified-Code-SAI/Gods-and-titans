@@ -1,7 +1,8 @@
 // Building placement ghost (translucent model + per-tile green/red footprint
 // grid), the ghost of a dragged wall line, the ground a Decade of Peace keeps
 // clear around enemy Town Centers, and ghost outlines of own workers'
-// pending build orders.
+// pending build orders. A tower's ghost carries its attack range ring (range-ring.js), and the ghost glides
+// from tile to tile instead of jumping.
 import * as THREE from 'three';
 import { BUILDINGS } from '../data/buildings.js';
 import { wallConnections } from '../data/walls.js';
@@ -9,6 +10,7 @@ import { MAX_WALL_LINE } from '../config.js';
 import { buildBuildingModel } from './models/building-models.js';
 import { footprintHeight, heightAt } from './height.js';
 import { NoBuildZone } from './no-build-zone.js';
+import { RangeRing, buildingReach } from './range-ring.js';
 
 const GRID_VS = `
 attribute vec3 aCol;
@@ -36,6 +38,8 @@ void main() {
 const OK_COLOR = new THREE.Color('#3cff5a');
 const BAD_COLOR = new THREE.Color('#ff3328');
 const MAX_TILES = 36; // up to 6×6
+const RANGE_COLOR = new THREE.Color('#ffe7a8'); // the ghost's range ring: warm white-gold, whatever the tint
+const GLIDE = 28; // 1/s: how fast the ghost catches up with the tile under the cursor
 
 /** Footprint tile grid draped on the terrain. */
 class FootprintGrid {
@@ -216,6 +220,8 @@ export class PlacementLayer {
     this.grid = new FootprintGrid(parent, map);
     this.lineGrid = new FootprintGrid(parent, map, MAX_WALL_LINE);
     this.zone = new NoBuildZone(parent, map); // shown with the ghost, whichever kind
+    this.range = new RangeRing(parent, map); // a shooting building's reach, under its ghost
+    this.at = new THREE.Vector3(); // where the ghost is heading (it glides there in update)
     this.ghost = null; // { type, model, mats }
     this.line = { type: null, ghosts: [] }; // the segments of a dragged wall line: { model, valid, mask }
     this.valid = true;
@@ -258,7 +264,7 @@ export class PlacementLayer {
    * Show the ghost for a building type with its top-left tile at (tx, ty).
    * @param {boolean[]|Uint8Array} [tiles] per-tile validity (row-major, size×size)
    */
-  show(typeId, tx, ty, valid, tiles) {
+  show(typeId, tx, ty, valid, tiles, rangeBonus = 0) {
     const def = BUILDINGS[typeId];
     if (!def) {
       this.hide();
@@ -266,7 +272,9 @@ export class PlacementLayer {
     }
     this.hideLine();
     this.ensureMats();
+    let snap = !this.ghost || !this.ghost.model.root.visible;
     if (!this.ghost || this.ghost.type !== typeId) {
+      snap = true;
       if (this.ghost) this.ghost.model.dispose();
       const { pantheon, color } = this.getStyle();
       const model = buildBuildingModel(typeId, pantheon, color, 1);
@@ -282,7 +290,11 @@ export class PlacementLayer {
     }
     const size = def.size;
     g.model.root.visible = true;
-    g.model.root.position.set(tx + size / 2, footprintHeight(this.map, tx, ty, size), ty + size / 2);
+    this.at.set(tx + size / 2, footprintHeight(this.map, tx, ty, size), ty + size / 2);
+    if (snap) g.model.root.position.copy(this.at);
+    const reach = buildingReach(def, rangeBonus);
+    if (reach > 0) this.range.set(this.at.x, this.at.z, reach, RANGE_COLOR, allOk ? 1 : 0.45);
+    else this.range.hide();
     this.grid.set(tx, ty, size, valid, tiles);
     this.zone.show();
   }
@@ -297,6 +309,7 @@ export class PlacementLayer {
 
   hide() {
     if (this.ghost) this.ghost.model.root.visible = false;
+    this.range.hide();
     this.grid.hide();
     this.hideLine();
     this.zone.hide();
@@ -317,6 +330,7 @@ export class PlacementLayer {
       return;
     }
     if (this.ghost) this.ghost.model.root.visible = false;
+    this.range.hide();
     this.grid.hide();
     this.ensureMats();
     const line = this.line;
@@ -411,6 +425,9 @@ export class PlacementLayer {
     this.grid.uniforms.uTime.value = this.time;
     this.lineGrid.uniforms.uTime.value = this.time;
     this.zone.update(dt);
+    this.range.update(dt, this.time);
+    const g = this.ghost;
+    if (g && g.model.root.visible) g.model.root.position.lerp(this.at, 1 - Math.exp(-GLIDE * dt));
     if (this.orderMats) {
       const k = 0.3 + 0.08 * Math.sin(this.time * 3);
       this.orderMats.body.opacity = k;
@@ -423,6 +440,7 @@ export class PlacementLayer {
     this.grid.dispose();
     this.lineGrid.dispose();
     this.zone.dispose();
+    this.range.dispose();
     this.clearLine();
     if (this.ghost) this.ghost.model.dispose();
     this.ghost = null;

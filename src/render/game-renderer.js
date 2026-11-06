@@ -29,6 +29,9 @@ import { FarUnits } from './far-units.js';
 import { Portrait } from './portrait.js';
 import { FogOfWar, patchFowObject, FOW_UNIFORMS } from './fog.js';
 import { createTerrain, WATER_LEVEL } from './terrain.js';
+import { RangeRing, buildingReach } from './range-ring.js';
+import { modsOf } from '../ui/hud-data.js';
+import { buildingMods } from '../data/upgrades.js';
 import { CORPSE, corpseCap, corpseHold, corpseSink, hurryCorpses, RubbleLayer } from './remains.js';
 import { RingLayer, BlobLayer, StarLayer, BarLayer, MarkerLayer, FloatingTextLayer, RallyFlags, OrderPaths, healthColor } from './overlays.js';
 import { PlacementLayer } from './placement.js';
@@ -96,6 +99,7 @@ const STATUS_SLOW = new THREE.Color('#8fd4ff');
 const STATUS_INVULN = new THREE.Color('#ffd76a');
 
 // Selection rings by relation, in the team palette (team-colors.js); filled in by setTeamPalette.
+const MAX_RANGE_RINGS = 6;
 const RELATION_COLORS = { own: new THREE.Color(), ally: new THREE.Color(), enemy: new THREE.Color(), neutral: new THREE.Color() };
 function paintRelationColors() {
   for (const k of Object.keys(RELATION_COLORS)) RELATION_COLORS[k].set(relationColor(k));
@@ -333,6 +337,7 @@ export class GameRenderer {
     this.texts = new FloatingTextLayer(this.overlayRoot);
     this.flags = new RallyFlags(this.overlayRoot, 12, (x, y) => heightAt(this.map, x, y));
     this.paths = new OrderPaths(this.overlayRoot, (x, y) => heightAt(this.map, x, y));
+    this.rangeRings = []; // RangeRing per selected shooting building (updateRangeRings)
     this.placement = new PlacementLayer(this.overlayRoot, this.map, () => ({
       pantheon: PANTHEONS[this.pantheonOf(this.vs.myIndex)] || null,
       color: this.colorOf(this.vs.myIndex),
@@ -900,7 +905,36 @@ export class GameRenderer {
    * @param {ArrayLike<boolean|number>} [tiles] optional per-tile validity, row-major size×size
    */
   showPlacement(buildingTypeId, tx, ty, valid, tiles) {
-    this.placement.show(buildingTypeId, tx | 0, ty | 0, valid, tiles || null);
+    this.placement.show(buildingTypeId, tx | 0, ty | 0, valid, tiles || null, this.rangeBonus(this.vs.myIndex, buildingTypeId));
+  }
+
+  /** Extra attack range a player's upgrades give a building type (Lookout Platforms), as the sim adds it. */
+  rangeBonus(owner, typeId) {
+    if (!(owner >= 0) || !BUILDINGS[typeId] || !BUILDINGS[typeId].attack) return 0;
+    return buildingMods(modsOf(this.vs, owner), typeId).range || 0;
+  }
+
+  /**
+   * Range rings (range-ring.js) around the selected buildings that shoot, finished ones only (a site doesn't),
+   * in the relation's colour; at most MAX_RANGE_RINGS.
+   */
+  updateRangeRings(dt) {
+    const rr = this.rangeRings;
+    let n = 0;
+    for (const id of this.selection) {
+      if (n >= MAX_RANGE_RINGS) break;
+      const b = this.buildings.get(id);
+      if (!b || !b.def || !b.def.attack || (b.e.bp ?? 1) < 1) continue;
+      const reach = buildingReach(b.def, this.rangeBonus(b.e.o, b.e.t));
+      if (!(reach > 0)) continue;
+      if (!rr[n]) rr[n] = new RangeRing(this.overlayRoot, this.map);
+      rr[n].set(b.x, b.y, reach, RELATION_COLORS[b.relation] || RELATION_COLORS.neutral, 0.8);
+      n++;
+    }
+    for (let i = 0; i < rr.length; i++) {
+      if (i >= n) rr[i].hide();
+      rr[i].update(dt, this.time);
+    }
   }
 
   /**
@@ -2017,6 +2051,8 @@ export class GameRenderer {
       }
     }
 
+    this.updateRangeRings(dt);
+
     // mines
     for (const m of this.mines.values()) {
       entities++;
@@ -2579,6 +2615,8 @@ export class GameRenderer {
     this.relicLayer.dispose();
     this.sacredSites.dispose();
     this.placement.dispose();
+    for (const r of this.rangeRings) r.dispose();
+    this.rangeRings.length = 0;
     this.blobs.dispose();
     this.rubble.dispose();
     this.weatherLayer.dispose();
