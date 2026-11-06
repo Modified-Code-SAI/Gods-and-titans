@@ -12,6 +12,7 @@
 //   overlays     waiting, in-game menu (F10), game over, host left
 // Only the panels take pointer events; everything else falls through to the canvas.
 import { SkyDial } from './hud-sky.js';
+import { ArrivalCard } from './hud-arrival.js';
 import { hourAt } from '../render/day-clock.js';
 import { setIconVar } from './icons.js';
 import { playEnding } from './hud-ending.js';
@@ -205,6 +206,8 @@ export class Hud {
     this.errorEl = el('div', 'hud-error');
     this.banner = el('div', 'hud-banner');
     this.banner.hidden = true;
+    // My god or Titan arriving: a carved plate under the top bar (hud-arrival.js).
+    this.arrival = new ArrivalCard();
     // A computer player's taunt (DESIGN 10.1): one big quote at the top centre, under the banners.
     this.taunt = el('div', 'hud-taunt');
     this.taunt.hidden = true;
@@ -300,7 +303,7 @@ export class Hud {
     this.market = new MarketView({ viewState: this.vs, onSend: (cmd) => game.command(cmd) });
 
     this.overlayRoot = el('div', 'hud-overlays');
-    root.append(this.top, this.gods, ...(this.roster ? [this.roster.root] : []), this.market.root, this.mismatch, this.stall, this.pauseBar, this.banner, this.taunt, this.msgs, this.errorEl, this.chatLog, this.chatBox, this.workers, this.bottom, this.tip, this.overlayRoot);
+    root.append(this.top, this.gods, ...(this.roster ? [this.roster.root] : []), this.market.root, this.mismatch, this.stall, this.pauseBar, this.banner, this.arrival.el, this.taunt, this.msgs, this.errorEl, this.chatLog, this.chatBox, this.workers, this.bottom, this.tip, this.overlayRoot);
 
     // Keep the canvas from seeing clicks on panels.
     for (const p of [this.top, this.bottom, this.gods, ...(this.roster ? [this.roster.root] : []), this.idleBtn, this.tasks, this.chatLog, this.chatBox, this.tip, this.market.root, this.pauseBar]) {
@@ -917,8 +920,18 @@ export class Hud {
   /** The ending (hud-ending.js): letterbox bars and the result carved across the screen; `done` follows it. */
   showEnding(words, result, ms, done) {
     this.banner.hidden = true;
+    this.arrival.el.hidden = true;
     if (this.taunt) this.taunt.hidden = true;
     return playEnding(this.root, words, result, ms, done);
+  }
+
+  /** My god or Titan has arrived: the arrival card, which takes the banner's place while it shows. */
+  showArrival(def) {
+    if (!this.arrival.show(def)) return false;
+    clearTimeout(this.bannerTimer);
+    this.banner.classList.remove('is-on');
+    this.banner.hidden = true;
+    return true;
   }
 
   showBanner(text, kind = 'info') {
@@ -1004,6 +1017,7 @@ export class Hud {
   dispose() {
     clearTimeout(this.errorTimer);
     clearTimeout(this.bannerTimer);
+    this.arrival.cleanup();
     clearTimeout(this.tauntTimer);
     for (const line of this.msgs.children) clearTimeout(line._timer);
     this.minimap.dispose();

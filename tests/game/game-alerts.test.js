@@ -129,7 +129,7 @@ function eventsGame(extra = {}) {
   const game = {
     disposed: false,
     viewState: { myIndex: 0, me: { defeated: false }, entities: new Map(), mineMemory: new Map(), isAlly: () => false, isExplored: () => true },
-    hud: { message: (text, kind, opts) => cards.push([text, kind, opts && opts.icon]), minimap: { ping() {} }, showBanner() {} },
+    hud: { message: (text, kind, opts) => cards.push([text, kind, opts && opts.icon]), minimap: { ping() {} }, showBanner() {}, showArrival() { return true; } },
     input: null,
     playerName: (i) => (i === 1 ? 'Freyja' : 'Me'),
     worldSound() {},

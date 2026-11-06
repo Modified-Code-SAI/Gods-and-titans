@@ -1261,9 +1261,10 @@ export class Game {
         if (!t) break;
         if (t.class === 'god') {
           hud.message(`${t.name}, ${t.title || 'god'}, answers your call!`, 'good', { icon: t.icon });
+          hud.showArrival(t);
           sfx.play('summon_god');
         } else if (t.class === 'titan') {
-          hud.showBanner(`${t.name} has risen!`, 'titan');
+          if (!hud.showArrival(t)) hud.showBanner(`${t.name} has risen!`, 'titan');
           sfx.play('summon_titan');
         } else if (t.class !== 'minion') {
           sfx.play('train', { volume: t.class === 'worker' ? 0.6 : 0.9 });
