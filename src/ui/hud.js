@@ -55,6 +55,15 @@ const ERROR_MS = 2600;
 const BANNER_MS = 4200;
 const MAX_MESSAGES = 6;
 const MAX_MESSAGE_CHARS = 240;
+
+/** Which top-bar count an error is about ('gold', 'wood', 'faith', 'pop'), so that chip can flash; else null. */
+export function shortOf(text) {
+  const t = String(text || '');
+  const m = /^Not enough (gold|wood|faith)\b/i.exec(t);
+  if (m) return m[1].toLowerCase();
+  if (/^(Not enough population|Population limit reached)/i.test(t)) return 'pop';
+  return null;
+}
 const SURVIVAL_ICON = '🐉'; // the Trial of the Titans' wave chip and messages
 const WAVE_WARNING = 10; // seconds before a wave when the HUD says it is coming
 const PEACE_ICON = '🕊️'; // the Decade of Peace's card emblem, as on its clock chip
@@ -761,12 +770,22 @@ export class Hud {
    * @param {{ icon?: string }} [opts]
    * @returns {HTMLElement|null}
    */
+  /** Flash the chip of the count an error says is short (a red pulse), restarting it on a second click. */
+  flashShort(which) {
+    const chip = { gold: this.rGold, wood: this.rWood, faith: this.rFaith, pop: this.rPop }[which];
+    if (!chip) return;
+    chip.n.classList.remove('is-short');
+    void chip.n.offsetWidth;
+    chip.n.classList.add('is-short');
+  }
+
   message(text, kind = 'info', opts = null) {
     if (text === null || text === undefined || text === '') return null;
     // Error texts arrive in snapshots from the host: keep them short, plain text.
     text = String(text);
     if (text.length > MAX_MESSAGE_CHARS) text = `${text.slice(0, MAX_MESSAGE_CHARS - 1)}…`;
     if (kind === 'error') {
+      this.flashShort(shortOf(text));
       this.errorEl.textContent = text;
       this.errorEl.classList.remove('is-on');
       void this.errorEl.offsetWidth;

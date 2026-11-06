@@ -4,7 +4,7 @@
 // with its blessings. Fake DOM, fake game.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { Hud } from '../../src/ui/hud.js';
+import { Hud, shortOf } from '../../src/ui/hud.js';
 import { PANTHEON_LIST } from '../../src/data/index.js';
 import { Selection } from '../../src/ui/hud-selection.js';
 import { leadText, stallText } from '../../src/ui/hud-data.js';
@@ -153,4 +153,19 @@ test('the idle button flashes when a Worshipper runs out of work, not at the sta
   const fresh = setup().hud;
   fresh.updateIdle();
   assert.equal(fresh.idleBtn.classList.contains('is-new'), false, 'the first count is not news');
+});
+
+test('an error about a missing resource or room flashes that count', () => {
+  assert.equal(shortOf('Not enough gold.'), 'gold');
+  assert.equal(shortOf('Not enough gold to repair.'), 'gold');
+  assert.equal(shortOf('Not enough faith.'), 'faith');
+  assert.equal(shortOf('Not enough population. Build more Houses.'), 'pop');
+  assert.equal(shortOf('Population limit reached (200).'), 'pop');
+  assert.equal(shortOf('Cannot build there.'), null);
+  const { hud } = setup();
+  hud.message('Not enough wood.', 'error');
+  assert.equal(hud.rWood.n.classList.contains('is-short'), true);
+  assert.equal(hud.rGold.n.classList.contains('is-short'), false);
+  hud.message('Not enough gold.', 'info');
+  assert.equal(hud.rGold.n.classList.contains('is-short'), false, 'only errors flash');
 });
