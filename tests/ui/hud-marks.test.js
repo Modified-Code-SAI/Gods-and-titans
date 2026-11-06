@@ -385,3 +385,16 @@ test('the hint line comes once, when the match has a teammate to ping', () => {
   assert.equal(hint.length, 1);
   assert.match(hint[0], /Alt\+click or middle-click/);
 });
+
+test('touch on the minimap: a finger is the left button, so a tap jumps the camera and a drag sweeps it', () => {
+  const { canvas, events } = minimapSetup(new TeamMarks());
+  const t = (x, y) => [{ identifier: 0, clientX: x, clientY: y }];
+  canvas.fire('touchstart', { cancelable: true, touches: t(30, 30), changedTouches: t(30, 30) });
+  canvas.fire('touchmove', { cancelable: true, touches: t(60, 40), changedTouches: t(60, 40) });
+  canvas.fire('touchend', { cancelable: true, touches: [], changedTouches: t(60, 40) });
+  assert.deepEqual(events.map((e) => [e.phase, e.button]), [['down', 0], ['drag', 0], ['up', 0]]);
+  assert.ok(events[1].x > events[0].x, 'the drag follows the finger');
+  canvas.fire('touchmove', { cancelable: true, touches: t(90, 40), changedTouches: t(90, 40) });
+  assert.equal(events.length, 3, 'nothing after the finger lifts');
+  assert.equal(canvas.style.touchAction, 'none');
+});
