@@ -2700,7 +2700,8 @@ pinch the zoom and pan by their midpoint. A finger lifting clears the pointer, s
 behind. HUD buttons are DOM and take taps as clicks. A finger held on a command button (`CARD_HOLD_MS`, 450 ms) or
 on any titled element (`TIP_HOLD` in hover-tip.js) shows its tooltip while it stays down, and that hold is not a
 press: its click is swallowed, a long press never toggles autocast, and the hover a tap emulates opens no tip.
-Whether a press was a hold is judged on the events' timestamps at release. Not done: the god-power ring before a
+Whether a press was a hold is judged on the events' timestamps at release. On the minimap a finger is the left button
+(a tap jumps the camera, a drag sweeps it). Not done: the god-power ring before a
 tap.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring

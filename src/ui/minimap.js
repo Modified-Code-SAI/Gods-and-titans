@@ -93,6 +93,35 @@ export class Minimap {
       this.dragging = 0;
       if (e.button === b) this.emit(e, 'up', b);
     });
+    // Touch (DESIGN 9 "Touch"): a finger on the minimap is the left button, so a tap jumps the camera there and a
+    // drag sweeps it along; the page never scrolls under it.
+    const touchAt = (e) => {
+      const t = e.changedTouches && e.changedTouches[0];
+      return t ? { clientX: t.clientX, clientY: t.clientY, shiftKey: false, ctrlKey: false, metaKey: false, altKey: false } : null;
+    };
+    const touchOpts = { passive: false };
+    on(canvas, 'touchstart', (e) => {
+      if (e.cancelable) e.preventDefault();
+      const p = touchAt(e);
+      if (!p || (e.touches && e.touches.length > 1)) return;
+      this.dragging = 1;
+      this.emit(p, 'down', 0);
+    }, touchOpts);
+    on(canvas, 'touchmove', (e) => {
+      if (e.cancelable) e.preventDefault();
+      const p = touchAt(e);
+      if (p && this.dragging === 1) this.emit(p, 'drag', 0);
+    }, touchOpts);
+    const touchEnd = (e) => {
+      if (e.cancelable) e.preventDefault();
+      if (this.dragging !== 1) return;
+      this.dragging = 0;
+      const p = touchAt(e);
+      if (p) this.emit(p, 'up', 0);
+    };
+    on(canvas, 'touchend', touchEnd, touchOpts);
+    on(canvas, 'touchcancel', touchEnd, touchOpts);
+    if (canvas.style) canvas.style.touchAction = 'none';
     // Re-measure only when the element or the window changes size (reading
     // layout every frame would force a reflow after each HUD update).
     this.needsFit = true;
