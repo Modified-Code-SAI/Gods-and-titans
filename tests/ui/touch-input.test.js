@@ -95,3 +95,38 @@ test('nothing happens under an open menu, and dispose takes the listeners off', 
   assert.deepEqual(a.log, []);
   assert.equal(a.input.canvas.style.touchAction, 'none', 'the page never scrolls or zooms under the map');
 });
+
+test('a god power aimed at the ground takes two taps: the first puts the ring, the second on it casts', () => {
+  const a = setup({ kind: 'target' });
+  a.input.mode = { kind: 'target', order: 'power', power: 'greek_power_lightning_storm', target: 'point' };
+  const msgs = [];
+  a.input.hud.message = (t) => msgs.push(t);
+  const tap = (x, y, t) => {
+    a.fire('touchstart', [a.pt(x, y)], [a.pt(x, y)], t);
+    a.fire('touchend', [], [a.pt(x, y)], t + 50);
+  };
+  tap(200, 150, 1000);
+  assert.deepEqual(a.log, [], 'the first tap only aims');
+  assert.equal(msgs.length, 1, 'and says how to cast');
+  assert.deepEqual([a.input.mx, a.input.my, a.input.overCanvas], [200, 150, true], 'the ring is drawn where the finger was');
+  tap(320, 90, 2000);
+  assert.deepEqual(a.log, [], 'a tap elsewhere moves the ring');
+  assert.deepEqual([a.input.mx, a.input.my], [320, 90]);
+  tap(330, 100, 3000);
+  assert.deepEqual(a.log, [['down', 0, 320, 90], ['up', 0, 320, 90]], 'a tap on the ring casts where it was aimed');
+  assert.equal(a.input.overCanvas, false);
+  assert.equal(msgs.length, 1);
+  // a Move order is still one tap
+  a.log.length = 0;
+  a.input.mode = { kind: 'target', order: 'move', target: 'point' };
+  tap(50, 60, 4000);
+  assert.deepEqual(a.log, [['down', 0, 50, 60], ['up', 0, 50, 60]]);
+});
+
+test('a god power that needs no spot is still one tap', () => {
+  const a = setup({ kind: 'target' });
+  a.input.mode = { kind: 'target', order: 'power', power: 'greek_power_demeters_bounty', target: 'point' };
+  a.fire('touchstart', [a.pt(80, 80)], [a.pt(80, 80)], 1000);
+  a.fire('touchend', [], [a.pt(80, 80)], 1050);
+  assert.deepEqual(a.log, [['down', 0, 80, 80], ['up', 0, 80, 80]]);
+});

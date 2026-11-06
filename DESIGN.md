@@ -2704,8 +2704,9 @@ behind. HUD buttons are DOM and take taps as clicks. A finger held on a command 
 on any titled element (`TIP_HOLD` in hover-tip.js) shows its tooltip while it stays down, and that hold is not a
 press: its click is swallowed, a long press never toggles autocast, and the hover a tap emulates opens no tip.
 Whether a press was a hold is judged on the events' timestamps at release. On the minimap a finger is the left button
-(a tap jumps the camera, a drag sweeps it). Not done: the god-power ring before a
-tap.
+(a tap jumps the camera, a drag sweeps it). A god power aimed at the ground takes two taps, as it is used once: the
+first puts its ring where the finger was (with a line saying so), the second within `AIM_SLOP` (48 px) of it casts,
+and a tap elsewhere moves the ring; a power that needs no spot, and every other order, is one tap.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).
