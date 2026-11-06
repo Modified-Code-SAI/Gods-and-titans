@@ -1100,6 +1100,7 @@ EntityView = {
 { type: 'effect',  el, shape, x, y, r, fx?, fy?, points?, duration, src, ability, delay? }
                    // VFX request; fx/fy for lines, points for chains, delay (s) when > 0
 { type: 'bounty',  player, amount, x, y, res? }                      // creep-kill gold; res 'g' | 'f' for plunder gold / sacrifice faith
+{ type: 'deposit', player, amount, res, x, y }                       // a gatherer's load brought in (res 'g' | 'w'); the owner's renderer floats a small "+N" over it, one per 2×2-tile spot each 0.6 s
 { type: 'spawn',   id, t, o }                                        // unit trained/summoned/revived
 { type: 'construction', id, t, o }                                   // building placed
 { type: 'buildingComplete', id, t, o }

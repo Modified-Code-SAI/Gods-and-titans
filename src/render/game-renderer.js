@@ -46,6 +46,8 @@ import { Atmosphere } from './atmosphere.js';
 import { displayColor, relationColor, onTeamPaletteChange } from '../team-colors.js';
 
 /** World units above the ground the shadow box keeps in view (roofs, heads, gods, hills): see updateShadowCamera. */
+/** Seconds between two drop-off numbers on the same 2×2-tile spot (events 'deposit'). */
+const DEPOSIT_GAP = 0.6;
 const SHADOW_LIFT = 8;
 
 // Low draws straight to the canvas; the others go through the post-processing
@@ -974,9 +976,9 @@ export class GameRenderer {
   }
 
   /** Floating text over a sim point ("+25" bounty, "Level 3"); h = height above ground. */
-  showFloatingText(x, y, text, color = '#ffd84a', h = 1.6) {
+  showFloatingText(x, y, text, color = '#ffd84a', h = 1.6, scale = 1) {
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-    this.texts.spawn(x, this.groundAt(x, y) + h, y, text, color);
+    this.texts.spawn(x, this.groundAt(x, y) + h, y, text, color, scale);
   }
 
   /** @returns {{drawCalls:number, triangles:number, entities:number, updateMs:number}} */
@@ -1012,6 +1014,7 @@ export class GameRenderer {
       case 'buildingComplete':
       case 'tierUp':
       case 'bounty':
+      case 'deposit':
       case 'resourceDepleted':
         break;
       default:
@@ -1242,6 +1245,18 @@ export class GameRenderer {
         // Gold bounty and plunder float low and yellow; sacrificed faith floats higher, in blue.
         if (ev.res === 'f') this.showFloatingText(ev.x, ev.y, `+${ev.amount} faith`, '#9fd8ff', 2.6);
         else this.showFloatingText(ev.x, ev.y, `+${ev.amount}`, '#ffd23a', 1.9);
+        break;
+      }
+      case 'deposit': {
+        // A load brought in: a small "+10" over the Worshipper, gold or wood coloured, for my own only.
+        if (ev.player !== vs.myIndex || !(ev.amount > 0) || !this.visibleAt(ev.x, ev.y)) break;
+        // A busy drop-off takes a load every few tenths of a second: one number per spot at a time, not a pile.
+        const spot = `${Math.floor(ev.x / 2)},${Math.floor(ev.y / 2)}`;
+        const seen = this.depositSeen || (this.depositSeen = new Map());
+        if (this.time - (seen.get(spot) ?? -1e9) < DEPOSIT_GAP) break;
+        seen.set(spot, this.time);
+        if (seen.size > 64) seen.clear();
+        this.showFloatingText(ev.x, ev.y, `+${ev.amount}`, ev.res === 'w' ? '#e9c08f' : '#ffd23a', 1.5, 0.72);
         break;
       }
       case 'resourceDepleted': {

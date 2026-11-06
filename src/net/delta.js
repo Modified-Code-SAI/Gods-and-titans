@@ -102,6 +102,7 @@ export const EVENT_SHAPES = [
   ['waveCleared', 'n', 'gold'],
   ['waveFront', 'n', 'player', 'count', 'x', 'y'], // a player's share of a wave (5.14)
   ['godPower', 'player', 'power', 'x', 'y'],
+  ['deposit', 'player', 'amount', 'res', 'x', 'y'], // a gatherer's load brought in (DESIGN 9)
 ].map(([type, ...keys]) => ({ type, keys }));
 const SHAPES_BY_TYPE = new Map();
 EVENT_SHAPES.forEach((s, code) => {
