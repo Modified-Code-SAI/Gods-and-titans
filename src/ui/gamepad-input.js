@@ -12,6 +12,8 @@
 //   LB / RB             → the next idle Worshipper / the next idle soldier ('.' and ',')
 //   Start               → the game menu
 //
+// A blast that shakes the screen (a titan's stomp, a god power, a collapse) also rumbles a pad that has a motor.
+//
 // Polled once a frame from InputController.update (the Gamepad API has no button events).
 //
 //   readPad(gp)            → { lx, ly, rx, ry, down: Set<number> }   the stick axes past the dead zone (pure)
@@ -23,6 +25,8 @@ export const DEAD_ZONE = 0.2;
 export const CURSOR_SPEED = 1100;
 /** Fraction of the zoom distance a fully pulled trigger moves per second. */
 export const ZOOM_RATE = 1.4;
+/** Smallest jump in the screen shake (vfx.shake, 0..1) that also rumbles the pad. */
+export const RUMBLE_KICK = 0.08;
 /** Standard-layout button numbers. */
 export const PAD = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, BACK: 8, START: 9 };
 
@@ -138,6 +142,7 @@ export class GamepadInput {
     this.cursor = null;
     this.told = false; // the one-line how-to went to the message feed
     this.hover = null; // the HUD button the cursor is over (ringed)
+    this.lastShake = 0; // the screen shake seen last frame: a jump in it rumbles the pad
     this.onMouse = () => this.setActive(false);
     if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('mousemove', this.onMouse);
   }
@@ -206,6 +211,7 @@ export class GamepadInput {
     }
     if (moved) [this.x, this.y] = stickStep(this.x, this.y, p.rx, p.ry, dt);
     if (this.cursor && this.cursor.style) this.cursor.style.transform = `translate(${Math.round(this.x)}px, ${Math.round(this.y)}px)`;
+    this.rumble(gp);
     const el = this.under();
     const onMap = el === input.canvas;
     this.hover = markHover(this.hover, onMap ? null : el);
@@ -245,6 +251,24 @@ export class GamepadInput {
     }
     this.prev = p.down;
     return out;
+  }
+
+  /** A fresh kick of the screen shake rumbles the pad, as hard as the screen shakes (no motor, no rumble). */
+  rumble(gp) {
+    const vfx = this.input.renderer && this.input.renderer.vfx;
+    const shake = vfx && Number.isFinite(vfx.shake) ? vfx.shake : 0;
+    const kick = shake - this.lastShake;
+    this.lastShake = shake;
+    const act = gp && gp.vibrationActuator;
+    if (kick < RUMBLE_KICK || !act || typeof act.playEffect !== 'function') return false;
+    const strong = Math.min(1, shake);
+    try {
+      const done = act.playEffect('dual-rumble', { startDelay: 0, duration: Math.round(120 + 380 * strong), strongMagnitude: strong, weakMagnitude: Math.min(1, 0.4 + 0.5 * strong) });
+      if (done && typeof done.catch === 'function') done.catch(noop);
+    } catch {
+      return false;
+    }
+    return true;
   }
 
   /** Let go of A on the map: the click, or the end of the box. */
