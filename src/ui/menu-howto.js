@@ -235,8 +235,32 @@ export function renderHowToContent() {
   return h('div.mw-howto', ...howToPages().map(([id, , kids]) => h('section', { dataset: { id } }, ...kids)));
 }
 
+// A phone or tablet (touch-input.js) and a controller (gamepad-input.js), DESIGN 9 "Touch" and "Gamepad".
+const TOUCH = [
+  [kbd('Tap'), 'Select; with your units selected, tap the ground, an enemy or a mine to send them'],
+  [kbd('Drag'), 'Move the camera'],
+  [kbd('Hold', 'Drag'), 'Box-select units'],
+  [kbd('Pinch'), 'Zoom in and out'],
+  [kbd('Two-finger tap'), 'Clear the selection, or call off a building or an aimed order'],
+  [kbd('Hold a button'), 'Read its tooltip without pressing it'],
+  [kbd('Tap', 'Tap'), 'A god power on the ground: the first tap places the ring, the second on it calls the power down'],
+  [label('+ over the selection'), 'Save the selection as the next control group; tap a group to select it'],
+  [label('Chat button'), 'Online games: write to the other players'],
+];
+
+const PAD = [
+  [keys('Right stick'), 'Move the cursor'],
+  [keys('Left stick'), 'Move the camera (in the menus: scroll)'],
+  [keys('A'), 'Select, or press the button under the cursor; hold and move for a box'],
+  [keys('X'), 'Send the selected units (move, attack, gather, build)'],
+  [keys('B'), 'Cancel, or clear the selection (in the menus: back)'],
+  [keys('LT', 'RT'), 'Zoom out and in'],
+  [keys('LB', 'RB'), 'Next idle Worshipper, next idle soldier'],
+  [keys('Start'), 'Game menu'],
+];
+
 /**
- * The controls: the mouse, then every hotkey table. `make` is the page's element maker, (tag, ...children):
+ * The controls: the mouse, then every hotkey table, then touch and the controller. `make` is the page's element maker, (tag, ...children):
  * menu-dom's h, or the HUD's el (the F10 menu's Controls). `bindings` (key-bindings.js bindingsOf) are the keys the
  * rebindable rows show; the defaults when left out.
  */
@@ -253,5 +277,9 @@ export function renderControls(make, bindings = bindingsOf({})) {
     make('h3.mw-h3', 'Mouse'),
     table(MOUSE),
     HOTKEYS.map(([title, rows]) => [make('h3.mw-h3', title), table(rows)]),
+    make('h3.mw-h3', 'Touch screen'),
+    table(TOUCH),
+    make('h3.mw-h3', 'Controller'),
+    table(PAD),
   ];
 }
