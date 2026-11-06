@@ -2128,7 +2128,7 @@ per-frame budget, so a revealed army appears over a few frames.
   (`menu.setNotice`, set by `boot` in main.js: no WebGL 2, and on a phone or tablet, `isTouchOnly` in menu-model.js:
   `(pointer: coarse)` matches and `(any-pointer: fine)` does not, `TOUCH_NOTICE` "Touch controls: tap to select, tap
   the ground to send, drag to look around, pinch to zoom, hold then drag to select a group, tap with two fingers to
-  deselect or cancel. A mouse and keyboard play best."; both join into one line), how-to-play (five tabs, as Settings, the last one
+  deselect or cancel, tap + over the selection to save a group. A mouse and keyboard play best."; both join into one line), how-to-play (five tabs, as Settings, the last one
   kept for the visit, `howToPages` in menu-howto.js: The Basics (gathering, prayer, the tiers, summoning, god
   levels, your pantheon), War (fighting, ranks, god powers, walls, relics, sacred sites), Game Modes (Decade of
   Peace, Trial of the Titans, Sacred Victory), Controls (the mouse and hotkey tables in two columns) and Beyond the
@@ -2398,7 +2398,10 @@ per-frame budget, so a revealed army appears over a few frames.
   the digit, the icon of the group's leading type (the first subgroup: gods first) and how many are left. A
   chip is red while the group fights (a member attacks or casts, or lost health in the last 3 s) and gold while
   the group is the selection. Clicking a chip is pressing its digit (`input.recallGroup`): a second click within
-  the double-tap time also brings the camera there. An emptied group's chip goes; hidden in replays.
+  the double-tap time also brings the camera there. An emptied group's chip goes; hidden in replays. On a
+  touch-only device (`isTouchOnly`), which has no Ctrl+digit, a dashed "+" chip after the groups saves the
+  selection as the lowest free group (`saveSlot`); it shows while own units are selected that are not already a
+  group and a digit is free.
 - God power bar (`src/ui/hud-powers.js`, `PowerBar`): three round buttons on the left of the minimap, one per power
   of my pantheon (4.11), Village at the top. Locked (grey) until my settlement reaches the tier, ready (a slow
   golden glow) once it has, dark once spent; the tooltip names the power, its tier, what it does, its area and why
