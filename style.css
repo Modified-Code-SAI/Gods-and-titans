@@ -710,6 +710,22 @@ kbd {
 .mw-peace-label { color: var(--mw-ink-dim); font-size: max(0.9em, var(--mw-min-text)); }
 .mw-peace-hint { flex-basis: 100%; margin: 0; }
 .mw-victory-group { flex-basis: 18em; }
+/* the game mode with a sample map of the chosen landscape under it (src/ui/map-preview.js) */
+.mw-opt-col { flex: 1 1 24em; min-width: 0; display: flex; flex-direction: column; gap: 0.9em; }
+.mw-opt-col > .mw-mode-group { flex: none; }
+.mw-mappv { display: flex; align-items: center; gap: 0.9em; margin: 0; }
+.mw-mappv-frame {
+  position: relative; flex: none; width: 7.5em; aspect-ratio: 1; padding: 3px; border-radius: 6px; overflow: hidden;
+  border: 1px solid rgba(220, 176, 90, 0.55); background: #0d1018;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+.mw-mappv-canvas { display: block; width: 100%; height: 100%; border-radius: 3px; transition: opacity 0.2s, filter 0.2s; }
+.mw-mappv.is-busy .mw-mappv-canvas { opacity: 0.45; filter: blur(1px); }
+.mw-mappv-veil { position: absolute; inset: 3px; display: none; place-items: center; border-radius: 3px;
+  background: radial-gradient(circle at 50% 40%, #3a3050, #141320 75%); color: #e8d6a0; font: 700 2.4em/1 var(--mw-font-display); text-shadow: 0 0 14px rgba(255, 210, 120, 0.5); }
+.mw-mappv.is-random .mw-mappv-veil { display: grid; }
+.mw-mappv.is-random .mw-mappv-canvas { visibility: hidden; }
+.mw-mappv-caption { min-width: 0; font-size: max(0.82em, var(--mw-min-text)); line-height: 1.4; color: var(--mw-ink-mute); }
 .mw-sacred-toggle { padding: 0.2em 0; }
 
 /* room code + chat */

@@ -22,6 +22,7 @@ import { createMenuBackdrop } from './menu-fx.js';
 import { createLiveBackdrop, liveWanted } from './menu-live.js';
 import { openPantheonPicker, pantheonLabel, pantheonEmblem, summaryFor, unitRow, blessingRow, styleLine } from './menu-pantheons.js';
 import { howToPages } from './menu-howto.js';
+import { MapPreview } from './map-preview.js';
 import { renderCareerContent } from './menu-career.js';
 import { renderReplays } from './menu-replays.js';
 import { getCareer, markSeen, hasBeatenComputer } from '../game/career.js';
@@ -745,6 +746,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
     });
     const landNote = h('div.mw-hint.mw-landscape-note');
     const landStatic = h('div.mw-map-static');
+    const mapPreview = new MapPreview(); // a sample map of the chosen landscape beside the choices (map-preview.js)
     // Game mode: a standard game, or the Decade of Peace with the host's pick of 30 / 45 / 60 minutes.
     let lastPeace = PEACE_LENGTHS[0]; // the length the mode comes back with when it is switched on again
     const setPeace = (minutes) => {
@@ -812,10 +814,12 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         h('div.mw-label', 'Landscape'),
         isHost ? [h('div.mw-chip-row', landBtns), landNote] : landStatic,
       ),
-      h('div.mw-opt-group.mw-mode-group',
-        h('div.mw-label', 'Game mode'),
-        isHost ? [h('div.mw-segmented', modeBtns), peaceRow, survivalRow] : [modeStatic, survivalRow],
-      ),
+      h('div.mw-opt-col',
+        h('div.mw-opt-group.mw-mode-group',
+          h('div.mw-label', 'Game mode'),
+          isHost ? [h('div.mw-segmented', modeBtns), peaceRow, survivalRow] : [modeStatic, survivalRow],
+        ),
+        mapPreview.el),
       h('div.mw-opt-group.mw-victory-group',
         h('div.mw-label', 'Victory'),
         isHost ? [sacredToggle, victoryStatic] : victoryStatic,
@@ -977,6 +981,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       landBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.landscape === land));
       landNote.textContent = landscapeInfo(land).blurb;
       landStatic.textContent = M.landscapeLabel(st());
+      mapPreview.update(st());
       const peace = M.peaceMinutes(st());
       if (peace) lastPeace = peace;
       const survival = M.survivalMode(st());
@@ -1121,6 +1126,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       cleanup: () => {
         alive = false;
         clearTimeout(leaveTimer);
+        mapPreview.cleanup();
         unsubAll(subs);
       },
     };
