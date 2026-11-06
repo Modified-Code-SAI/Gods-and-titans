@@ -1350,7 +1350,28 @@
 }
 .hi-q-item.is-more { width: auto; min-width: 1.9em; padding: 0 0.45em; font: 800 max(0.8em, var(--mw-min-text))/1 var(--mw-font-ui); color: var(--mw-gold-hi); }
 
-.hi-multi { display: flex; flex-direction: column; gap: 0.35em; height: 100%; }
+/* the portraits on the left, the summary column on the right (hud-info.js buildSummary) */
+.hi-multi { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr; gap: 0.4em 1.4em; height: 100%; }
+.hi-multi > .hi-grid-label { grid-column: 1; }
+.hi-multi > .hi-grid { grid-column: 1; grid-template-columns: repeat(12, 3.5em); grid-auto-rows: 3.5em; gap: 0.3em; }
+.hi-multi .hi-cell-icon { font-size: 1.8em; inset: 0 0 0.25em; }
+.hi-multi .hi-cell-bar { height: 0.38em; }
+.hi-sum { grid-column: 2; grid-row: 1 / -1; display: flex; flex-direction: column; gap: 0.45em; min-width: 0; padding: 0.15em 0 0 1.2em; border-left: 1px solid rgba(196, 146, 72, 0.25); }
+.hi-sum-head { display: flex; align-items: baseline; gap: 0.35em; color: var(--mw-ink-dim); font-size: max(0.9em, var(--mw-min-text)); }
+.hi-sum-head b { font: 700 1.3em/1 var(--mw-font-display); color: var(--mw-gold-hi); }
+.hi-sum-hp { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--mw-ink); }
+.hi-sum-bar { height: 0.5em; }
+.hi-sum-types { display: flex; flex-wrap: wrap; gap: 0.3em; align-content: flex-start; overflow: hidden; }
+.hi-sum-type {
+  display: inline-flex; align-items: center; gap: 0.35em; max-width: 100%; padding: 0.2em 0.55em 0.2em 0.3em;
+  font: max(0.85em, var(--mw-min-text))/1.2 var(--mw-font-body); color: var(--mw-ink); cursor: pointer;
+  background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(196, 146, 72, 0.35); border-radius: 1em;
+}
+.hi-sum-type:hover { border-color: var(--mw-gold-hi); }
+.hi-sum-type.is-active { border-color: var(--mw-gold); box-shadow: 0 0 0.4em rgba(227, 184, 79, 0.35); }
+.hi-sum-ico { font-family: var(--mw-emoji); font-size: 1.15em; line-height: 1; }
+.hi-sum-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hi-sum-n { font: 800 1em/1 var(--mw-font-ui); color: var(--mw-gold-hi); }
 .hi-grid-label { font-size: max(0.9em, var(--mw-min-text)); color: var(--mw-ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hi-grid-label b { font: 700 1.05em/1 var(--mw-font-display); letter-spacing: 0.05em; color: var(--mw-gold-hi); }
 .hi-grid-hint { color: var(--mw-ink-mute); font-size: max(0.9em, var(--mw-min-text)); }

@@ -567,8 +567,57 @@ export class InfoView {
       tasks.title = WORKER_TASKS.map((t) => `${t.icon} ${t.label}`).join('\n');
       label.appendChild(tasks);
     }
-    this.root.appendChild(el('div', 'hi-multi', label, grid));
-    this.multi = { cells, tasks, ids: ents.map((e) => e.id) };
+    const sum = this.buildSummary(ents, active);
+    this.root.appendChild(el('div', 'hi-multi', label, grid, sum.el));
+    this.multi = { cells, tasks, ids: ents.map((e) => e.id), sum };
+  }
+
+  /**
+   * The column beside the portraits: how many are selected, their health together, and one chip per type
+   * (icon, name, count) that selects only that type.
+   */
+  buildSummary(ents, active) {
+    const byType = new Map();
+    for (const e of ents) {
+      if (!byType.has(e.t)) byType.set(e.t, { e, n: 0 });
+      byType.get(e.t).n++;
+    }
+    const vs = this.o.viewState;
+    const fill = el('i', 'hi-bar-fill');
+    const hpText = el('span', 'hi-sum-hp', '');
+    const chips = el('div', 'hi-sum-types');
+    for (const [type, { e, n }] of byType) {
+      const chip = el('button', `hi-sum-type${active && active.type === type ? ' is-active' : ''}`);
+      chip.type = 'button';
+      chip.tabIndex = -1;
+      chip.title = `Select only the ${typeName(type)}${n > 1 ? 's' : ''}`;
+      chip.append(el('span', 'hi-sum-ico', iconOf(e, vs)), el('span', 'hi-sum-name', typeName(type)), el('b', 'hi-sum-n', String(n)));
+      chip.addEventListener('click', () => this.o.onSelectType(type));
+      chips.appendChild(chip);
+    }
+    const head = el('div', 'hi-sum-head', el('b', null, fmt(ents.length)), ' selected', hpText);
+    const node = el('div', 'hi-sum', head, el('div', 'hi-bar hi-sum-bar', fill), chips);
+    return { el: node, fill, hpText, sig: '' };
+  }
+
+  updateSummary() {
+    const vs = this.o.viewState;
+    const m = this.multi;
+    let hp = 0;
+    let max = 0;
+    for (const id of m.ids) {
+      const e = vs.entities.get(id);
+      if (!e || !(e.mhp > 0)) continue;
+      hp += Math.max(0, e.hp || 0);
+      max += e.mhp;
+    }
+    const f = max > 0 ? hp / max : 0;
+    const sig = `${Math.round(hp)}/${max}`;
+    if (sig === m.sum.sig) return;
+    m.sum.sig = sig;
+    setText(m.sum.hpText, max > 0 ? `${fmt(hp)} / ${fmt(max)}` : '');
+    setStyle(m.sum.fill, 'width', pct(f));
+    setStyle(m.sum.fill, 'background', hpColor(f));
   }
 
   /**
@@ -641,6 +690,7 @@ export class InfoView {
     const vs = this.o.viewState;
     if (this.multi.crowd) return this.updateCrowd();
     if (this.multi.tasks) setText(this.multi.tasks, taskSummaryText(workerTasks(vs, this.multi.ids).counts));
+    if (this.multi.sum) this.updateSummary();
     for (const c of this.multi.cells) {
       const e = vs.entities.get(c.id);
       if (!e) continue;
