@@ -64,3 +64,17 @@ test('the age card says Now open over the list', () => {
   assert.ok(card.el.find('hud-arrival-opens'));
   card.cleanup();
 });
+
+test("an enemy's Titan and a wave's boss get the red card, with the powers to watch for", () => {
+  const foe = arrivalSpec(titans[0], { foe: 'Ishtar' });
+  assert.equal(foe.kind, 'foe');
+  assert.equal(foe.kicker, "Ishtar's Titan has risen");
+  assert.ok(foe.powers.length);
+  const monster = Object.values(UNITS).find((u) => u.class === 'creature');
+  const boss = arrivalSpec(monster, { wave: 7 });
+  assert.equal(boss.kind, 'foe');
+  assert.match(boss.kicker, /^Wave 7/);
+  assert.equal(boss.name, monster.name);
+  assert.equal(arrivalSpec(monster, { wave: 9, count: 7 }).kicker, 'Wave 9 · It leads 6 monsters');
+  assert.equal(arrivalSpec(monster), null, 'a monster outside a wave gets no card');
+});

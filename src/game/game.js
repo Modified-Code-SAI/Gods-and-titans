@@ -1261,7 +1261,11 @@ export class Game {
       case 'spawn': {
         if (ev.o !== me) {
           const t = UNITS[ev.t];
-          if (t && t.class === 'titan') this.worldSoundAt(ev.id, 'summon_titan');
+          if (t && t.class === 'titan') {
+            this.worldSoundAt(ev.id, 'summon_titan');
+            // In the Trial of the Titans the wave's own card names the boss.
+            if (ev.o >= 0 && !vs.isAlly(ev.o) && !(vs.setup && vs.setup.survival)) hud.showArrival(t, { foe: this.playerName(ev.o) });
+          }
           break;
         }
         const t = UNITS[ev.t];
@@ -1322,7 +1326,7 @@ export class Game {
         const from = edgeName(vs.width, vs.height, at.x, at.y);
         const boss = ev.boss ? UNITS[ev.boss] : null;
         if (boss) {
-          hud.showBanner(ev.count > 1 ? `Wave ${ev.n}: ${boss.name} leads ${ev.count - 1} monsters!` : `Wave ${ev.n}: ${boss.name} comes!`, 'titan');
+          if (!hud.showArrival(boss, { wave: ev.n, count: ev.count })) hud.showBanner(ev.count > 1 ? `Wave ${ev.n}: ${boss.name} leads ${ev.count - 1} monsters!` : `Wave ${ev.n}: ${boss.name} comes!`, 'titan');
           sfx.play('summon_titan', { volume: 0.8 });
         } else {
           hud.showBanner(`Wave ${ev.n}: ${ev.count} monsters!`, 'danger');
