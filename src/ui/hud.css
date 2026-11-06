@@ -2580,3 +2580,13 @@
 }
 @keyframes hud-res-short-v { 0%, 45% { color: #ff7a62; } }
 @media (prefers-reduced-motion: reduce) { .hud-res.is-short { animation: none; border-color: rgba(255, 96, 72, 0.95); } }
+
+/* A short window (a phone held sideways, 390 px tall): the HUD's floor of 11 px made the bottom console take two
+   fifths of the screen. Below 520 px tall the base and the smallest text go down to 8.5 px and 8 px instead, so the
+   console keeps to about a quarter of the height; the Interface size setting still scales it. */
+@media (max-height: 520px) {
+  #hud-root.hud {
+    --mw-min-text: 8px;
+    font-size: calc(clamp(8.5px, min(1.48vh, 0.84vw), 28px) * var(--hud-scale, 1));
+  }
+}
