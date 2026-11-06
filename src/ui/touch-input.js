@@ -7,16 +7,20 @@
 //   drag one finger    → pans the camera (the middle-button drag)
 //   pinch, two fingers → zooms, and the two fingers' midpoint pans
 //   hold, then drag    → a selection box (the left-button drag)
+//   god power, two taps → the first aims its ring, the second (on the ring) casts it
 //
 // Buttons and panels of the HUD are ordinary DOM and take taps as clicks, so only the canvas is handled here.
 //
 //   tapButton(input, x, y)   → 0 (left) | 2 (right)   which button a tap at window point x, y stands for (pure)
 //   TouchInput               the listeners on the canvas (attach / dispose)
+import { POWERS } from '../data/powers.js';
 
 /** px a finger may wander before a press stops being a tap. */
 export const TAP_SLOP = 10;
 /** ms a finger rests before a drag draws a selection box instead of panning. */
 export const HOLD_MS = 420;
+/** px a second tap may land from the first and still cast an aimed god power. */
+export const AIM_SLOP = 48;
 
 /** Which mouse button a tap stands for: an order (2) with own units selected, unless it lands on an own unit. */
 export function tapButton(input, x, y) {
@@ -43,6 +47,7 @@ export class TouchInput {
     this.pinch = null; // two fingers: { d, mx, my }
     this.holdTimer = 0;
     this.holdMs = HOLD_MS;
+    this.aim = null; // { x, y, mode }: where a god power's ring was put by the first of its two taps
     this.offs = [];
     const on = (type, fn) => {
       this.canvas.addEventListener(type, fn, { passive: false });
@@ -143,13 +148,54 @@ export class TouchInput {
         input.box.hidden = true;
       } else input.onMouseUp(fake(input, 0, ex, ey));
     } else if (!cancelled && !this.busy()) {
+      if (this.aimPower(p.x, p.y)) return;
       const button = tapButton(input, p.x, p.y);
       input.onMouseDown(fake(input, button, p.x, p.y));
       if (button === 0) input.onMouseUp(fake(input, 0, p.x, p.y));
     }
-    // A finger has left the glass: no edge scroll, hover tag or hover ring stays behind where it last touched.
+    // A finger has left the glass: no edge scroll, hover tag or hover ring stays behind where it last touched;
+    // a god power's ring, aimed before a pan, stays where it was put.
     input.mouseInWindow = false;
-    input.overCanvas = false;
+    const a = this.aim;
+    if (a && a.mode === input.mode) {
+      input.mx = a.x;
+      input.my = a.y;
+      input.overCanvas = true;
+    } else input.overCanvas = false;
+  }
+
+  /**
+   * A god power aimed at the ground is cast in two taps, as it is used once: the first puts its ring where the
+   * finger was (the ring a mouse shows under the pointer), the second, on the ring, casts it; a tap elsewhere
+   * moves the ring. True when this tap only aimed.
+   */
+  aimPower(x, y) {
+    const input = this.input;
+    const m = input.mode;
+    const pw = m.kind === 'target' && m.order === 'power' && Object.hasOwn(POWERS, m.power) ? POWERS[m.power] : null;
+    if (!pw || pw.target !== 'point') {
+      this.aim = null;
+      return false;
+    }
+    const a = this.aim;
+    if (a && a.mode === m && Math.hypot(x - a.x, y - a.y) <= AIM_SLOP) {
+      this.aim = null;
+      input.mx = a.x;
+      input.my = a.y;
+      input.onMouseDown(fake(input, 0, a.x, a.y));
+      input.onMouseUp(fake(input, 0, a.x, a.y));
+      input.mouseInWindow = false;
+      input.overCanvas = false;
+      return true;
+    }
+    if (!a && input.hud && typeof input.hud.message === 'function') input.hud.message('Tap the ring again to call down the power, or tap elsewhere to move it.');
+    this.aim = { x, y, mode: m };
+    // the pointer rests where the finger aimed, so the power ring is drawn there (no edge scroll from it)
+    input.mx = x;
+    input.my = y;
+    input.overCanvas = true;
+    input.mouseInWindow = false;
+    return true;
   }
 
   dispose() {
