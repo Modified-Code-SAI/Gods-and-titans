@@ -34,6 +34,9 @@ the authoritative simulation.
   chunk, the icons); sounds and narration are kept as first played. So an installed game starts, and games
   against the computer, the campaign and replays play, without a network; online matches still need one.
   Cross-origin requests (PeerJS) and range requests are not touched or kept. Bump `CACHE` to drop old copies.
+  With no network (`navigator.onLine` false, `isOffline` in `src/ui/menu-model.js`) the title's Host and Join
+  buttons read "Needs a connection: you are offline" (and change back on the `online` event), and Host or a Join
+  attempt says `OFFLINE_NOTE` at once instead of waiting on the signalling server.
 - Three.js **0.186.1** vendored at `vendor/three/three.module.js` (+ `three.core.js`).
   Import as `import * as THREE from 'three'`; addons as
   `import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'`

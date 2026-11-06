@@ -58,6 +58,15 @@ export function difficultyNote(state, { online, suggested }) {
 const NET_PARAMS = ['transport', 'net', 'peerHost', 'peerPort', 'peerPath', 'peerSecure', 'turn', 'turnUser', 'turnPass', 'relay'];
 
 /** Clean a typed or pasted room code (also accepts an invite link). '' when nothing usable. */
+/** With no network (DESIGN 11 "Offline"): what the online buttons say instead of trying for a minute. */
+export const OFFLINE_NOTE = 'You are offline. Online games need a connection; games against the computer, the campaign and replays still play.';
+export const OFFLINE_SUB = 'Needs a connection: you are offline';
+
+/** The browser says there is no network at all (navigator.onLine false). Unknown counts as online. */
+export function isOffline(nav = globalThis.navigator) {
+  return !!nav && nav.onLine === false;
+}
+
 export function cleanRoomCode(input) {
   let s = String(input ?? '').trim();
   const m = s.match(/[?&#]join=([^&#\s]+)/i);
