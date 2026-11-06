@@ -1299,6 +1299,11 @@ game leaves one base free as a rich guarded expansion. No river center feature.
   `MARK_SEND_RATE` (1/s, burst 4, in `Game.sendMark`), a little under the host's bucket so a mark the sender saw
   go up is never one the host silently dropped; past it the HUD says "Slow down: too many pings." A client's mark
   that reaches the host before the match has started is ignored.
+- **Quick chat** (the numbered taunts of AoE II): nine set lines (`QUICK_LINES` in `src/data/quick-chat.js`: Yes, No,
+  Attack now, Help, I need gold, I need wood, Wait for me, Ready, Good game). A line that is a lone number 1 to 9 is sent
+  as that line (`expandQuick`, after the "/t " prefix is taken off), and the chat box shows the nine as small buttons
+  under the input (`Hud.chatQuick`) for a touch screen or a hurried hand; a button goes where the switch points
+  (Shift+click: the allies) and closes the box. The words themselves go over the wire, so nothing new is sent.
 - **Team chat** (allies only, as in AoE II / IV and SC2): Enter opens the chat box on everyone; its "To all:" label
   is a switch (`Hud.chatTo`: a click or Tab flips it to "To allies:", the box taking the allies colour) and Shift+Enter in the game
   opens it on the allies; in the box Shift+Enter sends to the allies whatever the switch says. A line that starts

@@ -43,6 +43,7 @@ import { GroupBar } from './hud-groups.js';
 import { TeamMarks } from '../game/team-marks.js';
 import { getSettings, saveSettings, onSettingsChange } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
+import { QUICK_LINES, QUICK_LABELS, expandQuick } from '../data/quick-chat.js';
 import { POP_MAX, PEACE_NAME, SURVIVAL_NAME, SURVIVAL_BOSS_EVERY } from '../config.js';
 import { displayColor, relationColor, onTeamPaletteChange } from '../team-colors.js';
 
@@ -248,7 +249,23 @@ export class Hud {
     this.chatTo = el('button', 'hud-chat-to', 'To all:');
     this.chatTo.type = 'button';
     this.chatTo.addEventListener('click', () => this.setChatAllies(!this.chatAllies));
-    this.chatBox = el('div', 'hud-chat hud-panel', this.chatTo, this.chatInput);
+    // Quick chat (DESIGN 7): the nine set lines as buttons under the box; typing the number alone sends one too.
+    this.chatQuick = el('div', 'hud-chat-quick');
+    QUICK_LINES.forEach((line, i) => {
+      const b = el('button', 'hud-chat-quick-btn', el('b', null, String(i + 1)), ' ', QUICK_LABELS[i]);
+      b.type = 'button';
+      b.tabIndex = -1;
+      b.title = `Send "${line}" (or type ${i + 1} and press Enter)`;
+      // keep the focus in the box, so its blur does not close the chat before the click lands
+      for (const t of ['pointerdown', 'mousedown']) b.addEventListener(t, (e) => e.preventDefault());
+      b.addEventListener('click', (e) => {
+        this.chatInput.value = line; // to whoever the switch points at (Shift+click: the allies)
+        this.sendChatLine(game, { allies: e.shiftKey || this.chatAllies });
+        this.closeChat();
+      });
+      this.chatQuick.append(b);
+    });
+    this.chatBox = el('div', 'hud-chat hud-panel', this.chatTo, this.chatInput, this.chatQuick);
     this.chatBox.hidden = true;
     // The chat history (DESIGN 9, "The message feed"): the last lines, newest at the bottom, above the box
     // while it is open, so a line the alerts pushed out of the feed can still be read.
@@ -1088,6 +1105,9 @@ export class Hud {
     this.chatInput.value = '';
     this.setChatAllies(allies);
     this.chatInput.focus({ preventScroll: true });
+    // On a narrow screen the quick chat buttons wrap to more lines: keep the history just above the box.
+    const h = this.chatBox.offsetHeight;
+    if (h > 0 && this.chatLog.style) this.chatLog.style.bottom = `calc(var(--hb) + 0.55em + ${h + 8}px)`;
   }
 
   /** Point the chat box's switch at the allies (true) or everyone; without teammates it stays on everyone. */
@@ -1111,8 +1131,9 @@ export class Hud {
 
   /** Send what the box holds, to the allies or everyone (chatTarget: a "/t " or "/all " prefix wins). */
   sendChatLine(game, { allies = this.chatAllies } = {}) {
-    const { text, team, refused } = chatTarget(this.chatInput.value, { allies, canAllies: this.canChatAllies() });
+    const { text: typed, team, refused } = chatTarget(this.chatInput.value, { allies, canAllies: this.canChatAllies() });
     if (refused) return this.message('You have no allies in this game: the line was not sent.', 'system');
+    const text = expandQuick(typed);
     if (!text) return;
     if (team) game.sendChat(text, { team: true });
     else game.sendChat(text);
