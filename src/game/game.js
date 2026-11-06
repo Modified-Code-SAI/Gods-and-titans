@@ -1283,7 +1283,7 @@ export class Game {
         break;
       case 'tierUp':
         if (ev.player === me) {
-          hud.showBanner(`Your ${tierName(ev.tier - 1)} has grown into a ${tierName(ev.tier)}!`, 'good');
+          if (!hud.showAge(ev.tier)) hud.showBanner(`Your ${tierName(ev.tier - 1)} has grown into a ${tierName(ev.tier)}!`, 'good');
           sfx.play('tier_up');
         }
         break;
