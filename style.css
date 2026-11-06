@@ -1499,3 +1499,16 @@ kbd {
   opacity: 0;
   pointer-events: none;
 }
+
+/* The live 3D title backdrop (src/ui/menu-live.js, DESIGN 9 "Live title backdrop"): fades in over the painted
+   sky once the village is drawn; a shade keeps the menu's text readable over the bright golden hour. */
+.mw-live { position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s ease; pointer-events: none; }
+.mw-live.is-on { opacity: 1; }
+.mw-live-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.mw-live-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 42%, rgba(6, 5, 10, 0.62) 0%, rgba(6, 5, 10, 0.38) 55%, rgba(6, 5, 10, 0.12) 100%),
+    linear-gradient(180deg, rgba(6, 6, 14, 0.35) 0%, transparent 30%, transparent 70%, rgba(4, 3, 6, 0.6) 100%);
+}

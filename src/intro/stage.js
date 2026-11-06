@@ -60,9 +60,11 @@ export class IntroStage {
   /**
    * @param {object} [o]
    * @param {number} [o.density] 1 is the whole cast; less (low quality) thins the armies and the crowd
+   * @param {boolean} [o.peaceful] only the village at work: no armies and no cues (the title screen's live backdrop)
    */
-  constructor({ density = 1 } = {}) {
+  constructor({ density = 1, peaceful = false } = {}) {
     this.density = Math.max(0.3, Math.min(1, density));
+    this.peaceful = !!peaceful;
     this.setup = stageSetup();
     const mapData = generateMap(mapOptions(this.setup));
     mapData.camps = []; // no neutral creatures: the cast is the film's own
@@ -190,6 +192,7 @@ export class IntroStage {
     this.anchors.lineup = { x: this.anchors.field.x + 16, y: this.anchors.field.y - 12 };
 
     this.populateVillage(tc, mine, placed, [site, site2].filter(Boolean));
+    if (this.peaceful) return;
     this.populateArmies();
     this.scheduleCues();
   }

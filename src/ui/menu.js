@@ -19,6 +19,7 @@ import { sfx } from '../audio/sfx.js';
 import { playTitleMusic, previewMusic, PREVIEW_MOODS } from '../audio/audio.js';
 import { h, setChildren, copyText } from './menu-dom.js';
 import { createMenuBackdrop } from './menu-fx.js';
+import { createLiveBackdrop, liveWanted } from './menu-live.js';
 import { openPantheonPicker, pantheonLabel, pantheonEmblem, summaryFor, unitRow, blessingRow, styleLine } from './menu-pantheons.js';
 import { renderHowToContent } from './menu-howto.js';
 import { renderCareerContent } from './menu-career.js';
@@ -121,6 +122,18 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
   const toasts = h('div.mw-toasts', { role: 'status', 'aria-live': 'polite' });
   root.append(sky, h('div.mw-vignette', { 'aria-hidden': 'true' }), screenLayer, toasts);
   const backdrop = createMenuBackdrop(sky);
+  // The village live in 3D over the painted sky (menu-live.js), where the player and the machine allow it.
+  const liveOk = liveWanted({ search: typeof location !== 'undefined' ? location.search : '', webdriver: typeof navigator !== 'undefined' && !!navigator.webdriver });
+  const live = createLiveBackdrop(sky, { quality: () => getSettings().quality, enabled: () => liveOk && getSettings().liveMenu !== false,
+    // behind the live picture the painted sky need not animate; it comes back when the live one goes (too slow, turned off)
+    onLive: (on) => (on ? backdrop.stop() : !root.hidden && backdrop.start()) });
+  onSettingsChange((st, changed) => {
+    if (root.hidden) return;
+    if (changed.includes('quality') && live.running) {
+      live.stop();
+      live.start();
+    } else if (changed.includes('liveMenu')) live.refresh();
+  });
 
   let current = null; // { name, cleanup, onEscape }
   let launchedLobby = null; // lobby of the running match; closed when the menu returns
@@ -197,6 +210,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
     if (name !== 'settings') playTitleMusic(); // the menu's own score (a no-op while it already plays; Settings may be auditioning another)
     // the full sky show on the title; a quieter one behind panels full of controls
     backdrop.setMode(name === 'title' ? 'full' : 'calm');
+    live.setMode(name === 'title' ? 'full' : 'calm');
     if (screen.focus) setTimeout(() => screen.focus.focus && screen.focus.focus({ preventScroll: true }), 60);
   }
 
@@ -1562,6 +1576,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         h('div.mw-field', h('span.mw-label', 'Graphics quality'), h('div.mw-segmented', qBtns), qDesc),
         h('div.mw-field', h('span.mw-label', 'Time of day'), h('div.mw-segmented', tBtns), tDesc),
         h('div.mw-field', h('span.mw-label', 'Weather'), toggle('weather', 'Weather', 'Passing showers, snow in the Highlands and mist over the woods, the same for every player. Off keeps the sky clear.')),
+        h('div.mw-field', h('span.mw-label', 'Live title screen'), toggle('liveMenu', 'Live title screen', 'The village at work in 3D behind the menus. Off shows the painted night sky, which is lighter on a slow machine.')),
         h('div.mw-field', h('span.mw-label', 'Game speed'), ...segField('gameSpeed', GAME_SPEED_OPTIONS)),
         h('div.mw-field', h('span.mw-label', 'Interface size'), ...segField('uiScale', UI_SCALE_OPTIONS)),
         h('div.mw-field', h('span.mw-label', 'Team colours'), ...segField('teamColors', TEAM_COLOR_OPTIONS)),
@@ -1607,12 +1622,14 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         launchedLobby = null;
       }
       root.hidden = false;
-      backdrop.start();
+      if (!live.shown) backdrop.start();
+      live.start();
       go(screen, opts);
     },
     hide() {
       root.hidden = true;
       backdrop.stop();
+      live.stop();
       root.querySelectorAll('.mw-overlay, .mw-popover').forEach((el) => el.remove());
     },
     get screen() {
@@ -1624,6 +1641,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
   const joinCode = params.get('join');
   root.hidden = false;
   backdrop.start();
+  live.start();
   if (joinCode) go('join', { code: joinCode });
   else go('title');
   return menu;

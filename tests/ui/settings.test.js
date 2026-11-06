@@ -68,7 +68,7 @@ test('clamps volume and limits the name to 20 characters', () => {
 test('loads stored settings and ignores corrupt or hostile values', () => {
   globalThis.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ name: 'Athena', volume: 0.3, quality: 'high', edgeScroll: false, showAllBars: true, extra: 1 }));
   _resetSettingsForTests();
-  assert.deepEqual({ ...getSettings() }, { name: 'Athena', volume: 0.3, quality: 'high', timeOfDay: 'cycle', weather: true, edgeScroll: false, showAllBars: true, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: {} });
+  assert.deepEqual({ ...getSettings() }, { name: 'Athena', volume: 0.3, quality: 'high', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: false, showAllBars: true, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: {} });
   globalThis.localStorage.setItem(SETTINGS_KEY, '{not json');
   _resetSettingsForTests();
   assert.equal(getSettings().volume, 0.7);
