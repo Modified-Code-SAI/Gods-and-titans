@@ -1512,6 +1512,22 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       },
     });
     volume.style.setProperty('--fill', `${volume.value}%`);
+    // The spoken lines: their own slider, on top of the sound effects (src/audio/sfx.js puts them on a bus of their own).
+    const voiceOut = h('output.mw-range-value', `${Math.round(s.voiceVolume * 100)}%`);
+    const voiceRange = h('input.mw-range', {
+      type: 'range',
+      min: '0',
+      max: '100',
+      step: '1',
+      value: String(Math.round(s.voiceVolume * 100)),
+      'aria-label': 'Voices volume',
+      oninput: () => {
+        saveSettings({ voiceVolume: Number(voiceRange.value) / 100 });
+        voiceOut.textContent = `${voiceRange.value}%`;
+        voiceRange.style.setProperty('--fill', `${voiceRange.value}%`);
+      },
+    });
+    voiceRange.style.setProperty('--fill', `${voiceRange.value}%`);
     const testSounds = ['horn', 'heal', 'lightning', 'summon_god', 'building_complete'];
     let testIdx = 0;
     const testBtn = h('button.mw-btn.mw-btn--small.mw-silent', { type: 'button', onclick: () => {
@@ -1680,6 +1696,9 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       ['sound', 'Audio', [
           h('div.mw-field', h('span.mw-label', 'Sound effects'),
             h('div.mw-range-row', volume, volValue, testBtn)),
+          h('div.mw-field', h('span.mw-label', 'Voices'),
+            h('div.mw-range-row', voiceRange, voiceOut),
+            h('span.mw-field-note', 'The narrator, the campaign storyteller and the taunts of the computer players. The sound effects volume turns them down too.')),
           h('div.mw-field', h('span.mw-label', 'Music'),
             h('div.mw-range-row', musicRange, musicOut, muteBtn),
             preview,

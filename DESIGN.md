@@ -2645,7 +2645,11 @@ per-frame budget, so a revealed army appears over a few frames.
   intensity `1 - exp(-heat / 55)`. In the Decade of Peace it stays under 0.3 (creature fights only) until the horn.
   **Settings.** `musicVolume` (0..1, default 0.5) and `musicMuted`, apart from the sound effects' `volume`. Settings →
   Music has the slider, a Mute button and a Listen row that plays any theme as Calm, Tense or Battle; the F10 menu has
-  "Sound effects" and "Music" rows. Moving the music slider lifts a mute.
+  "Sound effects" and "Music" rows. Moving the music slider lifts a mute. The spoken lines (the film's narrator, the
+  campaign's storyteller, the computer players' taunts) have their own `voiceVolume` (0..1, default 1): `sfx.js` gives
+  them a voice bus in front of the master, with its own send to the hall, so the "Voices" slider (Settings → Audio and
+  the F10 menu) turns them down and the sound effects slider still turns down both; the browser's voice, which has no
+  bus, gets the product (`voiceLevel` in `settings.js`).
   **Measured, not heard.** Nobody has listened to this score yet; what was measured, with the offline renders of
   `tools/music-render.mjs` (WAV files for ffmpeg's `ebur128`) and a live headless Chromium (the DevTools WebAudio
   domain's render capacity, the audio thread's share of its time budget): at the default volume every theme sits

@@ -11,7 +11,7 @@ import { tauntClip, tauntClips } from '../ai/taunt-voices.js';
 import { RecordedSpeech } from '../intro/voiceover.js';
 import { sfx } from '../audio/sfx.js';
 import { music } from '../audio/music.js';
-import { getSettings } from '../settings.js';
+import { getSettings, voiceLevel } from '../settings.js';
 
 export const TAUNT_LEAD = 0.55; // seconds after the card: the taunt's two drum blows, then the words over its brass
 const WORDS_PER_SECOND = 2.6; // the voices' pace, for how long the music stays down
@@ -33,7 +33,7 @@ export class TauntVoice {
 
   get enabled() {
     const s = this.settings();
-    return s.aiVoices !== false && s.aiChat !== false && s.volume > 0;
+    return s.aiVoices !== false && s.aiChat !== false && voiceLevel(s) > 0;
   }
 
   speechFor(pantheon) {

@@ -249,6 +249,18 @@ export class Overlays {
       saveSettings({ volume: Number(vol.value) / 100 });
     });
     vol.addEventListener('change', () => sfx.play('select'));
+    // The spoken lines (the campaign's storyteller, the computer players' taunts): their own slider, on top of the volume.
+    const voiceVol = el('input', 'hud-range');
+    voiceVol.type = 'range';
+    voiceVol.min = '0';
+    voiceVol.max = '100';
+    voiceVol.value = String(Math.round(s.voiceVolume * 100));
+    voiceVol.setAttribute('aria-label', 'Voices volume');
+    const voiceText = el('b', 'hud-vol-text', `${voiceVol.value}%`);
+    voiceVol.addEventListener('input', () => {
+      voiceText.textContent = `${voiceVol.value}%`;
+      saveSettings({ voiceVolume: Number(voiceVol.value) / 100 });
+    });
     // The music: its own mute and volume (the sound effects keep theirs). Moving the slider lifts a mute.
     const musicOn = toggleRow('Music', 'The score for your pantheon: calm while you build, louder in a fight.', !s.musicMuted, (v) => saveSettings({ musicMuted: !v }));
     const musicVol = el('input', 'hud-range');
@@ -334,7 +346,7 @@ export class Overlays {
     const pages = optionPages([
       ['play', 'Gameplay', [speed && speed.row, tips.row, hints.row, aiChat.row, alerts.row, tabAlerts.row, scroll.row, edge.row, bars.row]],
       ['look', 'Graphics', [quality.row, sky.row, weather.row, shake.row, uiScale.row, teamColors.row]],
-      ['sound', 'Audio', [el('label', 'hud-vol', el('span', null, 'Sound effects'), vol, volText), musicOn.row, el('label', 'hud-vol', el('span', null, 'Music volume'), musicVol, musicText)]],
+      ['sound', 'Audio', [el('label', 'hud-vol', el('span', null, 'Sound effects'), vol, volText), el('label', 'hud-vol', el('span', null, 'Voices'), voiceVol, voiceText), musicOn.row, el('label', 'hud-vol', el('span', null, 'Music volume'), musicVol, musicText)]],
       ['keys', 'Keys', [cardKeys.row, el('div', 'hud-keys-btns', controlsBtn, keysBtn)]],
     ]);
     const node = this.panel(replay ? 'Replay Menu' : 'Game Menu', paused ? (replay ? 'The replay is paused.' : 'The game is paused.') : `Game time ${formatClock(vs.time)}`,

@@ -243,3 +243,27 @@ test('F10 menu: the switch mutes the music, the slider sets its volume and lifts
   s.toggle.fire('change');
   assert.equal(getSettings().musicMuted, false);
 });
+
+// ---------------------------------------------------------------- the spoken lines' own volume
+
+test('Voices: a slider of its own in Settings and in the F10 menu, saved apart from the sound effects', () => {
+  saveSettings({ voiceVolume: 0.6 });
+  showMenu('settings');
+  const r = field('Voices').find('mw-range');
+  assert.equal(r.attrs['aria-label'], 'Voices volume');
+  assert.equal(r.attrs.value, '60');
+  r.value = '25';
+  r.fire('input');
+  assert.equal(getSettings().voiceVolume, 0.25);
+  assert.equal(field('Voices').find('mw-range-value').textContent, '25%');
+  assert.equal(getSettings().volume, 0.7, 'the sound effects are untouched');
+  const f = f10Menu();
+  const row = f.root.findAll('hud-vol').find((x) => x.textContent.startsWith('Voices'));
+  const slider = row.all('input')[0];
+  assert.equal(slider.value, '25');
+  slider.value = '90';
+  slider.fire('input');
+  assert.equal(getSettings().voiceVolume, 0.9);
+  assert.equal(row.find('hud-vol-text').textContent, '90%');
+  saveSettings({ voiceVolume: 1 });
+});

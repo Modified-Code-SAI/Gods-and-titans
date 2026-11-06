@@ -69,6 +69,22 @@ function fakeAudio({ running = true } = {}) {
   return { audio, ctx, started, master, reverb };
 }
 
+test('with a voice bus, a line goes into it (the Voices slider) and the bus sends to the hall, not the line', async () => {
+  const { audio, started, master, reverb } = fakeAudio();
+  const voice = { name: 'voice' };
+  const voiceReverb = { name: 'voice send', gain: { value: 0 } };
+  audio.shared = { ...audio.shared, voice, voiceReverb };
+  const speech = new RecordedSpeech({ audio, fetchClip: async (f) => f, fallback: fakeFallback().speech, later: timers().later });
+  await speech.loaded;
+  const u = new speech.Utterance(CAPTIONS[0].text);
+  speech.synth.speak(u);
+  assert.equal(started.length, 1);
+  const to = started[0].connections.map((g) => g.to);
+  assert.ok(to.includes(voice), 'into the voice bus');
+  assert.ok(!to.includes(master) && !to.includes(reverb), 'not past it');
+  assert.ok(voiceReverb.gain.value > 0, 'the bus sends to the hall');
+});
+
 function fakeFallback() {
   const said = [];
   class U {

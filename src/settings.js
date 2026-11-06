@@ -18,6 +18,7 @@ const ALERT_LEVELS = ['all', 'important', 'off'];
 const SHAKES = ['full', 'reduced', 'off'];
 // How fast the keys, the screen edge and a stick move the camera (src/ui/speed-options.js SCROLL_SCALE).
 const SCROLLS = ['slow', 'normal', 'fast', 'faster'];
+const unit = (v) => typeof v === 'number' && Number.isFinite(v);
 // What a tab in the background does when the game needs the player (src/ui/tab-attention.js):
 // nothing, flash the tab's title, or also raise a desktop notification (needs the browser's permission).
 const TAB_ALERTS = ['off', 'title', 'notify'];
@@ -56,7 +57,8 @@ function cleanName(name) {
  * `hints` whether a gameplay tip appears now and then, `tabAlerts` what a background tab does
  * when the game needs the player ('off', 'title', 'notify'). The intro film plays on every launch (src/ui/intro.js),
  * with no setting to turn it off; `narration` has a voice read its captions aloud
- * (src/intro/narrator.js). `aiChat` shows the computer players' in-character chat lines (src/ai/voice.js), and `aiVoices` has them say those lines aloud (src/game/taunt-voice.js). `volume` is the sound effects; `musicVolume` (0..1) and `musicMuted`
+ * (src/intro/narrator.js). `aiChat` shows the computer players' in-character chat lines (src/ai/voice.js), and `aiVoices` has them say those lines aloud (src/game/taunt-voice.js). `volume` is the sound effects, and `voiceVolume` (0..1) the spoken lines on top of it (the narrator, the campaign's voice,
+ * the computer players' taunts: src/audio/sfx.js has them on a bus of their own); `musicVolume` (0..1) and `musicMuted`
  * are the background music's own (src/audio/music.js). `gameSpeed` is the pace of a match against the
  * computer (online games always run at normal speed) and `uiScale` the size of the in-game interface.
  * `screenShake` is how far blasts shake the camera ('full', 'reduced', 'off'; 'reduced' by default when the system asks
@@ -65,8 +67,14 @@ function cleanName(name) {
  * `cardKeys` is the command card's key layout ('classic' letters or 'grid' by position) and `keyBindings`
  * the keys changed from their defaults (src/ui/key-bindings.js), kept per device like the rest.
  */
+/** How loud a spoken line is, 0..1: the volume times the Voices slider (for the browser's voice, which has no bus). */
+export function voiceLevel(s) {
+  const v = unit(s && s.voiceVolume) ? s.voiceVolume : 1;
+  return Math.max(0, (unit(s && s.volume) ? s.volume : 0) * v);
+}
+
 export function defaultSettings() {
-  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: reducedMotion() ? 'reduced' : 'full', scrollSpeed: 'normal', cardKeys: 'classic', keyBindings: Object.freeze({}) };
+  return { name: randomName(), volume: 0.7, voiceVolume: 1, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: reducedMotion() ? 'reduced' : 'full', scrollSpeed: 'normal', cardKeys: 'classic', keyBindings: Object.freeze({}) };
 }
 
 /** Merge a raw object onto base, keeping only valid values. */
@@ -74,7 +82,8 @@ function sanitize(raw, base) {
   const out = { ...base };
   if (!raw || typeof raw !== 'object') return out;
   if (typeof raw.name === 'string' && cleanName(raw.name)) out.name = cleanName(raw.name);
-  if (typeof raw.volume === 'number' && Number.isFinite(raw.volume)) out.volume = Math.min(1, Math.max(0, raw.volume));
+  if (unit(raw.volume)) out.volume = Math.min(1, Math.max(0, raw.volume));
+  if (unit(raw.voiceVolume)) out.voiceVolume = Math.min(1, Math.max(0, raw.voiceVolume));
   if (QUALITIES.includes(raw.quality)) out.quality = raw.quality;
   if (TIMES_OF_DAY.includes(raw.timeOfDay)) out.timeOfDay = raw.timeOfDay;
   if (typeof raw.weather === 'boolean') out.weather = raw.weather;

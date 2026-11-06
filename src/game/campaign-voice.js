@@ -9,7 +9,7 @@
 import { clipName } from '../data/campaign.js';
 import { recordedSpeech } from '../intro/voiceover.js';
 import { music } from '../audio/music.js';
-import { getSettings } from '../settings.js';
+import { getSettings, voiceLevel } from '../settings.js';
 
 const WORDS_PER_SECOND = 2.4; // the narrator's pace at the render's speed, for how long the music stays down
 const DUCK = 0.45;
@@ -44,7 +44,7 @@ export class CampaignVoice {
 
   get enabled() {
     const s = this.settings();
-    return !!(this.speech && s.narration && s.volume > 0);
+    return !!(this.speech && s.narration && voiceLevel(s) > 0);
   }
 
   /** Say a line (nothing when the narration is off, or nothing can speak). */
@@ -52,7 +52,7 @@ export class CampaignVoice {
     if (!text || !this.enabled) return false;
     try {
       const u = new this.speech.Utterance(text);
-      u.volume = this.settings().volume; // (the browser's voice, for a line with no clip; a clip follows the master volume)
+      u.volume = voiceLevel(this.settings()); // (the browser's voice, for a line with no clip; a clip goes through the voice bus)
       u.onstart = () => {
         if (this.music && typeof this.music.duck === 'function') this.music.duck(DUCK, text.split(/\s+/).length / WORDS_PER_SECOND);
       };
