@@ -297,10 +297,15 @@ export class Overlays {
     // ... and a saved game loaded in its place, like the title screen's Load Game.
     if (savable && typeof game.canLoad === 'function' && game.canLoad()) buttons.push(btn('Load Game', '', () => this.openLoads()));
     const replay = !!game.replay;
-    // A campaign mission starts again from its beginning (the objective panel's foot points here).
-    if (game.mission && !over && !replay && this.canRematch()) {
-      buttons.push(btn('Restart Mission', '', () => this.confirm(
-        'Restart the mission?', 'The mission starts again from the beginning.', 'Restart',
+    // A campaign mission starts again from its beginning (the objective panel's foot points here), and a match against
+    // the computer with the same lobby (the same players and settings, a fresh seed: game/rematch.js) (online games rematch only once over).
+    if (!game.online && !over && !replay && this.canRematch()) {
+      const counts = !game.mission && game.viewState && (game.viewState.time || 0) >= 60 && !defeated;
+      buttons.push(btn(game.mission ? 'Restart Mission' : 'Restart Match', '', () => this.confirm(
+        game.mission ? 'Restart the mission?' : 'Restart the match?',
+        game.mission ? 'The mission starts again from the beginning.'
+          : `The match starts again with the same players and settings, on a fresh map of the same kind.${counts ? ' This one counts as a loss in your career.' : ''}`,
+        'Restart',
         () => game.rematch(),
         () => this.openMenu(),
       )));
