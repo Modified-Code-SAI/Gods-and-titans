@@ -2475,6 +2475,8 @@ per-frame budget, so a revealed army appears over a few frames.
   A train or summon button's tooltip carries the unit's base stats under its cost (`unitStats`, `stats` on the
   button): "HP · melee damage, or ranged damage and range · armor · speed", a line on what it is good or bad against
   (flying, hits flyers or not, buildings only, ×n damage vs buildings, splash) and one line per passive.
+  In the cost row, each part the player cannot pay right now (gold, wood, faith, or population room) is red and
+  underlined (`shortCosts` in hud-card.js), redrawn as the purse changes, so the tooltip says what to gather.
   Wall segments: U upgrade to stone (every idle segment of the active subgroup, as many as the purse
   allows), D dismantle finished segments, C cancel unfinished segments or upgrades.
   Houses: U combine into a Manor (5.3), C cancel the combining. The button reads the same rule as the

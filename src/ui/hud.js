@@ -507,7 +507,7 @@ export class Hud {
       this.cardSig = sig;
       this.lastCard = now;
       this.card = withCardKeys(getCommandCard(game.selection.forCard(), vs, mode), cardKeysOf(getSettings()));
-      this.cardView.render(this.card);
+      this.cardView.render(this.card, vs.me);
     }
     if (this.tutorial) {
       this.tutorial.update(now);
@@ -634,7 +634,7 @@ export class Hud {
       this.cardSig = sig;
       this.lastCard = performance.now();
       this.card = withCardKeys(getCommandCard(this.game.selection.forCard(), this.vs, mode), cardKeysOf(getSettings()));
-      this.cardView.render(this.card);
+      this.cardView.render(this.card, this.vs && this.vs.me);
     }
     return this.card;
   }

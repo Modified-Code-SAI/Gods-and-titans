@@ -64,9 +64,10 @@ export class CardView {
     }
   }
 
-  /** Show a new card (diffed per slot). */
-  render(card) {
+  /** Show a new card (diffed per slot); `me` (the player's snapshot) marks the costs they cannot pay in the tooltip. */
+  render(card, me = null) {
     this.card = card;
+    this.me = me;
     for (let i = 0; i < 12; i++) {
       const b = card[i];
       const s = this.slots[i];
@@ -121,7 +122,8 @@ export class CardView {
 
   renderTip() {
     const b = this.hoverSlot >= 0 ? this.card[this.hoverSlot] : null;
-    const sig = b ? `${shape(b)}|${b.title}|${b.reason}|${b.description}|${JSON.stringify(b.cost)}` : '';
+    const short = b ? shortCosts(b.cost, this.me) : null;
+    const sig = b ? `${shape(b)}|${b.title}|${b.reason}|${b.description}|${JSON.stringify(b.cost)}|${short.join()}` : '';
     if (sig === this.tipSig) return;
     this.tipSig = sig;
     const tip = this.tip;
@@ -136,13 +138,13 @@ export class CardView {
     const c = b.cost;
     if (c && (c.gold || c.wood || c.faith || c.pop)) {
       const row = el('div', 'ht-cost');
-      const add = (cls, icon, v) => {
-        if (v) row.appendChild(el('span', `ht-res ${cls}`, el('i', 'ht-res-i', icon), fmt(v)));
+      const add = (res, icon, v) => {
+        if (v) row.appendChild(el('span', `ht-res is-${res}${short.includes(res) ? ' is-short' : ''}`, el('i', 'ht-res-i', icon), fmt(v)));
       };
-      add('is-gold', '💰', c.gold);
-      add('is-wood', '🌲', c.wood);
-      add('is-faith', '✨', c.faith);
-      add('is-pop', '👥', c.pop);
+      add('gold', '💰', c.gold);
+      add('wood', '🌲', c.wood);
+      add('faith', '✨', c.faith);
+      add('pop', '👥', c.pop);
       if (c.time) row.appendChild(el('span', 'ht-res is-time', el('i', 'ht-res-i', '⏳'), `${Math.round(c.time)}s`));
       tip.appendChild(row);
     } else if (c && c.cooldown) {
@@ -165,4 +167,13 @@ export class CardView {
     this.hoverSlot = -1;
     this.renderTip();
   }
+}
+
+/** The parts of a cost a player cannot pay now: ['wood', 'pop'] and so on ([] with no player or no cost). */
+export function shortCosts(cost, me) {
+  if (!cost || !me) return [];
+  const out = [];
+  for (const r of ['gold', 'wood', 'faith']) if (cost[r] && (me[r] ?? 0) < cost[r]) out.push(r);
+  if (cost.pop > 0 && Number.isFinite(me.popCap) && (me.pop ?? 0) + cost.pop > me.popCap) out.push('pop');
+  return out;
 }

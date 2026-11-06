@@ -1125,6 +1125,7 @@
 .ht-res.is-gold { color: #ffd862; }
 .ht-res.is-wood { color: #e2b98a; }
 .ht-res.is-faith { color: #bfe3ff; }
+.ht-res.is-short { color: #ff8a6a; text-decoration: underline 1px rgba(255, 138, 106, 0.55); text-underline-offset: 0.2em; }
 .ht-res.is-time, .ht-res.is-dim { color: var(--mw-ink-dim); font-weight: 600; }
 .ht-stats { margin-top: 0.35em; font-size: max(0.84em, var(--mw-min-text)); line-height: 1.35; color: var(--mw-ink); }
 .ht-desc { margin-top: 0.4em; font-size: max(0.9em, var(--mw-min-text)); line-height: 1.4; color: var(--mw-ink-dim); }
