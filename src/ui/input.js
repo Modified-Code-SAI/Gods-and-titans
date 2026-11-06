@@ -14,6 +14,7 @@ import { getSettings } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
 import { unitBark, BarkGate } from '../audio/sfx-voices.js';
 import { checkPlacement, checkWallLine, footprintAt, peaceAnchors } from '../game/placement.js';
+import { HoverTag, hoverTagInfo, HOVER_TAG_DELAY } from './hover-tag.js';
 import { getCommandCard, withCardKeys, buttonForKey, buildCheck, trainCheck, affordReason } from './command-card.js';
 import { normKey, bindingsOf, actionOf, cardKeysOf, PAN_ACTIONS } from './key-bindings.js';
 import { isComplete, isWallEntity, isMergingEntity, armyIds } from './hud-data.js';
@@ -103,6 +104,9 @@ export class InputController {
     this.powerRing.className = 'hud-powerring';
     this.powerRing.hidden = true;
     (overlayRoot || canvas.parentNode).appendChild(this.powerRing);
+    // Beside the cursor over a unit, building or mine: what it is and whose (hover-tag.js).
+    this.hoverTag = new HoverTag(overlayRoot || canvas.parentNode);
+    this.hoverSince = 0;
 
     this.offs = [];
     const on = (el, type, fn, opts) => {
@@ -1672,6 +1676,7 @@ export class InputController {
       this.hoverTree = !!g && this.forestAt(g.x, g.y);
       if (id !== this.hoverId) {
         this.hoverId = id;
+        this.hoverSince = now;
         r.setHover(id);
       }
     } else if ((!this.overCanvas || overlay) && this.hoverId !== null) {
@@ -1682,6 +1687,7 @@ export class InputController {
     }
     this.updateCursor();
     this.updatePowerRing(r, p);
+    this.updateHoverTag(now);
 
     // Placement ghost.
     if (this.mode.kind === 'place') {
@@ -1710,6 +1716,14 @@ export class InputController {
         }
       }
     }
+  }
+
+  /** The name tag beside the cursor, once it has rested on something; never over a ghost, a drag or another tip. */
+  updateHoverTag(now) {
+    const busy = this.mode.kind === 'place' || this.leftDown || this.midDown || !this.wallTip.hidden;
+    const e = !busy && this.hoverId !== null && now - this.hoverSince >= HOVER_TAG_DELAY ? this.vs.knownEntity(this.hoverId) : null;
+    if (e) this.hoverTag.show(hoverTagInfo(e, this.vs), this.mx, this.my);
+    else this.hoverTag.hide();
   }
 
   updateCursor() {
@@ -1761,6 +1775,7 @@ export class InputController {
     this.box.remove();
     this.wallTip.remove();
     this.powerRing.remove();
+    this.hoverTag.dispose();
     this.keys.clear();
   }
 }

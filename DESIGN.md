@@ -2666,6 +2666,14 @@ title of several lines heads with its first, one plain line is all body. Code ke
 wins over the stored one, a title rewritten while its card is up redraws it, and a click, the wheel, a key, the
 window losing focus, or the element being removed or hidden closes it. `[data-native-tip]` opts a subtree out.
 
+**Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
+shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).
+It shows the name (a Town Center by its tier), then for an ally's or enemy's thing the owner's name and "Ally" or
+"Enemy" in the owner's colour ("Neutral creature" for a wild one, nothing for your own), then a thin health bar
+(green, gold below 60%, red below 30%) or, for a mine, the gold left. The border is red for enemies and green for
+allies. The tag follows the cursor and refreshes as health changes. It hides while a building is placed, a mouse
+button is held (box select, panning), or the placement or wall tip is up.
+
 **Drop-down lists.** The lobby's slot and team pickers and the replay bar's vision picker are `<select>`s, and a
 native select opens the operating system's list. `installSelectMenus(document)` (`src/ui/select-menu.js`, main.js at
 boot) catches the mouse press on a `select.mw-select` or `select.hud-rp-vision` (and Enter, Space, Alt+Down or F4 on
