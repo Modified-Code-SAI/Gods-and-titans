@@ -1,7 +1,8 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { installFakeDom } from './fake-dom.js';
-import { matchSides, matchTerms, buildMatchup } from '../../src/ui/match-loading.js';
+import { matchSides, matchTerms, buildMatchup, missionCardSpec, buildMissionCard } from '../../src/ui/match-loading.js';
+import { CHAPTERS } from '../../src/data/campaign.js';
 
 before(() => installFakeDom());
 
@@ -37,4 +38,35 @@ test('the matchup draws one card per player, a vs between each pair of sides and
   const me = node.find('mw-ld-card');
   assert.ok(me.className.includes('is-me'));
   assert.equal(me.style.getPropertyValue('--pc'), '#3070d0');
+});
+
+test('a campaign mission gets its own card: chapter, number, title, place and the objectives known at the start', () => {
+  const c = CHAPTERS[0];
+  const m = c.missions[0];
+  const spec = missionCardSpec({ campaign: m.id, players: [pl(0, 1, 'greek')] });
+  assert.equal(spec.kicker, `Chapter I · ${c.title} · Mission 1 of ${c.missions.length}`);
+  assert.equal(spec.title, m.title);
+  assert.equal(spec.place, m.place);
+  const visible = m.objectives.filter((o) => !o.hidden);
+  assert.equal(spec.objectives.length, visible.length);
+  assert.ok(spec.objectives.every((o) => o.text && o.icon));
+  assert.ok(!spec.objectives.some((o) => m.objectives.find((x) => x.text === o.text).hidden), 'no hidden objective is given away');
+  const optionalAt = spec.objectives.findIndex((o) => o.optional);
+  if (optionalAt >= 0) assert.ok(spec.objectives.slice(optionalAt).every((o) => o.optional), 'bonus objectives come last');
+});
+
+test('every mission of every chapter has a card; a skirmish, the tutorial and an unknown mission have none', () => {
+  for (const c of CHAPTERS) for (const m of c.missions) assert.ok(missionCardSpec({ campaign: m.id }), m.id);
+  assert.equal(missionCardSpec({ players: [pl(0, 1, 'greek')] }), null);
+  assert.equal(missionCardSpec({ tutorial: true }), null);
+  assert.equal(missionCardSpec({ campaign: 'no-such-mission' }), null);
+  assert.equal(buildMissionCard({ players: [pl(0, 1, 'greek')] }), null);
+});
+
+test('the mission card shows the title and one row per objective', () => {
+  const m = CHAPTERS[1].missions[2];
+  const card = buildMissionCard({ campaign: m.id });
+  assert.ok(card.className.includes(`is-${CHAPTERS[1].id}`));
+  assert.equal(card.find('mw-ld-title').textContent, m.title);
+  assert.equal(card.findAll('mw-ld-goal').length, missionCardSpec({ campaign: m.id }).objectives.length);
 });

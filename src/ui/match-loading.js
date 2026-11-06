@@ -1,8 +1,13 @@
 // The loading screen before a match (DESIGN 9, "Loading screen"): the sides drawn as player cards, each with its
 // pantheon's emblem in a ring of the player's colour, their name and who plays them, a carved "vs" between the
 // sides, the landscape and the rules under them, and a tip at the foot. Campaign missions and the tutorial keep
-// the plain veil (their own story screens come next). game.js setLoading puts it over the empty canvas.
+// the plain veil. A campaign mission gets its own card instead (buildMissionCard): the chapter and the mission's
+// number, its title and place, the chapter map with the road walked so far and this stop lit, and the objectives
+// known at the start. game.js setLoading puts either over the empty canvas.
 import { getPantheon } from '../data/index.js';
+import { MISSION_BY_ID, chapterOf } from '../data/campaign.js';
+import { getProgress, isUnlocked } from '../game/campaign-progress.js';
+import { buildChapterMap } from './campaign-map.js';
 import { landscapeInfo } from '../data/landscapes.js';
 import { PANTHEON_EMBLEMS } from './menu-model.js';
 import { displayColor } from '../team-colors.js';
@@ -86,5 +91,69 @@ export function buildMatchup(setup, myIndex = -1) {
   wrap.append(row);
   const terms = matchTerms(setup);
   if (terms) wrap.append(el('div', 'mw-ld-terms', terms));
+  return wrap;
+}
+
+/**
+ * What the mission card shows for a campaign setup: { chapter, kicker, title, place, objectives: [{ icon, text }] },
+ * or null when the setup is not a campaign mission. The objectives are the ones the panel shows at the start (not
+ * hidden ones), the required first and the optional ones marked.
+ */
+export function missionCardSpec(setup) {
+  const m = setup && typeof setup.campaign === 'string' ? MISSION_BY_ID[setup.campaign] : null;
+  const c = m ? chapterOf(m) : null;
+  if (!m || !c) return null;
+  const shown = (m.objectives || []).filter((o) => !o.hidden && o.kind !== 'protect');
+  const guard = (m.objectives || []).filter((o) => !o.hidden && o.kind === 'protect');
+  const objectives = [
+    ...shown.filter((o) => !o.optional).map((o) => ({ icon: o.icon || '•', text: o.text, optional: false })),
+    ...guard.map((o) => ({ icon: o.icon || '🛡️', text: o.text, optional: false })),
+    ...shown.filter((o) => o.optional).map((o) => ({ icon: o.icon || '★', text: o.text, optional: true })),
+  ];
+  return {
+    chapter: c,
+    mission: m,
+    kicker: `${c.chapter} · ${c.title} · Mission ${m.n} of ${c.missions.length}`,
+    title: m.title,
+    place: m.place,
+    objectives,
+  };
+}
+
+/** The mission card, or null when the setup is not a campaign mission (the caller keeps the plain veil). */
+export function buildMissionCard(setup) {
+  const spec = missionCardSpec(setup);
+  if (!spec) return null;
+  const wrap = el('div', `mw-ld-mission is-${spec.chapter.id}`);
+  wrap.append(el('div', 'mw-ld-kicker', spec.kicker), el('div', 'mw-ld-title', spec.title), el('div', 'mw-ld-place', spec.place));
+  let progress = null;
+  try {
+    progress = getProgress();
+  } catch {
+    progress = null;
+  }
+  try {
+    const map = buildChapterMap(spec.chapter, {
+      isOpen: (x) => x === spec.mission || (progress ? isUnlocked(x.id, progress) : x.n <= spec.mission.n),
+      isWon: (x) => (progress ? !!progress.won[x.id] : x.n < spec.mission.n),
+      onPick: () => {},
+    });
+    map.select(spec.mission);
+    const frame = el('div', 'mw-ld-mapframe');
+    frame.append(map.el);
+    wrap.append(frame);
+  } catch {
+    // No SVG support (a test DOM): the card still has its words.
+  }
+  if (spec.objectives.length) {
+    const list = el('ul', 'mw-ld-goals');
+    spec.objectives.forEach((o, i) => {
+      const li = el('li', `mw-ld-goal${o.optional ? ' is-optional' : ''}`);
+      li.style.setProperty('--i', String(i));
+      li.append(el('span', 'mw-ld-goal-icon', o.icon), el('span', 'mw-ld-goal-text', o.optional ? `${o.text} (bonus)` : o.text));
+      list.append(li);
+    });
+    wrap.append(list);
+  }
   return wrap;
 }
