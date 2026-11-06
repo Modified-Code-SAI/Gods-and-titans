@@ -11,6 +11,9 @@ function shape(b) {
   return `${b.id}|${b.icon}|${b.keyLabel}|${b.state}|${b.queued}|${b.autocast ? 1 : 0}`;
 }
 
+/** ms a finger rests on a command button before its tooltip shows instead of the button being pressed. */
+export const CARD_HOLD_MS = 450;
+
 export class CardView {
   /**
    * @param {HTMLElement} grid container for the 12 slots
@@ -26,6 +29,11 @@ export class CardView {
     this.slots = [];
     this.hoverSlot = -1;
     this.tipSig = '';
+    this.held = -1; // the slot whose tooltip a held finger opened (its click is swallowed)
+    this.touchDown = false;
+    this.touchAt = -Infinity;
+    this.downStamp = 0;
+    this.holdTimer = 0;
     for (let i = 0; i < 12; i++) {
       const btn = el('button', 'hc-btn is-empty');
       btn.type = 'button';
@@ -41,17 +49,50 @@ export class CardView {
       btn.append(icon, cd, cdText, auto, lock, queue, key);
       const slot = { btn, icon, key, queue, cd, cdText, auto, lock, sig: null };
       btn.addEventListener('mousedown', (e) => e.preventDefault());
+      // Touch (DESIGN 9 "Touch"): a finger held on a button shows its tooltip and does not press it; a tap presses it.
+      btn.addEventListener('pointerdown', (e) => {
+        this.touchDown = e.pointerType === 'touch';
+        if (!this.touchDown) return;
+        this.touchAt = performance.now();
+        this.downStamp = e.timeStamp;
+        clearTimeout(this.holdTimer);
+        this.held = -1;
+        this.holdTimer = setTimeout(() => {
+          this.held = i;
+          this.hoverSlot = i;
+          this.renderTip();
+        }, CARD_HOLD_MS);
+      });
+      const release = (e) => {
+        clearTimeout(this.holdTimer);
+        if (this.touchDown) this.touchAt = performance.now();
+        // timed by the events' own clock: a busy frame that ran the timer late does not turn a tap into a hold
+        if (this.held === i && Number.isFinite(e.timeStamp) && e.timeStamp - this.downStamp < CARD_HOLD_MS) this.held = -1;
+        // the tip is read while the finger stays down; a tap's emulated hover would leave it standing otherwise
+        if (this.touchDown && this.hoverSlot === i) {
+          this.hoverSlot = -1;
+          this.renderTip();
+        }
+      };
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
       btn.addEventListener('click', (e) => {
+        if (this.held === i) {
+          this.held = -1; // the hold that read the tooltip is not a press
+          return;
+        }
         const b = this.card[i];
         if (b && this.onActivate) this.onActivate(b, e);
       });
       btn.addEventListener('contextmenu', (e) => {
         e.preventDefault();
+        if (this.touchDown) return; // a long press is the tooltip, not the right-click toggle
         // Right-click an ability: autocast on / manual (WC3).
         const b = this.card[i];
         if (b && b.toggle && this.onToggle) this.onToggle(b);
       });
       btn.addEventListener('mouseenter', () => {
+        if (this.touchDown && performance.now() - this.touchAt < 1000) return; // the hover a tap emulates
         this.hoverSlot = i;
         this.renderTip();
       });

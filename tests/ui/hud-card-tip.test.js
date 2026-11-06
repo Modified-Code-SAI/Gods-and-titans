@@ -41,3 +41,34 @@ test('the tooltip marks in red the parts of a cost the player cannot pay', () =>
   view.renderTip();
   assert.deepEqual(tip.find('ht-cost').children.map((c) => c.className), ['ht-res is-gold', 'ht-res is-wood'], 'redrawn once the wood is there');
 });
+
+test('touch: a finger held on a button shows its tooltip and does not press it; a tap presses it and leaves no tip', async () => {
+  const { CARD_HOLD_MS } = await import('../../src/ui/hud-card.js');
+  const tip = document.createElement('div');
+  const grid = document.createElement('div');
+  const pressed = [];
+  const view = new CardView(grid, tip, { onActivate: (b) => pressed.push(b.id) });
+  view.render([{ id: 'train:archer', icon: '🏹', keyLabel: 'A', state: 'ready', title: 'Train Archer', description: 'Ranged soldier.', cost: { gold: 120 } }]);
+  const btn = grid.children[0];
+  // a hold
+  btn.fire('pointerdown', { pointerType: 'touch' });
+  await new Promise((r) => setTimeout(r, CARD_HOLD_MS + 30));
+  assert.equal(view.hoverSlot, 0, 'the tip is up while the finger stays down');
+  assert.equal(tip.hidden, false);
+  btn.fire('pointerup', { pointerType: 'touch' });
+  btn.fire('mouseenter');
+  btn.fire('click');
+  assert.deepEqual(pressed, [], 'the hold was not a press');
+  assert.equal(view.hoverSlot, -1, 'and the tip went with the finger');
+  // a tap
+  btn.fire('pointerdown', { pointerType: 'touch' });
+  btn.fire('pointerup', { pointerType: 'touch' });
+  btn.fire('mouseenter');
+  btn.fire('click');
+  assert.deepEqual(pressed, ['train:archer']);
+  assert.equal(view.hoverSlot, -1, 'the hover a tap emulates opens no tip');
+  // a mouse still hovers
+  btn.fire('pointerdown', { pointerType: 'mouse' });
+  btn.fire('mouseenter');
+  assert.equal(view.hoverSlot, 0);
+});

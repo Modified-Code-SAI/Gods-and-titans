@@ -14,6 +14,8 @@
 export const TIP_DELAY = 280;
 /** After a tip closes, another within this many ms shows at once (sweeping along a row of chips). */
 export const TIP_WARM = 450;
+/** How long a finger rests on an element before its tip shows (touch), in ms. */
+export const TIP_HOLD = 450;
 /** Gap between the element and the card, and the card's margin from the window's edges, in px. */
 const GAP = 8;
 const EDGE = 8;
@@ -161,9 +163,45 @@ export function installHoverTips(doc = document) {
 
   const out = (e) => { if (target && (!e.relatedTarget || !target.contains(e.relatedTarget))) hide(); };
   const off = () => hide();
+  // Touch (DESIGN 9 "Touch"): a finger held on a titled element shows its tip while it stays down, and that hold
+  // is not a press (its click is swallowed).
+  let holdTimer = 0;
+  let heldAt = -Infinity;
+  let downStamp = 0;
+  const down = (e) => {
+    hide();
+    clearTimeout(holdTimer);
+    heldAt = -Infinity; // a new press: only a hold made by this one swallows its click
+    if (e.pointerType !== 'touch') return;
+    const from = e.target && e.target.closest ? e.target.closest('[title]:not([title=""]), [data-tip]') : null;
+    if (!from || from.closest('[data-native-tip]') || !tipText(from)) return;
+    takeTitle(from);
+    downStamp = e.timeStamp;
+    holdTimer = setTimeout(() => {
+      target = from;
+      show(from);
+      heldAt = performance.now();
+    }, TIP_HOLD);
+  };
+  const up = (e) => {
+    clearTimeout(holdTimer);
+    // timed by the events' own clock: a busy frame that ran the timer late does not turn a tap into a hold
+    if (heldAt > 0 && Number.isFinite(e.timeStamp) && e.timeStamp - downStamp < TIP_HOLD) heldAt = -Infinity;
+    if (shown && e.pointerType === 'touch') hide();
+  };
+  const click = (e) => {
+    if (heldAt > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    heldAt = -Infinity;
+  };
   doc.addEventListener('pointerover', over, true);
   doc.addEventListener('pointerout', out, true);
-  doc.addEventListener('pointerdown', off, true);
+  doc.addEventListener('pointerdown', down, true);
+  doc.addEventListener('pointerup', up, true);
+  doc.addEventListener('pointercancel', up, true);
+  doc.addEventListener('click', click, true);
   doc.addEventListener('wheel', off, { capture: true, passive: true });
   doc.addEventListener('keydown', off, true);
   win.addEventListener('blur', off);
@@ -173,7 +211,11 @@ export function installHoverTips(doc = document) {
       hide();
       doc.removeEventListener('pointerover', over, true);
       doc.removeEventListener('pointerout', out, true);
-      doc.removeEventListener('pointerdown', off, true);
+      doc.removeEventListener('pointerup', up, true);
+      doc.removeEventListener('pointercancel', up, true);
+      doc.removeEventListener('click', click, true);
+      clearTimeout(holdTimer);
+      doc.removeEventListener('pointerdown', down, true);
       doc.removeEventListener('wheel', off, { capture: true });
       doc.removeEventListener('keydown', off, true);
       win.removeEventListener('blur', off);
