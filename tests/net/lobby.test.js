@@ -20,8 +20,8 @@ const kinds = (state) => state.slots.map((s) => s.kind);
 test('lobby flow: join, presets, setMine, chat, kick on version mismatch, start', async () => {
   const host = await LobbyHost.create({ transport: 'loopback', name: 'Austin' });
   assert.match(host.roomCode, /^[A-Z2-9]{5}$/);
-  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'open'], 'online, every seat is open for friends');
-  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 2, 1, 2], 'on two sides, row by row');
+  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'open', 'open', 'open'], 'online, every seat is open for friends');
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 2, 1, 2, 1, 2], 'on two sides, row by row');
   assert.equal(host.state.preset, null);
   assert.equal(host.state.mapSize, 'small');
   assert.equal(host.canStart(), false, 'only one team so far');
@@ -54,19 +54,19 @@ test('lobby flow: join, presets, setMine, chat, kick on version mismatch, start'
     LobbyClient.join({ transport: 'loopback', roomCode: host.roomCode, name: 'Stale', version: `${GAME_VERSION}+00000000` }),
     (err) => /Version mismatch/.test(err.message) && err.message.includes('+00000000'),
   );
-  assert.deepEqual(kinds(host.state), ['host', 'human', 'closed', 'closed']);
+  assert.deepEqual(kinds(host.state), ['host', 'human', 'closed', 'closed', 'closed', 'closed']);
 
   // Presets keep connected players and fill the rest.
   assert.ok(host.applyPreset('coop'));
-  assert.deepEqual(kinds(host.state), ['host', 'human', 'ai', 'ai']);
-  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 2, 2]);
+  assert.deepEqual(kinds(host.state), ['host', 'human', 'ai', 'ai', 'closed', 'closed']);
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 2, 2, 5, 6]);
   assert.equal(host.state.mapSize, 'medium');
   assert.ok(host.applyPreset('ffa'));
-  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 2, 3, 4]);
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 2, 3, 4, 5, 6]);
   assert.ok(host.applyPreset('2v2'));
-  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 2, 2]);
-  assert.equal(new Set(host.state.slots.map((s) => s.color)).size, 4, 'colors stay unique');
-  assert.deepEqual(kinds(host.state), ['host', 'human', 'open', 'open'], 'online, the presets leave seats open for friends');
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 2, 2, 5, 6]);
+  assert.equal(new Set(host.state.slots.map((s) => s.color)).size, 6, 'colors stay unique');
+  assert.deepEqual(kinds(host.state), ['host', 'human', 'open', 'open', 'closed', 'closed'], 'online, the presets leave seats open for friends');
   assert.ok(host.setSlot(3, { kind: 'ai' }));
   assert.equal(host.state.slots[3].name, 'AI (Normal)');
 
@@ -167,11 +167,11 @@ test('two lobbies get different seeds; random pantheons are resolved from the se
 test('offline lobby: 1v1 vs AI by default, coop adds an AI ally, start without connections', async () => {
   const host = await LobbyHost.create({ transport: 'none', name: 'Solo' });
   assert.equal(host.roomCode, null);
-  assert.deepEqual(kinds(host.state), ['host', 'ai', 'closed', 'closed']);
+  assert.deepEqual(kinds(host.state), ['host', 'ai', 'closed', 'closed', 'closed', 'closed']);
   assert.ok(host.canStart());
   assert.ok(host.applyPreset('coop'));
-  assert.deepEqual(kinds(host.state), ['host', 'ai', 'ai', 'ai']);
-  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 2, 2]);
+  assert.deepEqual(kinds(host.state), ['host', 'ai', 'ai', 'ai', 'closed', 'closed'], 'co-op keeps to four seats for one human');
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 2, 2, 5, 6]);
   host.setSlot(1, { kind: 'closed' });
   const { setup, myIndex, conns } = host.start();
   assert.equal(myIndex, 0);
@@ -244,7 +244,7 @@ test('leaving frees the slot; kicking and closing the lobby notify clients', asy
   const b = await LobbyClient.join({ transport: 'loopback', roomCode: host.roomCode, name: 'B' });
   const c = await LobbyClient.join({ transport: 'loopback', roomCode: host.roomCode, name: 'C' }).catch((e) => e);
   assert.ok(c instanceof Error, 'slot 3 is an AI, so the lobby is full');
-  assert.deepEqual(kinds(host.state), ['host', 'human', 'human', 'ai']);
+  assert.deepEqual(kinds(host.state), ['host', 'human', 'human', 'ai', 'closed', 'closed']);
 
   a.leave();
   await waitFor(() => host.state.slots[1].kind === 'open');
@@ -335,7 +335,7 @@ test('lobby caps connections waiting to say HELLO; joined players still join, le
 test('the game gives every player a distinct name; lobby slots keep theirs', async () => {
   const host = await LobbyHost.create({ transport: 'none', name: 'Hosty' });
   host.applyPreset('ffa');
-  assert.deepEqual(host.state.slots.map((s) => s.name), ['Hosty', 'AI (Normal)', 'AI (Normal)', 'AI (Normal)']);
+  assert.deepEqual(host.state.slots.map((s) => s.name), ['Hosty', 'AI (Normal)', 'AI (Normal)', 'AI (Normal)', '', '']);
   host.setSlot(3, { difficulty: 'hard' });
   const { setup } = host.start();
   const aiNames = setup.players.slice(1).map((p) => p.name);
@@ -345,7 +345,7 @@ test('the game gives every player a distinct name; lobby slots keep theirs', asy
     const level = p.difficulty === 'hard' ? 'Hard' : 'Normal';
     assert.ok(figures.some((f) => p.name === `${f} (${level} AI)` || p.name === `${f} (${level})`), `${p.name} is a figure of the ${p.pantheon} with its level`);
   });
-  assert.deepEqual(host.state.slots.map((s) => s.name), ['Hosty', 'AI (Normal)', 'AI (Normal)', 'AI (Hard)'], 'lobby slots keep theirs');
+  assert.deepEqual(host.state.slots.map((s) => s.name), ['Hosty', 'AI (Normal)', 'AI (Normal)', 'AI (Hard)', '', ''], 'lobby slots keep theirs');
 
   const names = (slots) => buildSetup({ mapSize: 'small', slots }, 7).setup.players.map((p) => p.name);
   const slot = (kind, name, team) => ({ kind, name, pantheon: 'random', team, color: team - 1, difficulty: 'normal' });
@@ -449,4 +449,36 @@ test('computer players play under a figure of their pantheon with their level, d
   const own = buildSetup({ mapSize: 'small', slots: [st.slots[0], { ...ai(2, 'egyptian'), name: 'Pharaoh' }, { ...ai(2, 'egyptian'), name: '' }] }, 3).setup.players;
   assert.equal(own[1].name, 'Pharaoh');
   assert.match(own[2].name, /^(Ra|Anubis|Isis|Set|Apep) \(Easy AI\)$/);
+});
+
+test('six seats: the 3v3 preset fills all six, and a six-player start makes the bigger ring map', async () => {
+  const host = await LobbyHost.create({ transport: 'none', name: 'Solo' });
+  assert.equal(host.state.slots.length, 6);
+  assert.ok(host.applyPreset('3v3'));
+  assert.deepEqual(kinds(host.state), ['host', 'ai', 'ai', 'ai', 'ai', 'ai']);
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 1, 2, 2, 2]);
+  assert.equal(new Set(host.state.slots.map((s) => s.color)).size, 6, 'six colours');
+  assert.equal(host.state.mapSize, 'medium');
+  const { setup } = host.start();
+  assert.equal(setup.players.length, 6);
+  const m = generateMap(mapOptions(setup));
+  assert.equal(m.width, 152);
+  assert.equal(m.meta.layout, 'ring');
+  host.close();
+  // Opening a closed seat makes a five-player FFA possible.
+  const ffa = await LobbyHost.create({ transport: 'none', name: 'Solo' });
+  assert.ok(ffa.applyPreset('ffa'));
+  assert.ok(ffa.setSlot(4, { kind: 'ai', team: 5 }));
+  assert.equal(ffa.startProblem(), null);
+  assert.equal(ffa.start().setup.players.length, 5);
+  ffa.close();
+});
+
+test('co-op keeps four seats for up to three humans; four humans get two AI opponents', async () => {
+  const host = await LobbyHost.create({ transport: 'loopback', name: 'Austin' });
+  for (const name of ['B', 'C', 'D']) await LobbyClient.join({ transport: 'loopback', roomCode: host.roomCode, name });
+  assert.ok(host.applyPreset('coop'));
+  assert.deepEqual(kinds(host.state), ['host', 'human', 'human', 'human', 'ai', 'ai']);
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 1, 1, 1, 2, 2]);
+  host.close();
 });

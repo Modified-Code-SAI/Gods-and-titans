@@ -8,7 +8,7 @@
 // (Mine slots and prayer slots are checked lazily by the sim itself, so stale
 // ids left in them are not reported. "pop-over-cap" is legal after losing Houses.)
 //
-// Usage: node tools/sim-audit.mjs [--seeds=1-3] [--max=25] [--teams=1v1|2v2|ffa] [--diff=hard]
+// Usage: node tools/sim-audit.mjs [--seeds=1-3] [--max=25] [--teams=1v1|2v2|ffa|3v3|ffa6] [--diff=hard]
 //        [--pantheons=greek,norse] [--every=20] [--peace=30] [--sacred] [--determinism] [--strict]
 //
 // --strict (CI): exit 1 when a game breaks an invariant, an AI throws, a command errors or a replay differs.
@@ -191,7 +191,11 @@ for (const seed of seeds) {
   const c = ids[(seed * 5 + 2) % ids.length];
   const d = ids[(seed * 7 + 3) % ids.length];
   if (opt.teams === '2v2') games.push({ seed, size: 'medium', players: [{ pantheon: a, team: 1, difficulty: diff }, { pantheon: b, team: 1, difficulty: diff }, { pantheon: c, team: 2, difficulty: diff }, { pantheon: d, team: 2, difficulty: diff }] });
-  else if (opt.teams === 'ffa') games.push({ seed, size: 'medium', players: [a, b, c, d].map((pan, k) => ({ pantheon: pan, team: k + 1, difficulty: diff })) });
+  else if (opt.teams === '3v3' || opt.teams === 'ffa6') {
+    const e = ids[(seed * 11 + 4) % ids.length];
+    const f = ids[(seed * 13 + 5) % ids.length];
+    games.push({ seed, size: 'small', players: [a, b, c, d, e, f].map((pan, k) => ({ pantheon: pan, team: opt.teams === '3v3' ? (k < 3 ? 1 : 2) : k + 1, difficulty: diff })) });
+  } else if (opt.teams === 'ffa') games.push({ seed, size: 'medium', players: [a, b, c, d].map((pan, k) => ({ pantheon: pan, team: k + 1, difficulty: diff })) });
   else games.push({ seed, size: 'small', players: [{ pantheon: a, team: 1, difficulty: diff }, { pantheon: b, team: 2, difficulty: diff }] });
 }
 

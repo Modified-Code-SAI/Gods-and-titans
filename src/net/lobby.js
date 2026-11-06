@@ -19,7 +19,7 @@ import { hostRoom, joinRoom, abortError } from './transport.js';
 
 export const SLOT_KINDS = ['host', 'human', 'ai', 'open', 'closed'];
 export const DIFFICULTIES = ['easy', 'normal', 'hard', 'brutal'];
-export const PRESETS = ['coop', '1v1', '2v2', 'ffa'];
+export const PRESETS = ['coop', '1v1', '2v2', '3v3', 'ffa'];
 export const MAP_SIZE_NAMES = ['small', 'medium'];
 const HELLO_TIMEOUT_MS = 10000;
 const KICK_CLOSE_DELAY_MS = 300;
@@ -677,21 +677,26 @@ export class LobbyHost {
     let layout; // [{ team, fill }]
     if (name === '1v1') {
       if (humans.length > 2) return false;
-      layout = [{ team: 1 }, { team: 2, fill: seat }, { fill: 'closed' }, { fill: 'closed' }];
+      layout = [{ team: 1 }, { team: 2, fill: seat }];
     } else if (name === '2v2') {
       layout = [1, 1, 2, 2].map((team) => ({ team, fill: seat }));
+    } else if (name === '3v3') {
+      layout = [1, 1, 1, 2, 2, 2].map((team) => ({ team, fill: seat }));
     } else if (name === 'ffa') {
       layout = [1, 2, 3, 4].map((team) => ({ team, fill: seat }));
     } else {
-      // coop
+      // coop: four seats as before (up to three humans against the AI), all six for four or five humans
       if (humans.length >= MAX_PLAYERS) return false;
+      const seats = humans.length < 4 ? 4 : MAX_PLAYERS;
       layout = [];
-      for (let i = 0; i < MAX_PLAYERS; i++) {
+      for (let i = 0; i < seats; i++) {
         if (i < humans.length) layout.push({ team: 1 });
         else if (i === humans.length && humans.length < 2) layout.push({ team: 1, fill: seat });
         else layout.push({ team: 2, fill: 'ai' });
       }
     }
+    // Seats a preset does not use are closed (the host can still open them).
+    while (layout.length < MAX_PLAYERS) layout.push({ fill: 'closed' });
     if (humans.length > layout.filter((l) => l.fill !== 'closed').length) return false;
     const next = [];
     let ai = 0;

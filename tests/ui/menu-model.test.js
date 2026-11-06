@@ -177,3 +177,12 @@ test('friendlyJoinError maps transport errors to clear messages', () => {
   assert.match(M.friendlyJoinError('The host did not answer. Check the room code and try again.'), /did not answer/);
   assert.match(M.friendlyJoinError(null), /Could not join/);
 });
+
+test('map size labels follow the filled seats: five or six players get the bigger map', () => {
+  const seats = (n) => ({ mapSize: 'small', slots: Array.from({ length: 6 }, (_, i) => ({ kind: i === 0 ? 'host' : i < n ? 'ai' : 'closed' })) });
+  assert.equal(M.mapSizeTiles(seats(4)), 96);
+  assert.equal(M.mapSizeTiles(seats(4), 'medium'), 128);
+  assert.equal(M.mapSizeTiles(seats(5)), 120);
+  assert.equal(M.mapSizeTiles(seats(6), 'medium'), 152);
+  assert.equal(M.SLOT_COUNT, 6);
+});

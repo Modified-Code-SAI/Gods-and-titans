@@ -203,7 +203,7 @@ async function flows(browser, errors) {
     await page.click('text=Play vs AI');
     await page.waitForSelector('.mw-lobby', { timeout: 8000 });
     const rows = await page.$$eval('.mw-slot', (els) => els.map((e) => e.className));
-    ok('sp: lobby shows 1 human vs 1 AI', rows.filter((c) => /is-(host|ai)/.test(c)).length === 2 && rows.filter((c) => c.includes('is-closed')).length === 2, rows.join(' | '));
+    ok('sp: lobby shows 1 human vs 1 AI', rows.filter((c) => /is-(host|ai)/.test(c)).length === 2 && rows.filter((c) => c.includes('is-closed')).length === 4, rows.join(' | '));
     // choose a pantheon through the picker
     await page.click('.mw-slot.is-me .mw-pbtn');
     await page.click('.mw-pcard[data-pantheon="egyptian"]');

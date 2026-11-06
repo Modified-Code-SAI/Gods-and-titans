@@ -151,14 +151,11 @@ export class LobbyHost extends Emitter {
       set(1, fill(), 2);
       if (!human(slots[0])) set(0, fill(), 1);
       slots[0].team = 1;
-      set(2, 'closed', 1);
-      set(3, 'closed', 2);
+      for (let i = 2; i < slots.length; i++) set(i, 'closed', i + 1);
       this.state.mapSize = 'small';
-    } else if (preset === '2v2') {
-      [1, 1, 2, 2].forEach((t, i) => set(i, fill(), t));
-      this.state.mapSize = 'medium';
-    } else if (preset === 'ffa') {
-      [1, 2, 3, 4].forEach((t, i) => set(i, fill(), t));
+    } else if (preset === '2v2' || preset === '3v3' || preset === 'ffa') {
+      const teams = preset === '2v2' ? [1, 1, 2, 2] : preset === '3v3' ? [1, 1, 1, 2, 2, 2] : [1, 2, 3, 4];
+      for (let i = 0; i < slots.length; i++) set(i, i < teams.length ? fill() : 'closed', teams[i] ?? i + 1);
       this.state.mapSize = 'medium';
     }
     this.emitChange();

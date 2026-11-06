@@ -1,6 +1,6 @@
 // Pure helpers for the menu and lobby screens (no DOM, runs in Node tests).
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
-import { MAX_PLAYERS, PLAYER_COLORS, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SACRED_NAME, SACRED_HOLD } from '../config.js';
+import { MAX_PLAYERS, mapTiles, PLAYER_COLORS, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SACRED_NAME, SACRED_HOLD } from '../config.js';
 import { sanitizeName, sanitizeChat, sanitizeReason } from '../net/protocol.js';
 import { displayColor } from '../team-colors.js';
 
@@ -448,6 +448,12 @@ export function lobbyModeLabel(role, transport) {
   if (transport === 'none') return 'Skirmish vs AI';
   if (role === 'client') return 'Online — Joined';
   return transport === 'local' ? 'Online — Hosting (local test)' : 'Online — Hosting';
+}
+
+/** Width in tiles of a map size for the lobby's filled seats (five or six players get a bigger map). */
+export function mapSizeTiles(state, size = state && state.mapSize) {
+  const seats = ((state && state.slots) || []).filter(isFilled).length;
+  return mapTiles(size, seats);
 }
 
 /** Number of slots shown in the lobby. */

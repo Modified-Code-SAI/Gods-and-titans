@@ -14,7 +14,7 @@ export const GAME_SPEEDS = { slow: 0.5, normal: 1, fast: 1.5, faster: 2 };
 export const UI_SCALES = { small: 0.85, normal: 1, large: 1.15, larger: 1.3 };
 
 // ---- Players ----
-export const MAX_PLAYERS = 4;
+export const MAX_PLAYERS = 6;
 export const NEUTRAL = -1; // owner index for creeps and nature
 export const NEUTRAL_TEAM = -1;
 export const PLAYER_COLORS = [
@@ -116,6 +116,14 @@ export const SACRED_NAME = 'Sacred Victory';
 
 // ---- Map ----
 export const MAP_SIZES = { small: 96, medium: 128 };
+// Five or six players get more room (the six-base ring layout): about as much ground each as four players have.
+export const CROWDED_PLAYERS = 5;
+export const CROWDED_MAP_SIZES = { small: 120, medium: 152 };
+/** Width (= height) in tiles of a named map size for this many players. */
+export function mapTiles(size, playerCount = 2) {
+  const table = playerCount >= CROWDED_PLAYERS ? CROWDED_MAP_SIZES : MAP_SIZES;
+  return table[size] || table.small;
+}
 export const TERRAIN = { GRASS: 0, DIRT: 1, WATER: 2, FOREST: 3, ROCK: 4, SAND: 5 };
 
 // ---- Network ----
