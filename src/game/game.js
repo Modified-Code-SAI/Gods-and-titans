@@ -55,6 +55,7 @@ import { ReplaySession } from './replay-session.js';
 import { ReplayBar } from '../ui/hud-replay.js';
 import { MatchSaver, loadSaveGame, isSettled, packView, restoreView, settleMatch } from './game-saves.js';
 import { AUTO_SLOT } from './save-store.js';
+import { buildMatchup } from '../ui/match-loading.js';
 import { FallTracker, endingWords, ENDING_MS, ENDING_DISTANCE } from './match-end.js';
 
 const AMBIENT_MS = 800; // worker chop / mine / build sounds near the camera
@@ -576,19 +577,20 @@ export class Game {
       + 'background:radial-gradient(ellipse at 50% 40%,#121a33,#05070d 70%)';
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:0.9em';
+    row.className = 'mw-ld-status';
     const spin = document.createElement('span');
     spin.className = 'hud-spinner';
     const text = document.createElement('span');
     text.textContent = 'Preparing the battlefield…';
     row.append(spin, text);
-    const line = matchupLine(this.launch && this.launch.setup);
-    if (line) {
-      const vs = document.createElement('div');
-      vs.className = 'mw-loading-matchup';
-      vs.style.cssText = 'font:700 clamp(22px, 3.6vmin, 44px)/1.2 var(--mw-font-display);letter-spacing:0.14em;color:var(--mw-gold-hi);'
-        + 'text-shadow:0 0 18px rgba(227,184,79,0.35),0 2px 0 #000;text-align:center;padding:0 1em';
-      vs.textContent = line;
-      node.append(vs);
+    const setup = this.launch && this.launch.setup;
+    const line = matchupLine(setup);
+    const versus = line ? buildMatchup(setup, this.launch.myIndex ?? 0) : null;
+    if (versus) {
+      node.className = 'mw-loading';
+      node.style.background = ''; // the painted backdrop and the sides' glows come from style.css
+      node.setAttribute('aria-label', `Preparing the battlefield: ${line}`);
+      node.append(versus);
     }
     node.append(row);
     const tip = getSettings().hints ? loadingHint() : null;

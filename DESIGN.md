@@ -2265,9 +2265,13 @@ per-frame budget, so a revealed army appears over a few frames.
   length (while the pointer rests on it, and 4 s after), and has ✕ and "Turn tips off" (saves `hints: false`).
   A soft chime goes with it when `alerts` is `'all'`. A tip is text with `[[Key]]` markers drawn as `<kbd>`;
   the hotkeys and numbers it quotes come from the data (`tests/ui/hud-hints.test.js` checks them). The
-  loading screen ("Preparing the battlefield…") shows the matchup above the spinner (`matchupLine`: the pantheons
-  by team, then the landscape, as "Greek & Hindu vs Norse & Celtic · Islands"; none for a campaign mission or the
-  guided first match) and one general tip under it. When the scene is ready the loading veil and the start notice
+  loading screen ("Preparing the battlefield…") shows the matchup above the spinner (`src/ui/match-loading.js`
+  `buildMatchup`): one card per player, grouped by team, with the pantheon's emblem in a ring of the player's colour,
+  the name, the pantheon and who plays it ("You", "Computer · Hard", "Player"), a carved "vs" between the sides (the
+  cards slide in from their side), and under them the landscape, the map size and the rules that change the game
+  (`matchTerms`: Trial of the Titans, Decade of Peace, Sacred Victory). Phone widths stack the sides. `matchupLine`
+  ("Greek & Hindu vs Norse & Celtic · Islands") is the screen's spoken label. None of it for a campaign mission or the
+  guided first match, which keep the plain veil; one general tip under it all. When the scene is ready the loading veil and the start notice
   dissolve over 0.8 s (`setLoading(false, true)`, `#start-message.is-leaving`; at once with reduced motion or on a failure).
   **Sounds** (`src/audio/sfx-alerts.js`, merged into the tables of `sfx.js`): `nudge` (two soft notes: a
   reminder), `drums` (four war-drum beats), `gong` (the peace is about to end), `research` (an upgrade

@@ -1512,3 +1512,85 @@ kbd {
     radial-gradient(ellipse 60% 70% at 50% 42%, rgba(6, 5, 10, 0.62) 0%, rgba(6, 5, 10, 0.38) 55%, rgba(6, 5, 10, 0.12) 100%),
     linear-gradient(180deg, rgba(6, 6, 14, 0.35) 0%, transparent 30%, transparent 70%, rgba(4, 3, 6, 0.6) 100%);
 }
+
+/* Match loading screen: the sides as player cards (src/ui/match-loading.js, game.js setLoading) */
+.mw-loading {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 42%, rgba(227, 184, 79, 0.10), transparent 70%),
+    radial-gradient(ellipse at 50% 40%, #16203d 0%, #0a0e1c 58%, #030409 100%);
+  overflow: hidden;
+}
+.mw-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+}
+.mw-loading > * { position: relative; }
+.mw-ld-matchup { display: flex; flex-direction: column; align-items: center; gap: 1.5em; padding: 0 16px; max-width: 100%; box-sizing: border-box; }
+.mw-ld-sides { display: flex; align-items: center; justify-content: center; gap: 2.2em; }
+.mw-ld-sides.is-many { flex-wrap: wrap; gap: 1.2em 1.6em; }
+.mw-ld-side { display: flex; flex-direction: column; gap: 0.7em; }
+.mw-ld-card {
+  --pc: #c8a050;
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  width: 16.5em;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.65em 1em 0.65em 0.7em;
+  text-transform: none;
+  letter-spacing: 0;
+  background: linear-gradient(180deg, rgba(34, 40, 58, 0.94), rgba(14, 17, 27, 0.96));
+  border: 1px solid rgba(196, 146, 72, 0.45);
+  border-left: 3px solid var(--pc);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 10px 26px rgba(0, 0, 0, 0.55), -6px 0 22px -8px color-mix(in srgb, var(--pc) 70%, transparent);
+  animation: mw-ld-in-left 0.55s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+.mw-ld-side:not(.is-first) .mw-ld-card { animation-name: mw-ld-in-right; }
+.mw-ld-card.is-me { border-color: rgba(255, 214, 120, 0.8); }
+.mw-ld-ring {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.9em;
+  height: 2.9em;
+  border-radius: 50%;
+  border: 3px solid var(--pc);
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--pc) 38%, #1c2134), #0b0d16 75%);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 14px color-mix(in srgb, var(--pc) 45%, transparent);
+}
+.mw-ld-emblem { font-size: 1.45em; line-height: 1; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)); }
+.mw-ld-text { display: flex; flex-direction: column; min-width: 0; }
+.mw-ld-name { font: 700 1.05em/1.2 var(--mw-font-display); letter-spacing: 0.04em; color: var(--mw-gold-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mw-ld-pan { font: 600 0.82em/1.3 var(--mw-font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mw-ink); }
+.mw-ld-who { font: italic 400 0.8em/1.3 var(--mw-font-body); color: var(--mw-ink-dim); }
+.mw-ld-card.is-me .mw-ld-who { color: var(--mw-gold); font-style: normal; font-weight: 700; }
+.mw-ld-vs {
+  font: italic 700 2.5em/1 var(--mw-font-display);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  background: linear-gradient(180deg, #fff3c4 0%, #e3b84f 48%, #8a5a1c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 14px rgba(227, 184, 79, 0.35));
+  animation: mw-ld-vs 0.6s 0.35s cubic-bezier(0.2, 0.8, 0.25, 1.2) both;
+}
+.mw-ld-terms { font: 600 0.72em/1.4 var(--mw-font-body); letter-spacing: 0.22em; color: var(--mw-ink-dim); text-align: center; animation: mw-ld-fade 0.6s 0.6s both; }
+@keyframes mw-ld-in-left { from { opacity: 0; transform: translateX(-2.5em); } }
+@keyframes mw-ld-in-right { from { opacity: 0; transform: translateX(2.5em); } }
+@keyframes mw-ld-vs { from { opacity: 0; transform: scale(1.8); } }
+@keyframes mw-ld-fade { from { opacity: 0; } }
+@media (max-width: 720px) {
+  .mw-ld-sides { flex-direction: column; gap: 0.6em; }
+  .mw-ld-vs { font-size: 1.8em; }
+  .mw-ld-status { font-size: 15px; letter-spacing: 0.12em; padding: 0 16px; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mw-ld-card, .mw-ld-vs, .mw-ld-terms { animation: none; }
+}
