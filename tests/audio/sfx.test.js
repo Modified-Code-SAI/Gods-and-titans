@@ -9,7 +9,7 @@ const DESIGN_NAMES = ['click', 'hover', 'select', 'move', 'attack_melee', 'attac
   'chop', 'mine', 'pray', 'horn', 'ping', 'ping_urgent'];
 
 // src/audio/sfx-alerts.js: the alert, tip and milestone sounds.
-const ALERT_NAMES = ['nudge', 'drums', 'gong', 'research', 'tip', 'milestone', 'taunt'];
+const ALERT_NAMES = ['nudge', 'drums', 'gong', 'research', 'tip', 'milestone', 'taunt', 'chat'];
 const IMPACT_NAMES = ['hit_armor', 'hit_pierce', 'hit_wood', 'hit_stone', 'hit_heavy', 'death_big', 'death_titan', 'collapse'];
 const VOICE_NAMES = ['worker', 'soldier', 'god', 'creature', 'titan'].flatMap((v) => ['select', 'ack', 'attack'].map((e) => `vo_${v}_${e}`));
 
