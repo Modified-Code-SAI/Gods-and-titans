@@ -28,6 +28,11 @@ const DRAG_THRESHOLD = 5; // px before a left press becomes a box
 const DOUBLE_MS = 350;
 const PING_CLICK_MS = 350; // a middle press that ends sooner than this without moving is a ping; otherwise it was a camera drag
 const EDGE_PX = 4;
+
+/** The compass name of an edge-scroll direction (ex, ey in -1..1, y down), '' when still: the cursor turns into an arrow that way. */
+export function edgeDir(ex, ey) {
+  return (ey < 0 ? 'n' : ey > 0 ? 's' : '') + (ex < 0 ? 'w' : ex > 0 ? 'e' : '');
+}
 const PAN_SPEED = 26; // tiles per second for edge scroll and arrow keys
 const HOVER_MS = 60;
 const PLACE_CHECK_MS = 90;
@@ -88,6 +93,8 @@ export class InputController {
     this.deleteArmed = null; // { ids: Set, until } after a first Delete press that asks for a second
     this.shiftHeld = false;
     this.cursor = '';
+    this.edgeDir = '';
+    this.edgeMark = '';
     this.disposed = false;
 
     this.box = document.createElement('div');
@@ -199,6 +206,14 @@ export class InputController {
       if (!d || d.class !== 'worker') this.menu = 'root';
     }
     return this.menu;
+  }
+
+  /** The HUD panels along the screen edge show the same arrow (body[data-edge] in hud.css). */
+  markEdge(dir) {
+    if (this.edgeMark === dir || typeof document === 'undefined' || !document.body || !document.body.dataset) return;
+    this.edgeMark = dir;
+    if (dir) document.body.dataset.edge = dir;
+    else delete document.body.dataset.edge;
   }
 
   setCursor(c) {
@@ -1645,16 +1660,19 @@ export class InputController {
       dx += PAN_ACTIONS[k][0];
       dy += PAN_ACTIONS[k][1];
     }
+    this.edgeDir = '';
     if (!overlay && getSettings().edgeScroll && this.mouseInWindow && !this.leftDown && !this.midDown && (typeof document.hasFocus !== 'function' || document.hasFocus())) {
       const w = window.innerWidth;
       const h = window.innerHeight;
       if (this.mx >= 0) {
-        if (this.mx <= EDGE_PX) dx -= 1;
-        else if (this.mx >= w - 1 - EDGE_PX) dx += 1;
-        if (this.my <= EDGE_PX) dy -= 1;
-        else if (this.my >= h - 1 - EDGE_PX) dy += 1;
+        const ex = this.mx <= EDGE_PX ? -1 : this.mx >= w - 1 - EDGE_PX ? 1 : 0;
+        const ey = this.my <= EDGE_PX ? -1 : this.my >= h - 1 - EDGE_PX ? 1 : 0;
+        dx += ex;
+        dy += ey;
+        this.edgeDir = edgeDir(ex, ey);
       }
     }
+    this.markEdge(this.edgeDir);
     if ((dx || dy) && !overlay) {
       const len = Math.hypot(dx, dy) || 1;
       const sx = (dx / len) * PAN_SPEED * dt;
@@ -1728,6 +1746,7 @@ export class InputController {
 
   updateCursor() {
     if (this.midDown) return this.setCursor('pan');
+    if (this.edgeDir) return this.setCursor(`edge-${this.edgeDir}`);
     const vs = this.vs;
     const h = this.hoverId !== null ? vs.knownEntity(this.hoverId) : null;
     if (this.mode.kind === 'place') return this.setCursor('place');
@@ -1770,6 +1789,7 @@ export class InputController {
 
   dispose() {
     this.disposed = true;
+    this.markEdge('');
     for (const off of this.offs.splice(0)) off();
     if (this.resizeObs) this.resizeObs.disconnect();
     this.box.remove();

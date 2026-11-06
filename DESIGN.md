@@ -2165,6 +2165,8 @@ per-frame budget, so a revealed army appears over a few frames.
   (`workCursor`): a pick over a gold mine (`cur-gather-gold`), an axe over a known tree (`cur-gather-wood`, from the
   hover's ground point), a hammer over an own building that is unfinished or damaged (`cur-repair`) and a flame over
   an own finished Shrine or Temple (`cur-pray`).
+  While edge scrolling moves the camera the cursor becomes a gold arrow pointing that way, one of eight
+  (`edgeDir`, `cur-edge-n` to `cur-edge-nw`); `body[data-edge]` gives the HUD panels along that edge the same arrow.
   Decade of Peace (5.10): a 🕊️ countdown chip sits next to the game clock (tooltip explains it,
   it turns amber and pulses for the last minute and is gone when the peace ends); one line as the
   game opens, a reminder at 5:00, 1:00 and 0:10 (not for marks already passed when the HUD
