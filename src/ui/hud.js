@@ -933,6 +933,8 @@ export class Hud {
       card.style.setProperty('--msg-accent', color); // the card's edge and emblem take the player's colour
     }
     this.pushLine(card, CHAT_MS);
+    // Another player's line gives a soft pluck (not my own, and not with the alerts turned off).
+    if (from !== this.vs.myIndex && getSettings().alerts !== 'off') sfx.play('chat', { volume: 0.7 });
   }
 
   /** Keep a chat or system line in the history, and show it there at once when the chat box is open. */

@@ -8,6 +8,7 @@
 //   tip        a soft celesta ting: a gameplay tip appeared
 //   milestone  a short fanfare stab with a sparkle: a milestone was reached
 //   taunt      two war-drum blows under a snarling brass fifth that bends down: a computer player taunts you
+//   chat       a quill's tick and two soft plucked notes: another player wrote in the chat
 
 const NOTE = (n) => 440 * Math.pow(2, (n - 69) / 12); // MIDI note → Hz
 
@@ -20,10 +21,11 @@ export const ALERT_LIMITS = {
   tip: { gap: 4, voices: 1, ui: true },
   milestone: { gap: 2, voices: 1, ui: true },
   taunt: { gap: 2, voices: 1, ui: true },
+  chat: { gap: 0.8, voices: 1, ui: true },
 };
 
 /** Overall loudness per sound (see LEVEL in sfx.js). */
-export const ALERT_LEVEL = { nudge: 1.0, drums: 1.05, gong: 0.9, research: 1.0, tip: 0.9, milestone: 1.0, taunt: 0.85 };
+export const ALERT_LEVEL = { nudge: 1.0, drums: 1.05, gong: 0.9, research: 1.0, tip: 0.9, milestone: 1.0, taunt: 0.85, chat: 0.9 };
 
 export const ALERT_RECIPES = {
   nudge(k, t, out, rv) {
@@ -78,6 +80,14 @@ export const ALERT_RECIPES = {
     let end = t;
     for (const [n, dt] of [[88, 0], [93, 0.11]]) end = Math.max(end, k.bell(out, t + dt, NOTE(n), { peak: 0.1, r: 0.9 }));
     if (rv) k.bell(rv, t + 0.11, NOTE(93), { peak: 0.05, r: 1.1 });
+    return end;
+  },
+  chat(k, t, out, rv) {
+    // A dry tick, then G and C plucked high and short: a note passed, far quieter than an alert.
+    k.noise(out, t, { type: 'bandpass', f: 3200, q: 2, a: 0.001, r: 0.02, peak: 0.1 });
+    k.osc(out, t + 0.01, { type: 'triangle', f: NOTE(79), a: 0.002, r: 0.14, peak: 0.16 });
+    const end = k.osc(out, t + 0.08, { type: 'triangle', f: NOTE(84), a: 0.002, r: 0.22, peak: 0.14 });
+    if (rv) k.osc(rv, t + 0.08, { f: NOTE(84), a: 0.003, r: 0.4, peak: 0.04 });
     return end;
   },
   taunt(k, t, out, rv) {

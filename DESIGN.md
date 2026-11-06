@@ -2359,7 +2359,8 @@ per-frame budget, so a revealed army appears over a few frames.
   dissolve over 0.8 s (`setLoading(false, true)`, `#start-message.is-leaving`; at once with reduced motion or on a failure).
   **Sounds** (`src/audio/sfx-alerts.js`, merged into the tables of `sfx.js`): `nudge` (two soft notes: a
   reminder), `drums` (four war-drum beats), `gong` (the peace is about to end), `research` (an upgrade
-  finished), `tip` (a tip appeared) and `milestone` (a short fanfare).
+  finished), `tip` (a tip appeared), `milestone` (a short fanfare) and `chat` (a tick and two soft plucks: another
+  player's chat line; never my own, and not with Alerts off).
   **The message feed** (`Hud.message`, `Hud.chat`; `src/ui/hud.js`, `src/ui/hud-data.js`, the "messages" block of
   `hud.css`): everything the HUD tells the player (alerts and reminders, milestones, the game's own events, the
   peace marks, chat) is a card at the bottom left, above the idle button and the task counts, in the tips' carved
