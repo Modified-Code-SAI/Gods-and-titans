@@ -323,6 +323,18 @@ export class Hud {
     });
     this.bottom.appendChild(this.groupBar.root);
     this.bottomInfo = this.infoRoot.parentNode;
+    // Destroy the selected own units (DESIGN 9 "Delete key"): a phone or tablet has no Delete key, and a mouse
+    // player finds it here too. It asks for a second tap of itself where the key asks for a second press.
+    this.deleteBtn = el('button', 'hud-del-btn', '💀');
+    this.deleteBtn.type = 'button';
+    this.deleteBtn.tabIndex = -1;
+    this.deleteBtn.title = 'Destroy the selected units (Delete)';
+    this.deleteBtn.setAttribute('aria-label', 'Destroy the selected units');
+    this.deleteBtn.hidden = true;
+    this.deleteBtn.addEventListener('click', () => {
+      if (game.input && !game.replay) game.input.deleteSelected(this.touchOnly ? 'Tap 💀 again' : 'Click 💀 or press Delete again');
+    });
+    this.bottomInfo.appendChild(this.deleteBtn);
     // Every player of the match with their pantheon, tier and score; folds to its header. Not in the
     // guided first match, which keeps the screen to its objectives.
     this.roster = game.tutorial ? null : new RosterView({
@@ -513,6 +525,7 @@ export class Hud {
     }
 
     this.infoView.update();
+    this.updateDeleteButton();
     if (this.roster) this.roster.update(now);
     this.groupBar.update(now);
     if (!this.groupBar.root.hidden) setStyle(this.groupBar.root, 'left', `${this.groupBarLeft()}px`);
@@ -757,6 +770,13 @@ export class Hud {
     if (!canTrade && this.market.isOpen) this.market.close();
     setClass(this.marketBtn, 'is-on', this.market.isOpen);
     this.market.update();
+  }
+
+  /** The Destroy button: while own units are selected in a game being played (not a replay, not over). */
+  updateDeleteButton() {
+    const g = this.game;
+    const show = !!g && !g.replay && !g.ended && !!g.selection && g.selection.ownUnitIds().length > 0;
+    setHidden(this.deleteBtn, !show);
   }
 
   /** The touch Chat button: on a touch-only device, in an online game that is not over (no chat offline or in a replay). */

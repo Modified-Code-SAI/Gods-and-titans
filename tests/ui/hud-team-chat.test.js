@@ -196,3 +196,23 @@ test('touch: a Chat button in the top bar opens and closes the chat, on a touch-
   hud.updateChatButton();
   assert.equal(hud.chatBtn.hidden, true, 'gone once the game is over');
 });
+
+test('the selection panel has a Destroy button while own units are selected; it runs the Delete key', () => {
+  const { hud, game, vs } = setup([0, 1]);
+  hud.updateDeleteButton();
+  assert.equal(hud.deleteBtn.hidden, true, 'nothing selected');
+  const mine = [...vs.entities.values()].find((e) => e.k === 'u' && e.o === 0);
+  game.selection.set([mine.id]);
+  hud.updateDeleteButton();
+  assert.equal(hud.deleteBtn.hidden, false);
+  const calls = [];
+  game.input = { deleteSelected: (again) => calls.push(again) };
+  hud.deleteBtn.click();
+  hud.touchOnly = true;
+  hud.deleteBtn.click();
+  assert.deepEqual(calls, ['Click 💀 or press Delete again', 'Tap 💀 again']);
+  game.replay = true;
+  hud.updateDeleteButton();
+  assert.equal(hud.deleteBtn.hidden, true, 'not in a replay');
+  game.input = null;
+});

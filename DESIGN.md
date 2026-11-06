@@ -2485,7 +2485,10 @@ per-frame budget, so a revealed army appears over a few frames.
   leaving the window takes the question back. Key auto-repeat, Ctrl / Alt / Cmd + either key, typing in chat and an
   open menu do nothing. Destroying units also ends a pending placement or targeting. The jump to your Town Center
   that Backspace used to be is **Home** now (fn + the left arrow on a Mac laptop). Rules and texts in
-  `src/ui/delete-key.js`.
+  `src/ui/delete-key.js`. A phone has no Delete key, so the selection panel carries a small 💀 **Destroy** button
+  in its bottom-right corner while own units are selected (not in a replay or once the game is over). It does what
+  the key does, and its question asks for another tap of itself (`Tap 💀 again to destroy 12 units.`; with a mouse
+  `Click 💀 or press Delete again …`, since either answers it).
   **Walls**: with a wall type chosen in the build menu (W) the left button goes down on the first
   tile and the line follows the cursor in the nearest of eight directions (`wallLine`); releasing
   orders it for all selected workers (`build` with `tx2` / `ty2`; Shift keeps laying walls). A tip by

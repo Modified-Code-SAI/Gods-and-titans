@@ -1410,16 +1410,17 @@ export class InputController {
    * Delete, or Backspace (the delete key of a Mac keyboard): destroy the selected own units (the sim's
    * `kill`). A few plain units go at once; a bigger group, a god or a Titan first says what it would
    * destroy and needs a second press (of either key, DELETE_CONFIRM_MS) with nothing new in the
-   * selection. Buildings are not units and stay.
+   * selection. Buildings are not units and stay. `again` is how the question asks for that second press: the
+   * selection panel's Destroy button (a phone has no Delete key) asks for another tap of itself.
    */
-  deleteSelected() {
+  deleteSelected(again = undefined) {
     const units = this.ownUnits().map((id) => this.vs.entities.get(id)).filter(Boolean);
     if (!units.length) {
       this.deleteArmed = null;
       if (this.sel.ownBuildings().length) this.error('Delete destroys units, not buildings.');
       return;
     }
-    const plan = deletePlan(units);
+    const plan = deletePlan(units, again);
     const armed = this.pendingDelete();
     if (plan.confirm && !(armed && plan.ids.every((id) => armed.ids.has(id)))) {
       this.deleteArmed = { ids: new Set(plan.ids), until: performance.now() + DELETE_CONFIRM_MS };
