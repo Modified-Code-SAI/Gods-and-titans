@@ -135,3 +135,38 @@ test('the left stick pans and the triggers zoom; over the HUD or a menu, A press
   assert.deepEqual(b.log, [], 'nothing reached the map');
   assert.deepEqual(o, { panX: 0, panY: 0 }, 'no panning under an open menu');
 });
+
+test('menus: the right stick moves the cursor and rings the button under it, A presses it, B is Esc; in a match it stands aside', async () => {
+  const { MenuPad } = await import('../../src/ui/gamepad-input.js');
+  const gp = pad();
+  const btn = document.createElement('button');
+  let clicked = 0;
+  btn.addEventListener('click', () => clicked++);
+  const keys = [];
+  const doc = { body: document.createElement('div'), activeElement: null, createElement: (t) => document.createElement(t), elementFromPoint: () => btn, addEventListener() {}, removeEventListener() {}, dispatchEvent: (e) => keys.push(e.key) };
+  let match = false;
+  const m = new MenuPad({ nav: { getGamepads: () => [gp] }, doc, inMatch: () => match });
+  m.update(0.016);
+  assert.equal(m.active, false, 'a pad left alone shows nothing');
+  gp.axes[2] = 1;
+  m.update(0.1);
+  gp.axes[2] = 0;
+  assert.equal(m.cursor.hidden, false);
+  assert.ok(btn.classList.contains('mw-pad-hover'), 'the button under the cursor is ringed');
+  const tap = (b) => {
+    gp.buttons[b] = { pressed: true, value: 1 };
+    m.update(0.016);
+    gp.buttons[b] = { pressed: false, value: 0 };
+    m.update(0.016);
+  };
+  tap(PAD.A);
+  assert.equal(clicked, 1);
+  tap(PAD.B);
+  assert.deepEqual(keys, ['Escape']);
+  match = true;
+  tap(PAD.A);
+  assert.equal(clicked, 1, 'in a match the InputController reads the pad');
+  assert.equal(m.cursor.hidden, true);
+  assert.equal(btn.classList.contains('mw-pad-hover'), false);
+  m.dispose();
+});

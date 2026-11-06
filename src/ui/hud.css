@@ -2642,3 +2642,5 @@
   will-change: transform;
 }
 .mw-pad-cursor[hidden] { display: none; }
+/* What the pad's cursor is over (a drawn cursor sets off no :hover). */
+.mw-pad-hover { outline: 2px solid var(--mw-gold, #e3b84f) !important; outline-offset: 2px; }

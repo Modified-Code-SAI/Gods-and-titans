@@ -73,6 +73,54 @@ const noop = () => {};
 const CURSOR_SVG =
   "<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M3 2 L3 22 L8.5 17 L12.5 26 L16 24.5 L12 15.5 L20 15.5 Z' fill='%23f6d98a' stroke='%23201508' stroke-width='1.6' stroke-linejoin='round'/></svg>";
 
+/** What the pad's cursor is over that a press would work: the nearest button, link or field (or null). */
+export function pressable(el) {
+  if (!el) return null;
+  if (typeof el.closest === 'function') return el.closest('button, a[href], input, select, textarea, [role="button"]') || null;
+  for (let n = el; n; n = n.parentNode) if (/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(n.tagName || '')) return n;
+  return null;
+}
+
+/** Ring what the pad's cursor is over (`.mw-pad-hover`), since a drawn cursor sets off no CSS :hover. Returns it. */
+function markHover(prev, el) {
+  const next = pressable(el);
+  if (prev === next) return prev;
+  if (prev && prev.classList) prev.classList.remove('mw-pad-hover');
+  if (next && next.classList) next.classList.add('mw-pad-hover');
+  return next;
+}
+
+/** The drawn arrow a pad moves (`.mw-pad-cursor`), made on first use. */
+function makeCursor(doc) {
+  if (!doc || typeof doc.createElement !== 'function') return null;
+  const c = doc.createElement('div');
+  c.className = 'mw-pad-cursor';
+  c.hidden = true;
+  if (c.style) c.style.backgroundImage = `url("data:image/svg+xml,${CURSOR_SVG}")`;
+  if (doc.body) doc.body.appendChild(c);
+  return c;
+}
+
+/** A keydown of Esc, as the menus listen for it (a plain Event with the key where KeyboardEvent is missing). */
+function escapeEvent() {
+  const init = { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true };
+  if (typeof KeyboardEvent === 'function') return new KeyboardEvent('keydown', init);
+  if (typeof Event !== 'function') return null;
+  const ev = new Event('keydown', init);
+  Object.defineProperties(ev, { key: { value: 'Escape' }, code: { value: 'Escape' } });
+  return ev;
+}
+
+/** Move a point by a stick on the cursor's curve (slow near centre for aiming, CURSOR_SPEED at full tilt), clamped to the window. */
+function stickStep(x, y, sx, sy, dt) {
+  const w = globalThis.innerWidth || 800;
+  const h = globalThis.innerHeight || 600;
+  const mag = Math.min(1, Math.hypot(sx, sy));
+  const len = Math.hypot(sx, sy) || 1;
+  const speed = CURSOR_SPEED * mag * mag * dt;
+  return [Math.max(0, Math.min(w - 1, x + (sx / len) * speed)), Math.max(0, Math.min(h - 1, y + (sy / len) * speed))];
+}
+
 export class GamepadInput {
   /**
    * @param {object} input the InputController
@@ -89,22 +137,15 @@ export class GamepadInput {
     this.boxing = false; // A is down over the map: a click, or a box if the cursor moves
     this.cursor = null;
     this.told = false; // the one-line how-to went to the message feed
+    this.hover = null; // the HUD button the cursor is over (ringed)
     this.onMouse = () => this.setActive(false);
     if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('mousemove', this.onMouse);
   }
 
   /** The pad's cursor as a DOM element (made on first use). */
   ensureCursor() {
-    if (this.cursor || !this.doc || typeof this.doc.createElement !== 'function') return this.cursor;
-    const c = this.doc.createElement('div');
-    c.className = 'mw-pad-cursor';
-    c.hidden = true;
-    if (c.style) {
-      c.style.backgroundImage = `url("data:image/svg+xml,${CURSOR_SVG}")`;
-    }
-    if (this.doc.body) this.doc.body.appendChild(c);
-    this.cursor = c;
-    return c;
+    if (!this.cursor) this.cursor = makeCursor(this.doc);
+    return this.cursor;
   }
 
   setActive(on) {
@@ -112,6 +153,7 @@ export class GamepadInput {
     this.active = on;
     const c = on ? this.ensureCursor() : this.cursor;
     if (c) c.hidden = !on;
+    if (!on) this.hover = markHover(this.hover, null);
   }
 
   fake(button) {
@@ -162,18 +204,11 @@ export class GamepadInput {
       this.prev = p.down;
       return out;
     }
-    if (moved) {
-      const w = globalThis.innerWidth || 800;
-      const h = globalThis.innerHeight || 600;
-      const mag = Math.min(1, Math.hypot(p.rx, p.ry));
-      const speed = CURSOR_SPEED * mag * mag * dt; // a curve: slow near centre for aiming, quick at full tilt
-      const len = Math.hypot(p.rx, p.ry) || 1;
-      this.x = Math.max(0, Math.min(w - 1, this.x + (p.rx / len) * speed));
-      this.y = Math.max(0, Math.min(h - 1, this.y + (p.ry / len) * speed));
-    }
+    if (moved) [this.x, this.y] = stickStep(this.x, this.y, p.rx, p.ry, dt);
     if (this.cursor && this.cursor.style) this.cursor.style.transform = `translate(${Math.round(this.x)}px, ${Math.round(this.y)}px)`;
     const el = this.under();
     const onMap = el === input.canvas;
+    this.hover = markHover(this.hover, onMap ? null : el);
     // the controller's pointer is the input's pointer: hover tags, the placement ghost and power rings follow it
     input.mx = this.x;
     input.my = this.y;
@@ -220,6 +255,121 @@ export class GamepadInput {
 
   dispose() {
     if (this.doc && typeof this.doc.removeEventListener === 'function') this.doc.removeEventListener('mousemove', this.onMouse);
+    this.hover = markHover(this.hover, null);
+    if (this.cursor) this.cursor.remove();
+    this.cursor = null;
+  }
+}
+
+/**
+ * The menus with a pad (DESIGN 9, "Gamepad"): outside a match the right stick moves the same drawn cursor, the left
+ * stick scrolls what is under it, A presses the button under it and B is Esc (back, or close a dialog). While a
+ * match's InputController is reading the pad (`inMatch()`), this one stands aside.
+ */
+export class MenuPad {
+  /**
+   * @param {{ nav?: object, doc?: Document, inMatch?: () => boolean }} [o]
+   */
+  constructor({ nav = globalThis.navigator, doc = globalThis.document, inMatch = () => false } = {}) {
+    this.nav = nav;
+    this.doc = doc;
+    this.inMatch = inMatch;
+    this.prev = new Set();
+    this.active = false;
+    this.x = -1;
+    this.y = -1;
+    this.cursor = null;
+    this.hover = null;
+    this.onMouse = () => this.setActive(false);
+    if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('mousemove', this.onMouse);
+  }
+
+  setActive(on) {
+    if (this.active === on) return;
+    this.active = on;
+    if (on && !this.cursor) this.cursor = makeCursor(this.doc);
+    if (this.cursor) this.cursor.hidden = !on;
+    if (!on) this.hover = markHover(this.hover, null);
+  }
+
+  under() {
+    const d = this.doc;
+    return d && typeof d.elementFromPoint === 'function' ? d.elementFromPoint(this.x, this.y) : null;
+  }
+
+  /** One frame of the menus' pad. */
+  update(dt) {
+    if (this.inMatch()) {
+      this.setActive(false);
+      this.prev.clear();
+      return;
+    }
+    const gp = firstPad(this.nav);
+    if (!gp) {
+      this.prev.clear();
+      return;
+    }
+    const p = readPad(gp);
+    const was = this.prev;
+    const pressed = (b) => p.down.has(b) && !was.has(b);
+    this.prev = p.down;
+    if (p.rx || p.ry || p.lx || p.ly || p.down.size) {
+      if (!this.active) {
+        this.x = (globalThis.innerWidth || 800) / 2;
+        this.y = (globalThis.innerHeight || 600) / 2;
+      }
+      this.setActive(true);
+    }
+    if (!this.active) return;
+    if (p.rx || p.ry) [this.x, this.y] = stickStep(this.x, this.y, p.rx, p.ry, dt);
+    if (this.cursor && this.cursor.style) this.cursor.style.transform = `translate(${Math.round(this.x)}px, ${Math.round(this.y)}px)`;
+    const el = this.under();
+    this.hover = markHover(this.hover, el);
+    if (p.ly || p.lx) {
+      // the left stick scrolls the nearest scrolling box under the cursor (the how-to pages, the lobby lists)
+      for (let n = el; n && n !== this.doc.body; n = n.parentNode) {
+        if (n.scrollHeight > n.clientHeight + 1 || n.scrollWidth > n.clientWidth + 1) {
+          if (typeof n.scrollBy === 'function') n.scrollBy(p.lx * 900 * dt, p.ly * 900 * dt);
+          break;
+        }
+      }
+    }
+    if (pressed(PAD.A)) {
+      const target = pressable(el) || el;
+      if (target && typeof target.focus === 'function' && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) target.focus();
+      if (target && typeof target.click === 'function') target.click();
+    }
+    if (pressed(PAD.B) || pressed(PAD.START)) {
+      const t = (this.doc && this.doc.activeElement) || this.doc;
+      const ev = escapeEvent();
+      if (ev && t && typeof t.dispatchEvent === 'function') t.dispatchEvent(ev);
+    }
+  }
+
+  /** Poll the pad once a frame (requestAnimationFrame) until dispose. */
+  start(raf = globalThis.requestAnimationFrame) {
+    if (typeof raf !== 'function' || this.running) return this;
+    this.running = true;
+    let last = 0;
+    const tick = (t) => {
+      if (!this.running) return;
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      last = t;
+      try {
+        this.update(dt);
+      } catch (err) {
+        console.error('[pad] menu pad', err);
+      }
+      raf(tick);
+    };
+    raf(tick);
+    return this;
+  }
+
+  dispose() {
+    this.running = false;
+    if (this.doc && typeof this.doc.removeEventListener === 'function') this.doc.removeEventListener('mousemove', this.onMouse);
+    this.hover = markHover(this.hover, null);
     if (this.cursor) this.cursor.remove();
     this.cursor = null;
   }
