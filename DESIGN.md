@@ -2561,6 +2561,10 @@ per-frame budget, so a revealed army appears over a few frames.
   sources sounding at once and of nodes made per second, the two things that load tracks, inside limits above
   today's. `tools/music-lab.html` plays any theme at any intensity.
 
+**Group selection** (`src/ui/hud-info.js` `buildMulti`, `buildSummary`). Several selected: the portraits (up to 24,
+two rows of 12, each with its health bar and rank) on the left, and a summary column beside them: how many are
+selected, their health added up with one bar, and one chip per type (icon, name, count) that selects only that type.
+
 **Realm panel** (`src/ui/hud-realm.js`). With nothing selected, the selection panel shows the realm, not an empty
 stone: the pantheon's crest, name and culture, and the age ("Village · age 1 of 3"); a card for the next age with its
 cost (a resource you lack in red) and one line on what it waits on ("Build a Shrine first.", "Gather more gold.",
