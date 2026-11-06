@@ -325,7 +325,20 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
     }
   }
 
+  // Online needs the network: offline, the buttons say so (and change back when it returns) instead of trying.
+  const peerOffline = () => onlineTransport === 'peer' && M.isOffline();
+  let onlineSubs = []; // [element, its online text]
+  const syncOnlineSubs = () => {
+    onlineSubs = onlineSubs.filter(([el]) => el.isConnected !== false);
+    for (const [el, text] of onlineSubs) el.textContent = peerOffline() ? M.OFFLINE_SUB : text;
+  };
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('online', syncOnlineSubs);
+    window.addEventListener('offline', syncOnlineSubs);
+  }
+
   async function hostOnline() {
+    if (peerOffline()) return toast(M.OFFLINE_NOTE);
     let cancelled = false;
     const done = busy('Opening a room on the network…', () => (cancelled = true));
     try {
@@ -384,6 +397,13 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       h('span.mw-orn.is-l', { 'aria-hidden': 'true' }, '◆'),
       h('span.mw-btn-label', label), h('span.mw-btn-sub', sub),
       h('span.mw-orn.is-r', { 'aria-hidden': 'true' }, '◆'));
+    const onlineBtn = (label, sub, onclick) => {
+      const b = mainBtn(label, sub, onclick, 'mw-online-btn');
+      const subEl = b.querySelector ? b.querySelector('.mw-btn-sub') : null;
+      if (subEl) onlineSubs.push([subEl, sub]);
+      if (subEl && peerOffline()) subEl.textContent = M.OFFLINE_SUB;
+      return b;
+    };
     const playBtn = mainBtn('Play vs AI', 'Skirmish or co-op against the computer', () => playVsAI(), 'mw-btn--primary');
     // Quick Match: the last game against the computer again, in one click (src/game/rematch.js). Shown once the lobby
     // module has read it back; none on a first visit.
@@ -470,8 +490,8 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         dailyBtn,
         learnBtn,
         campaignBtn,
-        mainBtn('Host Online Game', 'Invite friends with a room code', hostOnline),
-        mainBtn('Join Online Game', 'Enter a friend\'s room code', () => go('join')),
+        onlineBtn('Host Online Game', 'Invite friends with a room code', hostOnline),
+        onlineBtn('Join Online Game', 'Enter a friend\'s room code', () => go('join')),
         h('div.mw-nav-row',
           saves.length ? h('button.mw-btn.mw-btn--small', { type: 'button', onclick: () => go('load') }, 'Load Game') : null,
           h('button.mw-btn.mw-btn--small', { type: 'button', onclick: () => go('howto') }, 'How to Play'),
@@ -1230,6 +1250,11 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         setStatus('error', 'Enter the 5-character room code from the host.');
         sfx.play('error');
         codeInput.focus();
+        return;
+      }
+      if (peerOffline()) {
+        setStatus('error', M.OFFLINE_NOTE);
+        sfx.play('error');
         return;
       }
       const name = saveSettings({ name: nameInput.value }).name;
