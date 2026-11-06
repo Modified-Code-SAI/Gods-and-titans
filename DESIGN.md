@@ -2406,7 +2406,9 @@ per-frame budget, so a revealed army appears over a few frames.
   the double-tap time also brings the camera there. An emptied group's chip goes; hidden in replays. On a
   touch-only device (`isTouchOnly`), which has no Ctrl+digit, a dashed "+" chip after the groups saves the
   selection as the lowest free group (`saveSlot`); it shows while own units are selected that are not already a
-  group and a digit is free.
+  group and a digit is free. There a finger held on a group chip for `HOLD_ADD_MS` (0.7 s, after the tooltip's own hold has shown
+  "Keep holding to add the selection to it") adds the selection to that group, as Shift+digit does
+  (`Added to group 3.`), and the lifted finger does not then recall the group.
 - God power bar (`src/ui/hud-powers.js`, `PowerBar`): three round buttons on the left of the minimap, one per power
   of my pantheon (4.11), Village at the top. Locked (grey) until my settlement reaches the tier, ready (a slow
   golden glow) once it has, dark once spent; the tooltip names the power, its tier, what it does, its area and why

@@ -72,10 +72,16 @@ export function saveSlot(sel, vs, chips) {
 }
 
 /** The tooltip of a chip. */
-export function chipTitle(c) {
+export function chipTitle(c, touch = false) {
   const what = c.count === 1 ? c.name : `${c.count} units, led by ${c.name}`;
-  return `Group ${c.n}: ${what}${c.fighting ? ' (fighting)' : ''}\nClick or press ${c.n} to select it; twice to jump there.`;
+  const how = touch ? 'Tap to select it; twice to jump there. Keep holding to add the selection to it.'
+    : `Click or press ${c.n} to select it; twice to jump there.`;
+  return `Group ${c.n}: ${what}${c.fighting ? ' (fighting)' : ''}\n${how}`;
 }
+
+/** How long a finger rests on a group chip to add the selection to that group: past the tooltip's TIP_HOLD, so
+ * the tip that says so shows first. */
+export const HOLD_ADD_MS = 700;
 
 export class GroupBar {
   /**
@@ -84,13 +90,15 @@ export class GroupBar {
    * @param {object} o.viewState
    * @param {(n: number) => void} o.onPick a chip was clicked
    * @param {(n: number) => void} [o.onSave] the "+" chip was tapped: save the selection as group n
+   * @param {(n: number) => void} [o.onAdd] a chip was held down (touch): add the selection to group n (Shift+digit)
    * @param {boolean} [o.touch] a touch-only device: show the "+" chip
    */
-  constructor({ selection, viewState, onPick, onSave = null, touch = false }) {
+  constructor({ selection, viewState, onPick, onSave = null, onAdd = null, touch = false }) {
     this.sel = selection;
     this.vs = viewState;
     this.onPick = onPick;
     this.onSave = onSave;
+    this.onAdd = onAdd;
     this.touch = touch;
     this.saveN = 0;
     this.saveChip = null;
@@ -125,7 +133,7 @@ export class GroupBar {
       setText(v.count, String(c.count));
       setClass(v.b, 'is-fighting', c.fighting);
       setClass(v.b, 'is-active', c.active);
-      const title = chipTitle(c);
+      const title = chipTitle(c, this.touch && !!this.onAdd);
       if (v.b.title !== title) v.b.title = title;
     }
     // A new group's chip takes its place in digit order (chips come in that order).
@@ -163,7 +171,32 @@ export class GroupBar {
     b.dataset.group = String(n);
     b.addEventListener('mousedown', (e) => e.preventDefault());
     b.addEventListener('contextmenu', (e) => e.preventDefault());
+    // A finger held on a chip for HOLD_ADD_MS adds the selection to that group (a phone has no Shift+digit);
+    // the click that ends the hold does not then recall the group.
+    let timer = null;
+    let held = false;
+    const stop = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+    };
+    b.addEventListener('pointerdown', (e) => {
+      held = false;
+      stop();
+      if (e.pointerType !== 'touch' || !this.onAdd) return;
+      timer = setTimeout(() => {
+        timer = null;
+        held = true;
+        this.onAdd(n);
+        this.update(performance.now(), true);
+      }, HOLD_ADD_MS);
+    });
+    for (const t of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(t, stop);
     b.addEventListener('click', () => {
+      stop();
+      if (held) {
+        held = false;
+        return;
+      }
       if (this.onPick) this.onPick(n);
       this.update(performance.now(), true);
     });
