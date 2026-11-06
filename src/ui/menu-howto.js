@@ -87,6 +87,7 @@ export const HOTKEYS = [
     [kbd('F1–F3'), 'Select your gods'],
     [kbd('Ctrl', 'F6–F9'), 'Keep the camera spot (Shift works too)'],
     [kbd('F6–F9'), 'Back to a kept camera spot'],
+    [kbd('Alt', 'H'), 'Photo mode: hide the interface (P saves a picture, Esc returns)'],
     [bound('cam_jump'), 'Center on selection or the last alert'],
     [kbd('Tab'), 'Next unit type in a mixed selection'],
     [kbd('.'), 'Next idle worshipper (Shift or Ctrl: select all of them)'],

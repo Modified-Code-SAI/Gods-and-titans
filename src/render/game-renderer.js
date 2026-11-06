@@ -894,6 +894,11 @@ export class GameRenderer {
     this.plannedBuilds = list ? list.slice() : [];
   }
 
+  /** Photo mode (src/ui/photo-mode.js): the overlay scene (bars, rings, markers, ghosts) left out of the picture. */
+  setPhotoMode(on) {
+    this.overlayScene.visible = !on;
+  }
+
   setShowAllBars(on) {
     this.showAllBars = !!on;
   }

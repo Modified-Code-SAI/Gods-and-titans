@@ -294,6 +294,11 @@ export class Overlays {
     // A solo match against the computer can be saved and carried on later (DESIGN 9.4).
     const savable = typeof game.canSave === 'function' && game.canSave();
     if (savable) buttons.push(btn('Save Game', '', () => this.openSaves()));
+    // Photo mode (src/ui/photo-mode.js): the interface out of the way for a picture; Alt+H does the same in a match.
+    if (game.photo && !over) buttons.push(btn('Photo Mode', '', () => {
+      this.closeMenu();
+      game.photo.set(true);
+    }));
     // ... and a saved game loaded in its place, like the title screen's Load Game.
     if (savable && typeof game.canLoad === 'function' && game.canLoad()) buttons.push(btn('Load Game', '', () => this.openLoads()));
     const replay = !!game.replay;

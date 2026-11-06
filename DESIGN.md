@@ -2484,6 +2484,10 @@ per-frame budget, so a revealed army appears over a few frames.
   **Camera spots** (`src/ui/camera-spots.js`): Ctrl+F6..F9 (Shift works too, for systems that keep Ctrl with a
   function key) keeps where the camera is going and how far out it is; F6..F9 brings it back at once, and an empty
   spot says how to fill it. Four spots for the match, not saved; F5 stays the browser's reload.
+  **Photo mode** (`src/ui/photo-mode.js`): Alt+H, or Photo Mode in the game menu, hides the interface (`#hud-root.is-photo`)
+  and the overlay scene (`GameRenderer.setPhotoMode`: bars, rings, markers, ghosts) while the camera moves as ever; P
+  saves the next drawn frame as a PNG (`Game.takePhoto`, read in the same task as the frame), Esc, Alt+H or F10 bring the
+  interface back, and so does the end of the match. The match goes on meanwhile.
   **Frame rate** (`src/game/frame-pace.js`): the Frame rate limit setting (`frameCap`: None, 60, 30) has
   `Game.frame` skip an animation frame that comes before the limit's beat (`FrameCap.due`, on a beat rather than a gap,
   so a 144 Hz screen held to 60 averages 60); Show frame rate (`showFps`) puts "60 fps · 16.7 ms" under the top bar's

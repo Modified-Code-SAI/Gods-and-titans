@@ -101,6 +101,24 @@
   background: linear-gradient(90deg, transparent, rgba(227, 184, 79, 0.65) 18%, rgba(255, 231, 163, 0.85) 50%, rgba(227, 184, 79, 0.65) 82%, transparent);
   pointer-events: none;
 }
+/* Photo mode (src/ui/photo-mode.js): every part of the interface hidden but the tip, which fades. */
+#hud-root.is-photo > :not(.hud-photo-tip) { visibility: hidden !important; }
+.hud-photo-tip {
+  position: absolute;
+  top: 1.2em;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.45em 1em;
+  border: 1px solid var(--hud-edge);
+  border-radius: 0.4em;
+  background: rgba(10, 13, 21, 0.82);
+  font: 600 max(0.9em, var(--mw-min-text))/1.3 var(--mw-font-ui);
+  color: var(--mw-ink);
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.hud-photo-tip.is-gone { opacity: 0; }
 /* Show frame rate (src/game/frame-pace.js): a quiet counter under the top bar's right end. */
 .hud-fps {
   position: absolute;

@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-06-comfort',
+    id: '2026-11-06-comfort-photo',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'Photo mode: Alt+H hides the interface so only the world shows, and P saves a picture of it.',
       'Restart Match in the game menu starts a game against the computer again with the same players and settings.',
       'Camera spots: Ctrl+F6 to F9 keeps where you are looking, F6 to F9 brings you back.',
       'A frame rate limit (60 or 30) for a cooler laptop or phone, and a frame rate counter, in Settings → Graphics.',
