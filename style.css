@@ -1197,7 +1197,7 @@ kbd {
   padding: 1.3em 1.6em 0.6em;
 }
 .mw-howto-panel .mw-panel-head { margin-bottom: 0.8em; }
-.mw-career-btn { position: relative; }
+.mw-career-btn, .mw-news-btn { position: relative; }
 .mw-learn-btn { position: relative; }
 .mw-daily-btn { position: relative; }
 .mw-new-badge.mw-streak-badge { background: linear-gradient(180deg, #ff8a3d, #c4401c); color: #fff4e0; box-shadow: 0 0 12px rgba(255, 120, 50, 0.55); }
@@ -1211,6 +1211,17 @@ kbd {
 .mw-save-row { display: flex; align-items: center; gap: 0.6em; padding: 0.6em 0.8em; border: 1px solid var(--mw-line); border-radius: 0.5em; background: rgba(6, 8, 14, 0.45); }
 .mw-save-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15em; }
 .mw-save-text span { font-size: max(0.85em, var(--mw-min-text)); color: var(--mw-ink-dim); overflow-wrap: anywhere; }
+
+/* What's New (src/data/whats-new.js, menu.js newsScreen) */
+.mw-news-panel { width: min(48em, 94vw); }
+.mw-news-dot { position: absolute; top: 0.35em; right: 0.35em; width: 0.55em; height: 0.55em; border-radius: 50%; background: #e2553a; box-shadow: 0 0 8px rgba(255, 90, 50, 0.8); pointer-events: none; }
+.mw-news { padding: 0.9em 1.1em 0.7em; margin-bottom: 0.8em; border: 1px solid var(--mw-line); border-radius: 0.55em; background: rgba(6, 8, 14, 0.45); }
+.mw-news.is-unread { border-color: rgba(227, 184, 79, 0.55); box-shadow: inset 0 0 0 1px rgba(227, 184, 79, 0.15); }
+.mw-news-head { position: relative; display: flex; align-items: baseline; gap: 0.8em; flex-wrap: wrap; margin-bottom: 0.45em; }
+.mw-news-title { margin: 0; font: 700 1.05em/1.2 var(--mw-font-display); color: var(--mw-gold); letter-spacing: 0.04em; }
+.mw-news-date { font-size: max(0.82em, var(--mw-min-text)); color: var(--mw-ink-dim); }
+.mw-news-head .mw-new-badge { position: static; margin-left: auto; }
+.mw-news-list { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 0.3em; line-height: 1.4; }
 
 /* Career screen (src/ui/menu-career.js) */
 .mw-career-panel .mw-scroll > .mw-label { margin: 1.4em 0 0.6em; }

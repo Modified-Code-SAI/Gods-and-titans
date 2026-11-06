@@ -22,6 +22,7 @@ import { createMenuBackdrop } from './menu-fx.js';
 import { createLiveBackdrop, liveWanted } from './menu-live.js';
 import { openPantheonPicker, pantheonLabel, pantheonEmblem, summaryFor, unitRow, blessingRow, styleLine } from './menu-pantheons.js';
 import { howToPages } from './menu-howto.js';
+import { NEWS, hasUnreadNews, unreadNews, markNewsSeen } from '../data/whats-new.js';
 import { MapPreview } from './map-preview.js';
 import { renderCareerContent } from './menu-career.js';
 import { renderReplays } from './menu-replays.js';
@@ -360,6 +361,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
     lobby: lobbyScreen,
     join: joinScreen,
     howto: howToScreen,
+    news: newsScreen,
     career: careerScreen,
     campaign: (opts) => buildCampaignScreen({ go, onBegin: startMission, mission: opts.mission || null }),
     settings: settingsScreen,
@@ -495,6 +497,8 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         h('div.mw-nav-row',
           saves.length ? h('button.mw-btn.mw-btn--small', { type: 'button', onclick: () => go('load') }, 'Load Game') : null,
           h('button.mw-btn.mw-btn--small', { type: 'button', onclick: () => go('howto') }, 'How to Play'),
+          h('button.mw-btn.mw-btn--small.mw-news-btn', { type: 'button', onclick: () => go('news') }, 'What\'s New',
+            hasUnreadNews() ? h('span.mw-news-dot', { title: 'An update you have not read yet', 'aria-label': 'new' }) : null),
           // The intro film again (it plays by itself only as the game opens).
           onIntro ? h('button.mw-btn.mw-btn--small.mw-silent.mw-intro-title', { type: 'button', title: 'Watch the intro film again, with its narration', onclick: () => onIntro('title') }, '▶ Intro Film') : null,
           h('button.mw-btn.mw-btn--small.mw-career-btn', { type: 'button', onclick: () => go('career') }, 'Career',
@@ -1462,6 +1466,26 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         h('header.mw-panel-head', backBtn, h('h2.mw-h2', 'How to Play'), h('span.mw-head-spacer')),
         pages.tabs,
         h('div.mw-scroll', h('div.mw-howto', ...pages.pages)),
+      ),
+    );
+    return { el, focus: backBtn, onEscape: () => go('title') };
+  }
+
+  // ---------------------------------------------------------- what's new
+
+  function newsScreen() {
+    const unread = new Set(unreadNews().map((n) => n.id));
+    markNewsSeen(); // the badge goes once the newest update has been opened
+    const backBtn = h('button.mw-btn.mw-btn--ghost', { type: 'button', onclick: () => go('title') }, '‹ Back');
+    const el = h('div.mw-center-screen.mw-wide-screen',
+      h('section.mw-panel.mw-howto-panel.mw-news-panel',
+        h('header.mw-panel-head', backBtn, h('h2.mw-h2', 'What\'s New'), h('span.mw-head-spacer')),
+        h('div.mw-scroll', NEWS.map((n) => h('article.mw-news', unread.has(n.id) ? { class: 'is-unread' } : {},
+          h('header.mw-news-head',
+            h('h3.mw-news-title', n.title),
+            h('span.mw-news-date', n.date),
+            unread.has(n.id) ? h('span.mw-new-badge', 'New') : null),
+          h('ul.mw-news-list', n.items.map((t) => h('li', t)))))),
       ),
     );
     return { el, focus: backBtn, onEscape: () => go('title') };

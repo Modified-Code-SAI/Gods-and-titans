@@ -2675,6 +2675,10 @@ options sit beside them on four tabs, so the menu fits the screen without scroll
 alerts, the background-tab choice, edge scrolling, health bars), Graphics (quality, time of day, weather, interface
 size, team colours, frame rate limit and counter), Audio (sound effects, voices and music) and Keys (the command-key layout, Controls, Change keys). The
 tab looked at last opens next time (for the visit). Phone widths stack the buttons above the tabs.
+**What's New** (`src/data/whats-new.js`, `menu.js` `newsScreen`): the title screen's row of small buttons has What's
+New, with a "New" badge until the newest update in `NEWS` has been opened (its id kept in localStorage,
+`mythicwar-news-seen`). The screen lists every update, newest first, marking the ones not read before. A new update is
+an entry at the top with a fresh id, in plain words about what a player can now do.
 The title screen's Settings uses the same four tabs (`src/ui/menu.js` `settingsPages`): General (name, game speed,
 the gameplay toggles, alerts, the background-tab choice, the intro film), Graphics (quality, time of day, weather, the
 live title screen, interface size, team colours), Audio (sound effects, music and its Listen row) and Keys (the
