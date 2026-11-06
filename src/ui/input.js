@@ -15,6 +15,7 @@ import { sfx } from '../audio/sfx.js';
 import { unitBark, BarkGate } from '../audio/sfx-voices.js';
 import { checkPlacement, checkWallLine, footprintAt, peaceAnchors } from '../game/placement.js';
 import { TouchInput } from './touch-input.js';
+import { GamepadInput } from './gamepad-input.js';
 import { HoverTag, hoverTagInfo, HOVER_TAG_DELAY } from './hover-tag.js';
 import { getCommandCard, withCardKeys, buttonForKey, buildCheck, trainCheck, affordReason } from './command-card.js';
 import { normKey, bindingsOf, actionOf, cardKeysOf, PAN_ACTIONS } from './key-bindings.js';
@@ -146,6 +147,7 @@ export class InputController {
     }
     // Phones and tablets: finger gestures become these same mouse actions (touch-input.js).
     this.touch = new TouchInput(this);
+    this.pad = new GamepadInput(this); // a controller: its own cursor, sticks and buttons (DESIGN 9 "Gamepad")
     this.setCursor('');
   }
 
@@ -1683,6 +1685,15 @@ export class InputController {
       if (typeof r.camera.scroll === 'function') r.camera.scroll(sx, sy);
       else r.camera.pan(sx, sy);
     }
+    // A controller's left stick pans at the speed its tilt sets (the pad is read once a frame).
+    const pad = this.pad.update(dt);
+    if ((pad.panX || pad.panY) && !overlay) {
+      const k = Math.min(1, Math.hypot(pad.panX, pad.panY)) / (Math.hypot(pad.panX, pad.panY) || 1);
+      const sx = pad.panX * k * PAN_SPEED * dt;
+      const sy = pad.panY * k * PAN_SPEED * dt;
+      if (typeof r.camera.scroll === 'function') r.camera.scroll(sx, sy);
+      else r.camera.pan(sx, sy);
+    }
 
     const now = performance.now();
     const p = this.canvasPoint(this.mx, this.my);
@@ -1794,6 +1805,7 @@ export class InputController {
     this.disposed = true;
     this.markEdge('');
     this.touch.dispose();
+    this.pad.dispose();
     for (const off of this.offs.splice(0)) off();
     if (this.resizeObs) this.resizeObs.disconnect();
     this.box.remove();

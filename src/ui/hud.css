@@ -2627,3 +2627,18 @@
   .hud-menu-btn > span:not(.hud-menu-ico), .hud-menu-btn > kbd, .hud-top-left > .hud-res, .hud-ping { display: none; }
   .hud-top-left, .hud-top-right { gap: 0.25em; }
 }
+
+/* The controller's cursor (gamepad-input.js, DESIGN 9 "Gamepad"): an arrow the right stick moves; the OS pointer stays put. */
+.mw-pad-cursor {
+  position: fixed;
+  left: -3px;
+  top: -2px;
+  width: 28px;
+  height: 28px;
+  z-index: 100000;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+  will-change: transform;
+}
+.mw-pad-cursor[hidden] { display: none; }
