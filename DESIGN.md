@@ -2110,8 +2110,9 @@ per-frame budget, so a revealed army appears over a few frames.
   `?join=CODE`; chat; Start for host, in a footer under the lobby that stays on screen while the lobby scrolls
   above it, never over it), join screen (name + code), a notice pinned to the title and join screens
   (`menu.setNotice`, set by `boot` in main.js: no WebGL 2, and on a phone or tablet, `isTouchOnly` in menu-model.js:
-  `(pointer: coarse)` matches and `(any-pointer: fine)` does not, `TOUCH_NOTICE` "This game needs a mouse and
-  keyboard: it has no touch controls yet."; both join into one line), how-to-play (five tabs, as Settings, the last one
+  `(pointer: coarse)` matches and `(any-pointer: fine)` does not, `TOUCH_NOTICE` "Touch controls: tap to select, tap
+  the ground to send, drag to look around, pinch to zoom, hold then drag to select a group. A mouse and keyboard play
+  best."; both join into one line), how-to-play (five tabs, as Settings, the last one
   kept for the visit, `howToPages` in menu-howto.js: The Basics (gathering, prayer, the tiers, summoning, god
   levels, your pantheon), War (fighting, ranks, god powers, walls, relics, sacred sites), Game Modes (Decade of
   Peace, Trial of the Titans, Sacred Victory), Controls (the mouse and hotkey tables in two columns) and Beyond the
@@ -2676,6 +2677,14 @@ card opens under an element in the top half of the window, over one in the botto
 title of several lines heads with its first, one plain line is all body. Code keeps writing `title`: a new title
 wins over the stored one, a title rewritten while its card is up redraws it, and a click, the wheel, a key, the
 window losing focus, or the element being removed or hidden closes it. `[data-native-tip]` opts a subtree out.
+
+**Touch.** On a phone or tablet the canvas turns fingers into the mouse actions `InputController` already has
+(`TouchInput` in touch-input.js, so selection, orders, placement and targeting keep one set of rules). A tap is a
+left click, or, with own units selected and the tap not on another own unit, the right-click order (`tapButton`).
+One finger dragged at once pans (the middle-button drag); a finger that rests `HOLD_MS` (420 ms, timed by the
+events' timestamps, with a 12 ms buzz where the phone has one) and then moves draws a selection box. Two fingers
+pinch the zoom and pan by their midpoint. A finger lifting clears the pointer, so no edge scroll or hover tag stays
+behind. HUD buttons are DOM and take taps as clicks. Not done: hover tooltips, the god-power ring before a tap.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).

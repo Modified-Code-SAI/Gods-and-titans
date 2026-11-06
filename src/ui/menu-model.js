@@ -470,8 +470,8 @@ export function friendlyJoinError(err, code) {
   return msg;
 }
 
-/** The title (and Join) screen's notice on a phone or tablet: there is no touch control. */
-export const TOUCH_NOTICE = 'This game needs a mouse and keyboard: it has no touch controls yet. Play it on a computer.';
+/** The title (and Join) screen's notice on a phone or tablet: how the touch controls work (touch-input.js). */
+export const TOUCH_NOTICE = 'Touch controls: tap to select, tap the ground to send, drag to look around, pinch to zoom, hold then drag to select a group. A mouse and keyboard play best.';
 
 /**
  * True on a device whose only pointer is coarse (a phone or tablet with no mouse or trackpad attached):

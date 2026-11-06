@@ -14,6 +14,7 @@ import { getSettings } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
 import { unitBark, BarkGate } from '../audio/sfx-voices.js';
 import { checkPlacement, checkWallLine, footprintAt, peaceAnchors } from '../game/placement.js';
+import { TouchInput } from './touch-input.js';
 import { HoverTag, hoverTagInfo, HOVER_TAG_DELAY } from './hover-tag.js';
 import { getCommandCard, withCardKeys, buttonForKey, buildCheck, trainCheck, affordReason } from './command-card.js';
 import { normKey, bindingsOf, actionOf, cardKeysOf, PAN_ACTIONS } from './key-bindings.js';
@@ -143,6 +144,8 @@ export class InputController {
       this.resizeObs = new ResizeObserver(() => (this.rect = null));
       this.resizeObs.observe(canvas);
     }
+    // Phones and tablets: finger gestures become these same mouse actions (touch-input.js).
+    this.touch = new TouchInput(this);
     this.setCursor('');
   }
 
@@ -1790,6 +1793,7 @@ export class InputController {
   dispose() {
     this.disposed = true;
     this.markEdge('');
+    this.touch.dispose();
     for (const off of this.offs.splice(0)) off();
     if (this.resizeObs) this.resizeObs.disconnect();
     this.box.remove();
