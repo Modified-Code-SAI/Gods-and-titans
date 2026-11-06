@@ -298,3 +298,35 @@ test('a match counted in the career (quit or ended) is remembered, so a save of 
     else delete globalThis.localStorage;
   }
 });
+
+test('leaving the page: a solo match is autosaved at once (not twice in a row), and the tab asks before it closes', async () => {
+  const { leaveNeedsAsking, LEAVE_ASK_AFTER } = await import('../../src/game/game.js');
+  const { LEAVE_SAVE_GAP } = await import('../../src/game/game-saves.js');
+  const writes = [];
+  const store = { writeSave: async (slot, save, info) => (writes.push(slot), { ...info, slot }), saveInfo: () => null, deleteSave: async () => {} };
+  const setup = aiSetup({ players: [
+    { index: 0, name: 'Me', team: 1, pantheon: 'greek', kind: 'human' },
+    { index: 1, name: 'B', team: 2, pantheon: 'norse', kind: 'ai', difficulty: 'easy' },
+  ] });
+  const session = new HostSession({ setup, myIndex: 0, autoTick: false, useWorker: false, createWorld, createAI });
+  const game = { session, viewState: session.viewState, myIndex: 0, paused: false, disposed: false, hud: { message() {} }, renderer: null, selection: { groups: new Map() }, chronicle: null, career: null, launch: null };
+  const saver = new MatchSaver(game, { store });
+  session.viewState.time = 50;
+  assert.equal(saver.saveOnLeave(), true);
+  await saver.busy;
+  assert.deepEqual(writes, [AUTO_SLOT]);
+  await new Promise((r) => setImmediate(r)); // the finished save lets go of busy
+  session.viewState.time = 50 + LEAVE_SAVE_GAP - 1;
+  assert.equal(saver.saveOnLeave(), false, 'not again so soon');
+  session.viewState.time = 50 + LEAVE_SAVE_GAP;
+  assert.equal(saver.saveOnLeave(), true);
+  await saver.busy;
+  assert.equal(writes.length, 2);
+
+  assert.equal(leaveNeedsAsking(game), true, 'a match being played');
+  assert.equal(leaveNeedsAsking({ ...game, viewState: { time: LEAVE_ASK_AFTER - 1 } }), false, 'just begun');
+  assert.equal(leaveNeedsAsking({ ...game, replay: {} }), false, 'a replay');
+  assert.equal(leaveNeedsAsking({ ...game, ended: true }), false, 'over');
+  assert.equal(leaveNeedsAsking({ ...game, viewState: { time: 99, me: { defeated: true } } }), false, 'defeated');
+  session.stop();
+});

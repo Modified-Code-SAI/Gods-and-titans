@@ -2892,7 +2892,11 @@ A match against the computer (one human, the rest AI; not the guided first match
   this very match (its `matchId`), when nothing is counted; a slot that cannot be read leaves the match running
   and says why) and **Save & Quit** (saves to the autosave slot and leaves
   without counting the match in the career: it counts when it ends after being carried on). The game is also
-  autosaved every `AUTOSAVE_EVERY` (180) seconds of game time ("Game autosaved." in the feed). When the match
+  autosaved every `AUTOSAVE_EVERY` (180) seconds of game time ("Game autosaved." in the feed), and also, quietly,
+  whenever the page goes out of sight or is being closed (`MatchSaver.saveOnLeave`, at most once per
+  `LEAVE_SAVE_GAP` = 20 game seconds), because a phone may drop a hidden tab. Closing the tab or going back in the
+  middle of any match (not a replay, not once it is over for me, past its first `LEAVE_ASK_AFTER` = 30 s) makes the
+  browser ask "Leave site?" first (`leaveNeedsAsking`, a `beforeunload` handler in `Game.watchVisibility`). When the match
   ends, its own autosave is deleted (Continue must not bring back a finished game); slots are kept. **Quit to
   Menu** counts the match as lost (9.2) and deletes its autosave too. A counted match (ended or quit) is
   remembered by its id (localStorage `mythicwar-settled`, the last 40): a slot of it loaded later plays on but

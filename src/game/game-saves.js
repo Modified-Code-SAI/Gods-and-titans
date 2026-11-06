@@ -17,6 +17,8 @@ import { AUTO_SLOT, writeSave, saveInfo, deleteSave } from './save-store.js';
 
 /** Game seconds between two autosaves. */
 export const AUTOSAVE_EVERY = 180;
+/** Game seconds between two saves made because the page went out of sight (MatchSaver.saveOnLeave). */
+export const LEAVE_SAVE_GAP = 20;
 
 let saveGameModule = null;
 /** save-game.js, loaded once. */
@@ -191,6 +193,20 @@ export class MatchSaver {
     this.save(AUTO_SLOT).then(() => {
       if (this.game.hud && !this.game.disposed) this.game.hud.message('Game autosaved.', 'system', { icon: '💾' });
     }, (err) => console.warn('[save] autosave failed', err && err.message ? err.message : err));
+  }
+
+  /**
+   * The page is going out of sight (another app, a locked phone, a closed tab): autosave now, quietly, so a phone
+   * that drops the hidden tab loses nothing. Not more often than once per LEAVE_SAVE_GAP seconds of game time, and
+   * not while another save runs. Returns whether a save started.
+   */
+  saveOnLeave() {
+    const vs = this.game.viewState;
+    if (this.busy || !vs || !this.canSave()) return false;
+    if (Number.isFinite(this.leftAt) && vs.time - this.leftAt < LEAVE_SAVE_GAP) return false;
+    this.leftAt = vs.time;
+    this.save(AUTO_SLOT).catch((err) => console.warn('[save] the save on leaving failed', err && err.message ? err.message : err));
+    return true;
   }
 
   /** The match is over (or the player quit it, a loss): its autosave would only bring it back to count again, so Continue forgets it. */

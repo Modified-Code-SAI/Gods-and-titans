@@ -176,6 +176,20 @@ function isSolo(s) {
   return !!(s && s.isHost && s.ticker && (!s.clients || s.clients.size === 0) && !s.stopped && !(s.waiting && s.waiting.size));
 }
 
+/** Game seconds into a match before closing the tab asks first: a match just begun has nothing to lose. */
+export const LEAVE_ASK_AFTER = 30;
+
+/**
+ * Should closing the tab (or going back) ask "Leave site?" first? While a match is being played: not a replay, not
+ * over for this player, past its first LEAVE_ASK_AFTER seconds. (A solo match is also autosaved as the page goes.)
+ */
+export function leaveNeedsAsking(game) {
+  if (!game || game.disposed || game.ended || game.replay) return false;
+  const vs = game.viewState;
+  if (!vs || vs.gameOver || (vs.me && vs.me.defeated)) return false;
+  return Number.isFinite(vs.time) && vs.time >= LEAVE_ASK_AFTER;
+}
+
 /** Let the browser paint once (a timer covers a hidden tab, where frames do not run). */
 function nextPaint() {
   return new Promise((resolve) => {
@@ -736,13 +750,27 @@ export class Game {
   watchVisibility() {
     if (typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
     const onChange = () => {
-      if (!document.hidden || this.disposed || this.ended || this.paused || !this.hud) return;
+      if (!document.hidden || this.disposed || this.ended || !this.hud) return;
+      // A phone may drop a hidden tab: a solo match is autosaved as it goes out of sight (Continue brings it back).
+      if (this.saver) this.saver.saveOnLeave();
+      if (this.paused) return;
       const vs = this.viewState;
       if (!isSolo(this.session) || vs.gameOver || (vs.me && vs.me.defeated) || this.hud.overlays.open) return;
       this.hud.overlays.openMenu();
     };
     document.addEventListener('visibilitychange', onChange);
     this.offs.push(() => document.removeEventListener('visibilitychange', onChange));
+    // Closing the tab or going back by mistake in the middle of a match: the browser asks first ("Leave site?").
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      const onLeave = (e) => {
+        if (!leaveNeedsAsking(this)) return;
+        if (this.saver) this.saver.saveOnLeave();
+        e.preventDefault();
+        e.returnValue = ''; // older browsers show the dialog only with a returnValue
+      };
+      window.addEventListener('beforeunload', onLeave);
+      this.offs.push(() => window.removeEventListener('beforeunload', onLeave));
+    }
     onChange(); // the tab may already be hidden: the player switched away while the match was loading
   }
 
