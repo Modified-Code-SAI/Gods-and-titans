@@ -909,6 +909,16 @@ export class Hud {
    * A computer player's line (DESIGN 10.1) as a taunt at the top centre: their pantheon's emblem,
    * their name in their colour and the words, larger than the feed. A new taunt replaces the one up.
    */
+  /** In a narrow window the player list reaches under the taunt's spot: the card then drops just below the list. */
+  clearRoster(card) {
+    card.style.top = '';
+    const list = this.roster && this.roster.root;
+    if (!list || list.hidden || typeof list.getBoundingClientRect !== 'function') return;
+    const a = list.getBoundingClientRect();
+    const b = card.getBoundingClientRect();
+    if (a.bottom > b.top && a.right > b.left && a.left < b.right) card.style.top = `${Math.round(a.bottom + 8)}px`;
+  }
+
   showTaunt(line) {
     if (!line || typeof line !== 'object' || this.endScreenUp()) return false;
     const text = sanitizeChat(line.text);
@@ -924,6 +934,7 @@ export class Hud {
     t.style.setProperty('--taunt-accent', displayColor(safeColor(p && p.color, '#ff7a4a')));
     t.hidden = false;
     t.classList.remove('is-on');
+    this.clearRoster(t);
     void t.offsetWidth; // restart the slam-in for a taunt that replaces another
     t.classList.add('is-on');
     clearTimeout(this.tauntTimer);
