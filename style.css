@@ -1594,3 +1594,21 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   .mw-ld-card, .mw-ld-vs, .mw-ld-terms { animation: none; }
 }
+
+/* Settings: the fields on four pages behind tabs (src/ui/menu.js settingsPages) */
+.mw-stabs { display: flex; gap: 0.25em; margin: 0.4em 0 1.1em; border-bottom: 1px solid rgba(196, 146, 72, 0.32); }
+.mw-stab {
+  position: relative; padding: 0.6em 1em 0.65em; margin-bottom: -1px; cursor: pointer;
+  font: 700 0.8rem/1 var(--mw-font-display); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mw-ink-dim); background: none; border: 1px solid transparent; border-radius: 4px 4px 0 0;
+  transition: color 0.15s, background 0.15s;
+}
+.mw-stab:hover { color: var(--mw-gold-hi); }
+.mw-stab:focus-visible { outline: 2px solid var(--mw-gold); outline-offset: 2px; }
+.mw-stab.is-active { color: var(--mw-gold-hi); background: linear-gradient(180deg, rgba(227, 184, 79, 0.14), rgba(227, 184, 79, 0.02)); border-color: rgba(196, 146, 72, 0.45); }
+.mw-stab.is-active::after { content: ''; position: absolute; left: 1em; right: 1em; bottom: 0.22em; height: 2px; background: var(--mw-gold); box-shadow: 0 0 6px rgba(227, 184, 79, 0.6); }
+.mw-spage[hidden] { display: none; }
+.mw-spage { min-height: 24em; animation: mw-ld-fade 0.18s ease-out; }
+@media (max-width: 560px) {
+  .mw-stab { padding: 0.55em 0.6em; letter-spacing: 0.06em; }
+}

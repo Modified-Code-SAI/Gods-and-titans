@@ -54,6 +54,42 @@ export function hideMenu() {
 }
 
 /** 'fifth' for 5 (the boss rhythm of the Trial of the Titans), else '5th'. */
+/** The Settings tab shown last (this visit only): the screen opens on it again. */
+let settingsTab = 'general';
+
+/**
+ * The Settings screen's pages behind a tab bar: [id, label, fields] each; only the chosen page shows, the others
+ * stay in the screen hidden.
+ */
+export function settingsPages(list) {
+  const buttons = [];
+  const pages = [];
+  if (!list.some(([id]) => id === settingsTab)) settingsTab = list[0][0];
+  const pick = (id) => {
+    settingsTab = id;
+    for (const b of buttons) {
+      const on = b.dataset.id === id;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    for (const pg of pages) pg.hidden = pg.dataset.id !== id;
+  };
+  for (const [id, label, fields] of list) {
+    const b = h('button.mw-stab', { type: 'button', role: 'tab', onclick: () => {
+      if (settingsTab !== id) sfx.play('click');
+      pick(id);
+    } }, label);
+    b.dataset.id = id;
+    buttons.push(b);
+    const pg = h('div.mw-spage', { role: 'tabpanel' }, ...fields.filter(Boolean));
+    pg.dataset.id = id;
+    pages.push(pg);
+  }
+  const tabs = h('div.mw-stabs', { role: 'tablist' }, ...buttons);
+  pick(settingsTab);
+  return { tabs, pages, pick };
+}
+
 function ordinal(n) {
   return ({ 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth', 10: 'tenth' })[n] || `${n}th`;
 }
@@ -1563,38 +1599,50 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
     };
     const keyPanel = buildKeyPanel(); // the camera and command card keys (src/ui/key-panel.js)
     const backBtn = h('button.mw-btn.mw-btn--ghost', { type: 'button', onclick: () => go('title') }, '‹ Back');
+    const pages = settingsPages([
+      ['general', 'General', [
+          h('label.mw-field', h('span.mw-label', 'Player name'), nameInput, h('span.mw-field-note', 'Shown to other players in online lobbies.')),
+          h('div.mw-field', h('span.mw-label', 'Game speed'), ...segField('gameSpeed', GAME_SPEED_OPTIONS)),
+          h('div.mw-field', h('span.mw-label', 'Gameplay'),
+            toggle('edgeScroll', 'Edge scrolling', 'Move the camera when the mouse touches the screen edge.'),
+            toggle('showAllBars', 'Always show health bars', 'Otherwise hold Alt to see them all.'),
+            toggle('tipsDismissed', 'Getting-started tips', 'Show the new-player checklist in your next game.', true),
+            toggle('hints', 'Gameplay tips', 'A short tip now and then during a match.'),
+            toggle('aiChat', 'AI chatter', 'Computer players greet you, taunt you and beg for mercy in chat, each in the voice of its pantheon.'),
+          ),
+          h('div.mw-field', h('span.mw-label', 'Alerts'), h('div.mw-segmented', aBtns), aNote),
+          h('div.mw-field', h('span.mw-label', 'When this tab is in the background'), h('div.mw-segmented', wBtns), wNote),
+          h('div.mw-field', h('span.mw-label', 'Intro film'),
+            h('span.mw-field-note', 'A short film of the game that plays every time the game opens, with a score that follows the Music setting. Browsers keep sound off until a key press or a click, so it waits for one; allow sound for this site in your browser\'s site settings and it starts by itself. Esc skips it.'),
+            toggle('narration', 'Narration', browserSpeech() || sfx.supported ? 'A narrator reads the film\'s captions aloud. It follows the Volume above.' : 'This browser cannot play the narration, so the film plays with its captions only.'),
+            onIntro ? h('button.mw-btn.mw-btn--small.mw-silent.mw-intro-watch', { type: 'button', onclick: () => onIntro('settings') }, '▶ Watch it now') : null),
+      ]],
+      ['look', 'Graphics', [
+          h('div.mw-field', h('span.mw-label', 'Graphics quality'), h('div.mw-segmented', qBtns), qDesc),
+          h('div.mw-field', h('span.mw-label', 'Time of day'), h('div.mw-segmented', tBtns), tDesc),
+          h('div.mw-field', h('span.mw-label', 'Weather'), toggle('weather', 'Weather', 'Passing showers, snow in the Highlands and mist over the woods, the same for every player. Off keeps the sky clear.')),
+          h('div.mw-field', h('span.mw-label', 'Live title screen'), toggle('liveMenu', 'Live title screen', 'The village at work in 3D behind the menus. Off shows the painted night sky, which is lighter on a slow machine.')),
+          h('div.mw-field', h('span.mw-label', 'Interface size'), ...segField('uiScale', UI_SCALE_OPTIONS)),
+          h('div.mw-field', h('span.mw-label', 'Team colours'), ...segField('teamColors', TEAM_COLOR_OPTIONS)),
+      ]],
+      ['sound', 'Audio', [
+          h('div.mw-field', h('span.mw-label', 'Sound effects'),
+            h('div.mw-range-row', volume, volValue, testBtn)),
+          h('div.mw-field', h('span.mw-label', 'Music'),
+            h('div.mw-range-row', musicRange, musicOut, muteBtn),
+            preview,
+            h('span.mw-field-note', 'Every pantheon has its own score: calm while you build, louder in a fight. The Decade of Peace stays calm until the war horn.')),
+      ]],
+      ['keys', 'Keys', [
+          h('div.mw-field', h('span.mw-label', 'Command keys'), ...segField('cardKeys', CARD_KEY_OPTIONS)),
+          h('div.mw-field', h('span.mw-label', 'Keys'), keyPanel.el),
+      ]],
+    ]);
     const el = h('div.mw-center-screen',
       h('section.mw-panel.mw-form-panel.mw-settings',
         h('header.mw-panel-head', backBtn, h('h2.mw-h2', 'Settings'), h('span.mw-head-spacer')),
-        h('label.mw-field', h('span.mw-label', 'Player name'), nameInput, h('span.mw-field-note', 'Shown to other players in online lobbies.')),
-        h('div.mw-field', h('span.mw-label', 'Sound effects'),
-          h('div.mw-range-row', volume, volValue, testBtn)),
-        h('div.mw-field', h('span.mw-label', 'Music'),
-          h('div.mw-range-row', musicRange, musicOut, muteBtn),
-          preview,
-          h('span.mw-field-note', 'Every pantheon has its own score: calm while you build, louder in a fight. The Decade of Peace stays calm until the war horn.')),
-        h('div.mw-field', h('span.mw-label', 'Graphics quality'), h('div.mw-segmented', qBtns), qDesc),
-        h('div.mw-field', h('span.mw-label', 'Time of day'), h('div.mw-segmented', tBtns), tDesc),
-        h('div.mw-field', h('span.mw-label', 'Weather'), toggle('weather', 'Weather', 'Passing showers, snow in the Highlands and mist over the woods, the same for every player. Off keeps the sky clear.')),
-        h('div.mw-field', h('span.mw-label', 'Live title screen'), toggle('liveMenu', 'Live title screen', 'The village at work in 3D behind the menus. Off shows the painted night sky, which is lighter on a slow machine.')),
-        h('div.mw-field', h('span.mw-label', 'Game speed'), ...segField('gameSpeed', GAME_SPEED_OPTIONS)),
-        h('div.mw-field', h('span.mw-label', 'Interface size'), ...segField('uiScale', UI_SCALE_OPTIONS)),
-        h('div.mw-field', h('span.mw-label', 'Team colours'), ...segField('teamColors', TEAM_COLOR_OPTIONS)),
-        h('div.mw-field', h('span.mw-label', 'Command keys'), ...segField('cardKeys', CARD_KEY_OPTIONS)),
-        h('div.mw-field', h('span.mw-label', 'Keys'), keyPanel.el),
-        h('div.mw-field', h('span.mw-label', 'Intro film'),
-          h('span.mw-field-note', 'A short film of the game that plays every time the game opens, with a score that follows the Music setting. Browsers keep sound off until a key press or a click, so it waits for one; allow sound for this site in your browser\'s site settings and it starts by itself. Esc skips it.'),
-          toggle('narration', 'Narration', browserSpeech() || sfx.supported ? 'A narrator reads the film\'s captions aloud. It follows the Volume above.' : 'This browser cannot play the narration, so the film plays with its captions only.'),
-          onIntro ? h('button.mw-btn.mw-btn--small.mw-silent.mw-intro-watch', { type: 'button', onclick: () => onIntro('settings') }, '▶ Watch it now') : null),
-        h('div.mw-field', h('span.mw-label', 'Gameplay'),
-          toggle('edgeScroll', 'Edge scrolling', 'Move the camera when the mouse touches the screen edge.'),
-          toggle('showAllBars', 'Always show health bars', 'Otherwise hold Alt to see them all.'),
-          toggle('tipsDismissed', 'Getting-started tips', 'Show the new-player checklist in your next game.', true),
-          toggle('hints', 'Gameplay tips', 'A short tip now and then during a match.'),
-          toggle('aiChat', 'AI chatter', 'Computer players greet you, taunt you and beg for mercy in chat, each in the voice of its pantheon.'),
-        ),
-        h('div.mw-field', h('span.mw-label', 'Alerts'), h('div.mw-segmented', aBtns), aNote),
-        h('div.mw-field', h('span.mw-label', 'When this tab is in the background'), h('div.mw-segmented', wBtns), wNote),
+        pages.tabs,
+        ...pages.pages,
         h('p.mw-hint.mw-saved-note', '✓ Settings are saved automatically in this browser.'),
       ),
     );
