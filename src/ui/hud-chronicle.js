@@ -51,16 +51,36 @@ function nameCell(p, vs, winningTeam) {
   return cell;
 }
 
-/** A table of players: cols are [heading, (p, i) => text, title?]; textCol: the second column is words, not numbers. */
+/**
+ * A table of players: cols are [heading, (p, i) => text, title?, measure?]; textCol: the second column is words, not
+ * numbers. A column with a `measure` ({ of: (p, i) => number, best: true|false }) draws each cell's share of the
+ * column's largest value as a thin bar under it, and when `best` marks the leader(s) in gold (nobody when all tie).
+ */
 function table(vs, winningTeam, cols, textCol = false) {
+  const players = vs.players || [];
   const head = el('tr', null, el('th', null, 'Player'), ...cols.map(([h, , tip]) => {
     const th = el('th', null, h);
     if (tip) th.title = tip;
     return th;
   }));
-  const rows = (vs.players || []).map((p, i) => el('tr', p.defeated ? 'is-defeated' : null, nameCell(p, vs, winningTeam), ...cols.map(([, read]) => el('td', null, read(p, i)))));
+  const tops = cols.map(([, , , m]) => (m ? Math.max(0, ...players.map((p, i) => Number(m.of(p, i)) || 0)) : 0));
+  // A lead needs someone behind it: a column where everyone ties marks nobody.
+  const tied = cols.map(([, , , m], c) => !!m && players.every((p, i) => (Number(m.of(p, i)) || 0) === tops[c]));
+  const rows = players.map((p, i) => el('tr', p.defeated ? 'is-defeated' : null, nameCell(p, vs, winningTeam), ...cols.map(([, read, , m], c) => {
+    const td = el('td', null, read(p, i));
+    if (m && tops[c] > 0) {
+      const v = Number(m.of(p, i)) || 0;
+      td.className = m.best && v === tops[c] && !tied[c] ? 'has-bar is-best' : 'has-bar';
+      td.style.setProperty('--share', String(Math.round((v / tops[c]) * 1000) / 1000));
+    }
+    return td;
+  })));
   return el('table', `hud-stats${textCol ? '' : ' is-numbers'}`, el('thead', null, head), el('tbody', null, ...rows));
 }
+
+const stat = (k) => (p) => (p.stats && p.stats[k]) || 0;
+const most = (of) => ({ of, best: true });
+const bar = (of) => ({ of, best: false });
 
 function summaryTab(vs, winningTeam, peak) {
   const players = vs.players || [];
@@ -76,9 +96,9 @@ function summaryTab(vs, winningTeam, peak) {
     table(vs, winningTeam, [
       ['Pantheon', (p) => (PANTHEONS[p.pantheon] ? PANTHEONS[p.pantheon].name : p.pantheon || '')],
       ['Score', score, 'Economy (gathered and faith) + military (worth destroyed) + civilization (tier and research)'],
-      ['Kills', (p) => fmt(p.stats && p.stats.kills)],
-      ['Losses', (p) => fmt(p.stats && p.stats.losses)],
-      ['Gathered', (p) => fmt(p.stats && p.stats.gathered)],
+      ['Kills', (p) => fmt(p.stats && p.stats.kills), null, most(stat('kills'))],
+      ['Losses', (p) => fmt(p.stats && p.stats.losses), null, bar(stat('losses'))],
+      ['Gathered', (p) => fmt(p.stats && p.stats.gathered), null, most(stat('gathered'))],
     ], true),
     awards.length ? el('div', 'hud-ch-awards', ...awards.map((a) => {
       const who = a.winners.map((i) => byIndex.get(i)).filter(Boolean);
@@ -98,12 +118,12 @@ function summaryTab(vs, winningTeam, peak) {
 function economyTab(vs, winningTeam) {
   const st = (p, k) => fmt(p.stats && p.stats[k]);
   return el('div', 'hud-ch-pane', table(vs, winningTeam, [
-    ['Gold', (p) => st(p, 'gold')],
-    ['Wood', (p) => st(p, 'wood')],
-    ['Faith', (p) => st(p, 'faith'), 'Faith earned: prayer, blessings and spells'],
-    ['Trained', (p) => st(p, 'unitsTrained')],
-    ['Buildings', (p) => st(p, 'buildings')],
-    ['Research', (p) => fmt(Array.isArray(p.up) ? p.up.length : 0)],
+    ['Gold', (p) => st(p, 'gold'), null, most(stat('gold'))],
+    ['Wood', (p) => st(p, 'wood'), null, most(stat('wood'))],
+    ['Faith', (p) => st(p, 'faith'), 'Faith earned: prayer, blessings and spells', most(stat('faith'))],
+    ['Trained', (p) => st(p, 'unitsTrained'), null, most(stat('unitsTrained'))],
+    ['Buildings', (p) => st(p, 'buildings'), null, most(stat('buildings'))],
+    ['Research', (p) => fmt(Array.isArray(p.up) ? p.up.length : 0), null, most((p) => (Array.isArray(p.up) ? p.up.length : 0))],
     ['Tier', (p) => TIER_NAMES[p.tier] || ''],
   ]));
 }
@@ -111,12 +131,12 @@ function economyTab(vs, winningTeam) {
 function militaryTab(vs, winningTeam, peak) {
   const st = (p, k) => fmt(p.stats && p.stats[k]);
   return el('div', 'hud-ch-pane', table(vs, winningTeam, [
-    ['Kills', (p) => st(p, 'kills')],
-    ['Losses', (p) => st(p, 'losses')],
-    ['Razed', (p) => st(p, 'razed'), 'Enemy buildings destroyed'],
-    ['Destroyed', (p) => st(p, 'killValue'), 'Gold, wood and faith worth of enemy units and buildings destroyed'],
-    ['Lost', (p) => st(p, 'lostValue'), 'Gold, wood and faith worth of own units and buildings lost'],
-    ['Largest army', (p, i) => fmt(peak[p.i ?? i]), 'Most population in fighting units at once'],
+    ['Kills', (p) => st(p, 'kills'), null, most(stat('kills'))],
+    ['Losses', (p) => st(p, 'losses'), null, bar(stat('losses'))],
+    ['Razed', (p) => st(p, 'razed'), 'Enemy buildings destroyed', most(stat('razed'))],
+    ['Destroyed', (p) => st(p, 'killValue'), 'Gold, wood and faith worth of enemy units and buildings destroyed', most(stat('killValue'))],
+    ['Lost', (p) => st(p, 'lostValue'), 'Gold, wood and faith worth of own units and buildings lost', bar(stat('lostValue'))],
+    ['Largest army', (p, i) => fmt(peak[p.i ?? i]), 'Most population in fighting units at once', most((p, i) => peak[p.i ?? i] || 0)],
   ]));
 }
 
@@ -207,6 +227,9 @@ export function chronicleView(vs, winningTeam, chronicle) {
   const tabs = TABS.map(([id, label]) => {
     const b = seg(label, id === 'summary', () => {
       tabs.forEach((x) => x.classList.toggle('is-active', x === b));
+      // The panel keeps the tallest height it has shown, so the buttons under it stay put from tab to tab.
+      const h = body.offsetHeight;
+      if (h > 0) body.style.minHeight = `${Math.max(h, parseFloat(body.style.minHeight) || 0)}px`;
       body.replaceChildren(panes[id]());
     });
     b.dataset.tab = id;
