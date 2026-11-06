@@ -2557,6 +2557,18 @@ per-frame budget, so a revealed army appears over a few frames.
   sources sounding at once and of nodes made per second, the two things that load tracks, inside limits above
   today's. `tools/music-lab.html` plays any theme at any intensity.
 
+**Live title backdrop** (`src/intro/menu-scene.js`, `src/ui/menu-live.js`). Behind the menus the intro film's Greek
+village works on in 3D: the film's stage built peaceful (no armies, no cues), drawn by the real renderer at a held
+golden hour (17.4) under the film's sky dome. The camera circles it once every four minutes and breathes in and out
+a little. The painted night sky (`menu-fx.js`) stays underneath. It shows until the village has drawn six frames,
+then the live picture fades in over it with a shade that keeps the text readable, and the painted layers stop
+animating behind it. The live picture runs at up to 60 fps on the title and 30 behind the other screens. It skips
+frames while the tab is hidden. After a 3 s warm-up, a machine averaging slower than 0.11 s a frame over 30 frames
+drops it for the painted sky for the rest of the visit. It loads only while the menu shows and frees its GL
+context whenever the menu hides (a match, the film), so a match never shares the GPU with it. Settings has
+"Live title screen" (on by default); `?livemenu=0` or `1` forces it off or on, and an automated browser (the e2e
+tests) keeps the painted sky.
+
 **The ending** (`src/game/match-end.js`, `src/ui/hud-ending.js`). When a match ends, the game-over screen does not
 appear at once. First the camera glides to where the match was decided: on a win, the last building the losing
 team lost; on a loss, the local team's last fallen building; in a draw, the most recent fall. With no fall (a

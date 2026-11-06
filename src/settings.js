@@ -39,7 +39,7 @@ function cleanName(name) {
  * becomes true once the player closes (or finishes) the in-game "getting started" tips, and
  * `rosterOpen` is whether the in-match player list (src/ui/hud-roster.js) is unfolded.
  * `timeOfDay` is 'cycle' (day and night follow the match clock, opening on the golden morning)
- * or one fixed time of day, and `weather` whether passing rain, snow and mist come over the map (src/render/weather.js). `alerts` is how much the game speaks up ('all', 'important', 'off'),
+ * or one fixed time of day, and `weather` whether passing rain, snow and mist come over the map (src/render/weather.js), `liveMenu` whether the title screen shows the village live in 3D behind it (src/ui/menu-live.js) or the painted night sky. `alerts` is how much the game speaks up ('all', 'important', 'off'),
  * `hints` whether a gameplay tip appears now and then, `tabAlerts` what a background tab does
  * when the game needs the player ('off', 'title', 'notify'). The intro film plays on every launch (src/ui/intro.js),
  * with no setting to turn it off; `narration` has a voice read its captions aloud
@@ -51,7 +51,7 @@ function cleanName(name) {
  * the keys changed from their defaults (src/ui/key-bindings.js), kept per device like the rest.
  */
 export function defaultSettings() {
-  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: Object.freeze({}) };
+  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: Object.freeze({}) };
 }
 
 /** Merge a raw object onto base, keeping only valid values. */
@@ -63,6 +63,7 @@ function sanitize(raw, base) {
   if (QUALITIES.includes(raw.quality)) out.quality = raw.quality;
   if (TIMES_OF_DAY.includes(raw.timeOfDay)) out.timeOfDay = raw.timeOfDay;
   if (typeof raw.weather === 'boolean') out.weather = raw.weather;
+  if (typeof raw.liveMenu === 'boolean') out.liveMenu = raw.liveMenu;
   if (typeof raw.edgeScroll === 'boolean') out.edgeScroll = raw.edgeScroll;
   if (typeof raw.showAllBars === 'boolean') out.showAllBars = raw.showAllBars;
   if (typeof raw.tipsDismissed === 'boolean') out.tipsDismissed = raw.tipsDismissed;
@@ -125,7 +126,7 @@ function load() {
 
 /**
  * Current settings (a frozen object; use saveSettings to change it).
- * @returns {{ name: string, volume: number, quality: 'low'|'medium'|'high'|'ultra', timeOfDay: 'cycle'|'golden'|'day'|'dusk'|'night'|'dawn', weather: boolean, edgeScroll: boolean, showAllBars: boolean, tipsDismissed: boolean, rosterOpen: boolean, alerts: 'all'|'important'|'off', hints: boolean, tabAlerts: 'off'|'title'|'notify', narration: boolean, aiChat: boolean, musicVolume: number, musicMuted: boolean, gameSpeed: 'slow'|'normal'|'fast'|'faster', uiScale: 'small'|'normal'|'large'|'larger', teamColors: 'standard'|'colorblind', cardKeys: 'classic'|'grid', keyBindings: Object<string, string> }}
+ * @returns {{ name: string, volume: number, quality: 'low'|'medium'|'high'|'ultra', timeOfDay: 'cycle'|'golden'|'day'|'dusk'|'night'|'dawn', weather: boolean, liveMenu: boolean, edgeScroll: boolean, showAllBars: boolean, tipsDismissed: boolean, rosterOpen: boolean, alerts: 'all'|'important'|'off', hints: boolean, tabAlerts: 'off'|'title'|'notify', narration: boolean, aiChat: boolean, musicVolume: number, musicMuted: boolean, gameSpeed: 'slow'|'normal'|'fast'|'faster', uiScale: 'small'|'normal'|'large'|'larger', teamColors: 'standard'|'colorblind', cardKeys: 'classic'|'grid', keyBindings: Object<string, string> }}
  */
 export function getSettings() {
   return load();
