@@ -85,6 +85,8 @@ export const HOTKEYS = [
     [kbd('Ctrl', '1–9'), 'Assign a control group'],
     [kbd('1–9'), 'Select a group (tap twice to jump to it)'],
     [kbd('F1–F3'), 'Select your gods'],
+    [kbd('Ctrl', 'F6–F9'), 'Keep the camera spot (Shift works too)'],
+    [kbd('F6–F9'), 'Back to a kept camera spot'],
     [bound('cam_jump'), 'Center on selection or the last alert'],
     [kbd('Tab'), 'Next unit type in a mixed selection'],
     [kbd('.'), 'Next idle worshipper (Shift or Ctrl: select all of them)'],
