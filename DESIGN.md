@@ -2100,7 +2100,7 @@ per-frame budget, so a revealed army appears over a few frames.
   save, the Daily Challenge across both when there is no Quick Match, and Load Game, How to Play, Career and Settings
   in one row of small buttons, so everything and the footer fit a 1280x720 window without scrolling; windows under
   820 px high get a smaller crest and tighter spacing; a "New" tag sits on its button's top edge), lobby screen (4 slot rows: color, name/kind dropdown, pantheon picker with
-  Random, team, AI difficulty; presets; map size; landscape (Wildlands, Highlands, Rivers, Islands, Great Forest or Random, 6.7, as chips with a one-line note; clients see it as text); game mode (Standard, Decade of Peace with
+  Random, team, AI difficulty; presets; map size; landscape (Wildlands, Highlands, Rivers, Islands, Great Forest or Random, 6.7, as chips with a one-line note; clients see it as text; under the game mode a map preview, src/ui/map-preview.js: a sample map of that landscape and size for the filled seats, made by the real generator from a fixed seed a moment after a change and kept per landscape, size and seating, 2 px a tile with the minimap's shading, the bases in the seat colours, gold mines and sacred sites, captioned as a sample since every battle draws its own; Random shows a veiled card); game mode (Standard, Decade of Peace with
   30 / 45 / 60 min buttons, or Trial of the Titans with its rules and the player's best wave, 5.14; the host's pick;
   clients see it as text), victory (a Sacred Victory toggle, 5.11, hidden in a trial;
   clients see it as text); room code with Copy and Copy Invite Link
