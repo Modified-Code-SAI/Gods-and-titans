@@ -170,3 +170,22 @@ test('menus: the right stick moves the cursor and rings the button under it, A p
   assert.equal(btn.classList.contains('mw-pad-hover'), false);
   m.dispose();
 });
+
+test('a fresh kick of the screen shake rumbles a pad that has a motor, as hard as the screen shakes', () => {
+  const a = setup();
+  const played = [];
+  a.gp.vibrationActuator = { playEffect: (type, o) => { played.push([type, o.strongMagnitude]); return Promise.resolve('complete'); } };
+  a.input.renderer.vfx = { shake: 0 };
+  a.gp.axes[2] = 0.5;
+  a.ctl.update(0.016);
+  assert.deepEqual(played, [], 'no shake, no rumble');
+  a.input.renderer.vfx.shake = 0.6;
+  a.ctl.update(0.016);
+  assert.deepEqual(played, [['dual-rumble', 0.6]]);
+  a.input.renderer.vfx.shake = 0.55;
+  a.ctl.update(0.016);
+  assert.equal(played.length, 1, 'a shake dying away does not rumble again');
+  a.gp.vibrationActuator = null;
+  a.input.renderer.vfx.shake = 1;
+  assert.doesNotThrow(() => a.ctl.update(0.016), 'a pad without a motor');
+});
