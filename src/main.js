@@ -7,6 +7,7 @@ import { initAudio, syncAudio, quietMusic, playTitleMusic } from './audio/audio.
 import { createMenu, showMenu, hideMenu } from './ui/menu.js';
 import { isTouchOnly, TOUCH_NOTICE } from './ui/menu-model.js';
 import { MenuPad } from './ui/gamepad-input.js';
+import { registerOffline } from './offline.js';
 import { introWanted, playIntro } from './ui/intro.js';
 import { isSoloLaunch, saveSkirmish, launchFrom, stepUpSkirmish } from './game/rematch.js';
 import { readSave, saveInfo } from './game/save-store.js';
@@ -305,6 +306,8 @@ function boot() {
   installSelectMenus(document);
   // A controller works the menus too (DESIGN 9, "Gamepad"); in a match the InputController reads it instead.
   new MenuPad({ inMatch: () => !!(window.__game && window.__game.input) }).start();
+  // Keep a copy of the game so the next start works offline (DESIGN 11 "Offline"); after the page is up.
+  window.addEventListener('load', () => registerOffline(), { once: true });
   const tabIcon = document.querySelector('link[rel="icon"]');
   const bolt = iconVar('⚡');
   if (tabIcon && bolt) tabIcon.href = bolt.slice(5, -2);

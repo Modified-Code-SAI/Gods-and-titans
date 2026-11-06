@@ -24,7 +24,16 @@ the authoritative simulation.
 - Plain ES modules, **no build step**. Served as static files (GitHub Pages).
 - Installable on a phone or tablet: `manifest.webmanifest` (full screen, landscape, the gold-bolt icon in
   `assets/icons/`, drawn from `icon.svg`) and the theme-color and apple-mobile-web-app meta tags in `index.html`;
-  `tools/build-site.mjs` copies the manifest. No service worker: the game is not offline.
+  `tools/build-site.mjs` copies the manifest.
+- **Offline**: a service worker (`sw.js` at the root, registered by `src/offline.js` after the page loads, only
+  on https or with `?sw` so local tools serve over http as before) answers every same-origin GET network
+  first: online nothing changes (a deploy shows at once; the bundle's hashed names keep a tab from mixing
+  versions), each 200 answer is also kept in the `mythicwar-v1` cache, and with no network the kept copy answers
+  (a page opened by any URL gets the kept start page). On install it fetches the files the deployed page needs
+  to start, which `tools/build-site.mjs` lists in `precache.json` (the page, its links and scripts, every bundle
+  chunk, the icons); sounds and narration are kept as first played. So an installed game starts, and games
+  against the computer, the campaign and replays play, without a network; online matches still need one.
+  Cross-origin requests (PeerJS) and range requests are not touched or kept. Bump `CACHE` to drop old copies.
 - Three.js **0.186.1** vendored at `vendor/three/three.module.js` (+ `three.core.js`).
   Import as `import * as THREE from 'three'`; addons as
   `import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'`
