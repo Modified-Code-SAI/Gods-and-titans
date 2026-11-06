@@ -2648,6 +2648,17 @@ so long outlines don't drift). `src/ui/icons.js`:
   `src/data`, `src/ui` or `src/game` use a pictograph the map lacks (typographic marks such as ✓ ✕ ★ are text).
   `tools/gallery-icons.html` shows every emoji beside its icon.
 
+**Hover tips.** Hover text in the HUD and the menus is written as a plain `title`, and the browser drew those as its
+own grey box. `installHoverTips(document)` (`src/ui/hover-tip.js`, main.js at boot) draws them as the game's card
+instead (`.mw-hovertip` in style.css: dark stone, gold rule, the heading in the display face). When the pointer
+(not touch) rests on an element with a title for 280 ms, or at once within 450 ms of another tip closing, the title
+moves to `data-tip` (the system box never shows; the text stays for screen readers as `aria-description`) and the
+card opens under an element in the top half of the window, over one in the bottom half, slid to stay 8 px inside.
+`tipParts` splits the text: 'Name — what it does' heads with the name (a dash within the first 28 characters), a
+title of several lines heads with its first, one plain line is all body. Code keeps writing `title`: a new title
+wins over the stored one, a title rewritten while its card is up redraws it, and a click, the wheel, a key, the
+window losing focus, or the element being removed or hidden closes it. `[data-native-tip]` opts a subtree out.
+
 ### 9.1 Career and achievements (src/game/career.js, src/game/career-tracker.js, src/data/achievements.js, src/game/renown.js, src/ui/menu-career.js)
 
 Client only: nothing goes over the wire and the sim does not know about it. The career lives in
