@@ -2721,6 +2721,17 @@ selected is always an order. A pinch, a third finger or a drag the second finger
 button in the top bar (`hud.chatBtn`, shown only on a touch-only device, which has no Enter key) opens the chat box
 and with it the phone's keyboard; a second tap closes it.
 
+**Gamepad.** A controller in the browser's standard layout plays a match the same way (`GamepadInput` in
+gamepad-input.js, read once a frame from `InputController.update`, since the Gamepad API has no events). It has a
+cursor of its own, an arrow drawn over everything (`.mw-pad-cursor`, the OS pointer is not moved), which the right
+stick moves on a curve (slow near centre for aiming, `CURSOR_SPEED` 1100 px/s at full tilt) past a `DEAD_ZONE` of
+0.2; the input's pointer follows it, so hover tags, placement ghosts and power rings do too. The left stick pans as
+the arrow keys do, at the speed its tilt sets. A is the left button at the cursor (held while the cursor moves, a
+selection box), and over the HUD or a menu it clicks what is under the cursor; X is the right-click order; B is Esc
+for the map (a placement or targeted order is called off, else the selection cleared); LT and RT zoom out and in;
+LB and RB find the next idle Worshipper and soldier ('.' and ','); Start opens the game menu. The first touch of a
+pad posts one line saying so; moving the mouse hides the pad's cursor until the pad is used again.
+
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).
 It shows the name (a Town Center by its tier), then for an ally's or enemy's thing the owner's name and "Ally" or
