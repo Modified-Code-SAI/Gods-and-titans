@@ -157,8 +157,12 @@ export class RecordedSpeech {
       const g = ctx.createGain();
       g.gain.value = GAIN;
       src.connect(g);
-      g.connect(sh.master);
-      if (sh.reverb && REVERB > 0) {
+      if (sh.voice) {
+        // The voice bus (the Voices slider, then the master) and its own send to the hall, which follows the slider.
+        g.connect(sh.voice);
+        if (sh.voiceReverb) sh.voiceReverb.gain.value = REVERB;
+      } else g.connect(sh.master);
+      if (!sh.voice && sh.reverb && REVERB > 0) {
         const send = ctx.createGain();
         send.gain.value = REVERB;
         src.connect(send);

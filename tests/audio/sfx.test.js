@@ -392,6 +392,24 @@ test('volume and mute drive the master gain', () => {
   sfx.setVolume(0.7);
 });
 
+test('the spoken lines have a bus of their own: the Voices volume on it, then the master; and a send to the hall', () => {
+  const sh = sfx.shared;
+  assert.ok(sh.voice.outputs.includes(sh.master), 'voice bus into the master');
+  assert.ok(sh.voice.outputs.includes(sh.voiceReverb) && sh.voiceReverb.outputs.includes(sh.reverb), 'its own send to the hall');
+  assert.equal(sh.voiceReverb.gain.value, 0, 'silent until a line sets it');
+  sfx.setVoiceVolume(0.25);
+  assert.equal(sfx.voiceVolume, 0.25);
+  const last = sh.voice.gain.events[sh.voice.gain.events.length - 1];
+  assert.equal(last[0], 'target');
+  assert.ok(Math.abs(last[1] - Math.pow(0.25, 1.5)) < 1e-9, 'the same curve as the volume');
+  const m = sh.master.gain.events[sh.master.gain.events.length - 1];
+  assert.ok(Math.abs(m[1] - Math.pow(sfx.volume, 1.5)) < 1e-9, 'the master keeps the volume');
+  sfx.setVoiceVolume(5);
+  assert.equal(sfx.voiceVolume, 1);
+  sfx.setVoiceVolume(NaN);
+  assert.equal(sfx.voiceVolume, 1);
+});
+
 test('a fresh engine without WebAudio is a silent no-op (Node)', async () => {
   const mod = await import('../../src/audio/sfx.js?fresh');
   const s = mod.sfx;

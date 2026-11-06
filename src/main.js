@@ -2,7 +2,7 @@
 // lobby to the Game (DESIGN 11). Returning to the menu tears the game down
 // completely, so matches can be played one after another without a reload. Replays
 // (DESIGN 9.4) play in a Game of their own, from the Career screen or the game-over screen.
-import { getSettings, onSettingsChange } from './settings.js';
+import { getSettings, onSettingsChange, voiceLevel } from './settings.js';
 import { initAudio, syncAudio, quietMusic, playTitleMusic } from './audio/audio.js';
 import { createMenu, showMenu, hideMenu } from './ui/menu.js';
 import { isTouchOnly, TOUCH_NOTICE } from './ui/menu-model.js';
@@ -277,7 +277,7 @@ function watchIntro(screen, guard = true) {
     // A browser keeps sound off until a key press or a click, unless the player has allowed it for the site. When the
     // player wants to hear the film and the browser has not allowed it, the film waits for that input behind a card.
     const wantsSound = s.volume > 0 || (!s.musicMuted && s.musicVolume > 0);
-    const intro = playIntro({ root: document.getElementById('app'), quality: s.quality, guard, narrate: s.narration, volume: s.volume, gate: wantsSound, onHandover: handover });
+    const intro = playIntro({ root: document.getElementById('app'), quality: s.quality, guard, narrate: s.narration, volume: voiceLevel(s), gate: wantsSound, onHandover: handover });
     return intro.done;
   } catch (err) {
     console.error('[main] the intro film could not start', err);

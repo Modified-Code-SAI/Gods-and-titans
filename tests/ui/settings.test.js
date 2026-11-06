@@ -1,7 +1,7 @@
 // Settings persistence (src/settings.js) with a fake localStorage.
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { getSettings, saveSettings, onSettingsChange, defaultSettings, _resetSettingsForTests, SETTINGS_KEY, ALERT_LEVEL_IDS, TAB_ALERT_MODES } from '../../src/settings.js';
+import { getSettings, saveSettings, onSettingsChange, defaultSettings, voiceLevel, _resetSettingsForTests, SETTINGS_KEY, ALERT_LEVEL_IDS, TAB_ALERT_MODES } from '../../src/settings.js';
 
 class FakeStorage {
   constructor() {
@@ -68,7 +68,7 @@ test('clamps volume and limits the name to 20 characters', () => {
 test('loads stored settings and ignores corrupt or hostile values', () => {
   globalThis.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ name: 'Athena', volume: 0.3, quality: 'high', edgeScroll: false, showAllBars: true, extra: 1 }));
   _resetSettingsForTests();
-  assert.deepEqual({ ...getSettings() }, { name: 'Athena', volume: 0.3, quality: 'high', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: false, showAllBars: true, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: 'full', scrollSpeed: 'normal', cardKeys: 'classic', keyBindings: {} });
+  assert.deepEqual({ ...getSettings() }, { name: 'Athena', volume: 0.3, voiceVolume: 1, quality: 'high', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: false, showAllBars: true, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: 'full', scrollSpeed: 'normal', cardKeys: 'classic', keyBindings: {} });
   globalThis.localStorage.setItem(SETTINGS_KEY, '{not json');
   _resetSettingsForTests();
   assert.equal(getSettings().volume, 0.7);
@@ -269,4 +269,14 @@ test('screenShake: full, reduced or off; reduced by default when the system asks
     if (prev) globalThis.matchMedia = prev;
     else delete globalThis.matchMedia;
   }
+});
+
+test('voiceVolume: 1 by default, kept within 0..1; voiceLevel is the volume times it', () => {
+  assert.equal(getSettings().voiceVolume, 1);
+  assert.equal(saveSettings({ voiceVolume: 0.4 }).voiceVolume, 0.4);
+  assert.equal(saveSettings({ voiceVolume: 7 }).voiceVolume, 1);
+  assert.equal(saveSettings({ voiceVolume: 'loud' }).voiceVolume, 1);
+  assert.equal(voiceLevel({ volume: 0.5, voiceVolume: 0.5 }), 0.25);
+  assert.equal(voiceLevel({ volume: 0.5 }), 0.5, 'an old settings object: the volume alone');
+  assert.equal(voiceLevel(null), 0);
 });

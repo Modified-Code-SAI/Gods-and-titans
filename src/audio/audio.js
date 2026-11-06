@@ -23,13 +23,15 @@ export const TITLE_INTENSITY = 0.25;
 export const PREVIEW_MOODS = [['Calm', 0.08], ['Tense', 0.45], ['Battle', 0.9]];
 
 export function initAudio(settings) {
-  sfx.init({ volume: settings.volume });
+  sfx.init({ volume: settings.volume, voiceVolume: settings.voiceVolume });
   sfx.setVolume(settings.volume);
+  sfx.setVoiceVolume(settings.voiceVolume);
   music.init({ volume: settings.musicVolume, muted: settings.musicMuted });
 }
 
 export function syncAudio(settings, changed) {
   if (changed.includes('volume')) sfx.setVolume(settings.volume);
+  if (changed.includes('voiceVolume')) sfx.setVoiceVolume(settings.voiceVolume);
   if (changed.includes('musicVolume')) music.setVolume(settings.musicVolume);
   if (changed.includes('musicMuted')) music.mute(settings.musicMuted);
 }

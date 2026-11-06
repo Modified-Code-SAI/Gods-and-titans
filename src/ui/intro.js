@@ -115,7 +115,7 @@ function buildOverlay(onSkip) {
  * @param {boolean} [o.manual] tools and tests drive the film themselves (intro.advance moves it on, intro.draw paints a frame); no frame loop runs
  * @param {boolean} [o.guard] drop the film on a machine too slow to show it
  * @param {boolean} [o.narrate] read each caption aloud (the player's setting): the recorded narration (src/intro/voiceover.js), or the browser's speech synthesis where the clips cannot be had; silent where neither can
- * @param {number} [o.volume] the game's volume setting, 0..1: the voice follows it
+ * @param {number} [o.volume] how loud the voice is, 0..1 (the volume times the Voices slider: settings.js voiceLevel)
  * @param {boolean} [o.gate] the player wants sound: when the browser has not allowed it (it waits for a key press or a click), hold the film at its first frame behind a card until one comes, or until the browser allows it. The page passes it; tools and tests, which drive the film themselves, do not
  * @param {() => Promise<{ IntroFilm: Function, Renderer: Function }>} [o.load]
  * @param {(ms: number) => Promise<void>} [o.wait]

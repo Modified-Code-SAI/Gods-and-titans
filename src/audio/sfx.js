@@ -6,7 +6,9 @@
 //   sfx.play(name, { x, y, volume }) positional when x, y are given (tile coords)
 //   sfx.setListener(x, y, scale)     usually the camera target; scale > 1 widens the hearing range (zoomed out)
 //   sfx.setVolume(v) / sfx.mute(bool)
-//   sfx.shared                       { ctx, out, master, reverb, noise } once the context exists: the music and the film's voice play through it
+//   sfx.setVoiceVolume(v)            the spoken lines' own volume (the voice bus), on top of the volume
+//   sfx.shared                       { ctx, out, master, reverb, voice, voiceReverb, noise } once the context exists: the music
+//                                    plays through out, the spoken lines through voice (voiceReverb is that bus's send to the hall)
 //   sfx.onPlay(cb)                   cb(name, gain) after a sound starts (the music dips under big ones)
 // Every call is a safe no-op where WebAudio is missing (Node, old browsers).
 import { ALERT_RECIPES, ALERT_LIMITS, ALERT_LEVEL } from './sfx-alerts.js';
@@ -497,6 +499,14 @@ function buildGraph(ctx) {
   comp.connect(ctx.destination);
   const master = ctx.createGain();
   master.connect(comp);
+  // The spoken lines (the narrator, the campaign's voice, the computer players' taunts) have a bus of their own
+  // in front of the master, so the Voices slider turns them down without the sounds; its send to the hall is set
+  // by whoever plays a line there (src/intro/voiceover.js), and so follows the slider too.
+  const voice = ctx.createGain();
+  voice.connect(master);
+  const voiceSend = ctx.createGain();
+  voiceSend.gain.value = 0;
+  voice.connect(voiceSend);
   let reverb = null;
   try {
     const conv = ctx.createConvolver();
@@ -505,11 +515,12 @@ function buildGraph(ctx) {
     wet.gain.value = 0.32;
     conv.connect(wet);
     wet.connect(master);
+    voiceSend.connect(conv);
     reverb = conv;
   } catch {
     reverb = null;
   }
-  return { master, comp, reverb, noise: makeNoiseBuffer(ctx) };
+  return { master, comp, reverb, voice, voiceSend, noise: makeNoiseBuffer(ctx) };
 }
 
 // The alert, tip and milestone sounds are written in sfx-alerts.js.
@@ -544,6 +555,7 @@ class SfxEngine {
     this.graph = null;
     this.kit = null;
     this.volume = 0.7;
+    this.voiceVolume = 1; // the spoken lines, on top of the volume (the Voices slider)
     this.muted = false;
     this.listener = null; // { x, y, scale } or null = no attenuation
     this.last = new Map(); // name → last start (ctx time)
@@ -561,10 +573,11 @@ class SfxEngine {
    * Allow", the autoplay switch, a page reached by a click on a link of this site) runs it,
    * and everything that plays from then on, the intro film included, is heard from its first moment. A browser that
    * does not leaves it suspended, and the first key press or click resumes it (see `unlock`).
-   * @param {{ context?: AudioContext|object, volume?: number }} [opts] context injects one (tests)
+   * @param {{ context?: AudioContext|object, volume?: number, voiceVolume?: number }} [opts] context injects one (tests)
    */
   init(opts = {}) {
     if (typeof opts.volume === 'number') this.volume = Math.min(1, Math.max(0, opts.volume));
+    if (typeof opts.voiceVolume === 'number' && Number.isFinite(opts.voiceVolume)) this.voiceVolume = Math.min(1, Math.max(0, opts.voiceVolume));
     if (opts.context) {
       this._attach(opts.context);
       return this;
@@ -656,6 +669,14 @@ class SfxEngine {
     } catch {
       p.value = g;
     }
+    const vg = Math.pow(this.voiceVolume, 1.5);
+    const vp = this.graph.voice.gain;
+    try {
+      vp.cancelScheduledValues(this.ctx.currentTime);
+      vp.setTargetAtTime(vg, this.ctx.currentTime, 0.02);
+    } catch {
+      vp.value = vg;
+    }
   }
 
   /**
@@ -663,7 +684,8 @@ class SfxEngine {
    * other engines (the music) that play through the same chain; null until a gesture has made the context.
    */
   get shared() {
-    return this.ctx && this.graph ? { ctx: this.ctx, out: this.graph.comp, master: this.graph.master, reverb: this.graph.reverb, noise: this.graph.noise } : null;
+    const g = this.graph;
+    return this.ctx && g ? { ctx: this.ctx, out: g.comp, master: g.master, reverb: g.reverb, voice: g.voice, voiceReverb: g.reverb ? g.voiceSend : null, noise: g.noise } : null;
   }
 
   /** Call cb(name, gain) each time a sound starts. Returns an unsubscribe function. */
@@ -778,6 +800,13 @@ class SfxEngine {
   setVolume(v) {
     if (!Number.isFinite(v)) return;
     this.volume = Math.min(1, Math.max(0, v));
+    this._applyVolume();
+  }
+
+  /** Volume 0..1 of the spoken lines (the voice bus), on top of the master volume. */
+  setVoiceVolume(v) {
+    if (!Number.isFinite(v)) return;
+    this.voiceVolume = Math.min(1, Math.max(0, v));
     this._applyVolume();
   }
 
