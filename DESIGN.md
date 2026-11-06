@@ -2730,7 +2730,11 @@ the arrow keys do, at the speed its tilt sets. A is the left button at the curso
 selection box), and over the HUD or a menu it clicks what is under the cursor; X is the right-click order; B is Esc
 for the map (a placement or targeted order is called off, else the selection cleared); LT and RT zoom out and in;
 LB and RB find the next idle Worshipper and soldier ('.' and ','); Start opens the game menu. The first touch of a
-pad posts one line saying so; moving the mouse hides the pad's cursor until the pad is used again.
+pad posts one line saying so; moving the mouse hides the pad's cursor until the pad is used again. The menus take
+the pad too (`MenuPad`, started at boot and standing aside while a match's `InputController` reads the pad): the
+right stick moves the same cursor, the left stick scrolls the box under it, A presses the button under it, and B or
+Start is Esc (back, or close a dialog). A drawn cursor sets off no CSS `:hover`, so what it is over gets a gold ring
+(`.mw-pad-hover`), in the HUD as in the menus.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).
