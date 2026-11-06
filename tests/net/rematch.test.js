@@ -23,8 +23,8 @@ const join = (host, name, extra = {}) => LobbyClient.join({ transport: 'loopback
 
 test('an online lobby opens every seat on two sides; friends fill the emptier side, and an Open seat does not hold up the start', async () => {
   const host = await LobbyHost.create({ transport: 'loopback', name: 'Hosta' });
-  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'open']);
-  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 2, 1, 2], 'two sides, row by row');
+  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'open', 'open', 'open']);
+  assert.deepEqual(host.state.slots.map((s) => s.team), [1, 2, 1, 2, 1, 2], 'two sides, row by row');
   assert.equal(host.state.preset, null);
   assert.equal(host.state.mapSize, 'small', 'most rooms are two friends');
 
@@ -38,34 +38,39 @@ test('an online lobby opens every seat on two sides; friends fill the emptier si
   assert.equal(host.state.slots[2].team, 1);
   const eve = await join(host, 'Eve');
   assert.equal(eve.mySlot, 3);
-  assert.deepEqual(kinds(host.state), ['host', 'human', 'human', 'human']);
+  assert.deepEqual(kinds(host.state), ['host', 'human', 'human', 'human', 'open', 'open']);
+  const finn = await join(host, 'Finn');
+  assert.equal(finn.mySlot, 4);
+  assert.equal(host.state.slots[4].team, 1, 'a 3v3 fills up the same way');
+  await join(host, 'Gus');
+  assert.equal(host.state.slots[5].team, 2);
 
-  // A fifth is turned away, and the host hears about it (once in a while, not for every knock).
+  // A seventh is turned away, and the host hears about it (once in a while, not for every knock).
   const lines = [];
   host.onChat((l) => lines.push(l));
-  await assert.rejects(join(host, 'Finn'), /full/);
-  await assert.rejects(join(host, 'Finn'), /full/);
-  assert.equal(lines.filter((l) => l.system && /Finn tried to join/.test(l.text)).length, 1);
+  await assert.rejects(join(host, 'Hal'), /full/);
+  await assert.rejects(join(host, 'Hal'), /full/);
+  assert.equal(lines.filter((l) => l.system && /Hal tried to join/.test(l.text)).length, 1);
   host.close();
 });
 
 test('online presets leave seats Open for friends; against the computer they are AI', async () => {
   const online = await LobbyHost.create({ transport: 'loopback', name: 'Hosta' });
   assert.ok(online.applyPreset('ffa'));
-  assert.deepEqual(kinds(online.state), ['host', 'open', 'open', 'open']);
+  assert.deepEqual(kinds(online.state), ['host', 'open', 'open', 'open', 'closed', 'closed']);
   assert.ok(online.applyPreset('2v2'));
-  assert.deepEqual(kinds(online.state), ['host', 'open', 'open', 'open']);
-  assert.deepEqual(online.state.slots.map((s) => s.team), [1, 1, 2, 2]);
+  assert.deepEqual(kinds(online.state), ['host', 'open', 'open', 'open', 'closed', 'closed']);
+  assert.deepEqual(online.state.slots.map((s) => s.team), [1, 1, 2, 2, 5, 6]);
   assert.ok(online.applyPreset('1v1'));
-  assert.deepEqual(kinds(online.state), ['host', 'open', 'closed', 'closed']);
+  assert.deepEqual(kinds(online.state), ['host', 'open', 'closed', 'closed', 'closed', 'closed']);
   assert.ok(online.applyPreset('2v2'));
   const cleo = await join(online, 'Cleo');
   assert.equal(cleo.mySlot, 2, 'in a 2v2 the first friend still plays against the host');
   online.close();
   const solo = await LobbyHost.create({ transport: 'none', name: 'Solo' });
-  assert.deepEqual(kinds(solo.state), ['host', 'ai', 'closed', 'closed'], 'a game against the computer starts 1v1');
+  assert.deepEqual(kinds(solo.state), ['host', 'ai', 'closed', 'closed', 'closed', 'closed'], 'a game against the computer starts 1v1');
   assert.ok(solo.applyPreset('2v2'));
-  assert.deepEqual(kinds(solo.state), ['host', 'ai', 'ai', 'ai']);
+  assert.deepEqual(kinds(solo.state), ['host', 'ai', 'ai', 'ai', 'closed', 'closed']);
   solo.close();
 });
 
@@ -76,6 +81,8 @@ test('rematch: the room is a lobby again, each player gets their own seat back b
   const cleo = await join(host, 'Cleo');
   const dax = await join(host, 'Dax');
   assert.ok(host.setSlot(3, { kind: 'ai', difficulty: 'hard', pantheon: 'aztec' }));
+  assert.ok(host.setSlot(4, { kind: 'closed' }));
+  assert.ok(host.setSlot(5, { kind: 'closed' }));
   cleo.setMine({ pantheon: 'egyptian', color: 5 });
   await waitFor(() => host.state.slots[1].pantheon === 'egyptian' && host.state.slots[1].color === 5);
   const tokens = {};
@@ -93,7 +100,7 @@ test('rematch: the room is a lobby again, each player gets their own seat back b
   for (const conn of res.conns.values()) conn.close('end'); // the game is over (its session closes these)
   assert.ok(host.reopen({ setup: res.setup, myIndex: res.myIndex, name: 'Hosta' }));
   assert.equal(host.started, false);
-  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'ai'], 'the humans\' seats are Open, held for them');
+  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'ai', 'closed', 'closed'], 'the humans\' seats are Open, held for them');
   assert.equal(host.state.peace, 30);
   assert.equal(host.state.landscape, 'rivers');
   assert.equal(host.state.slots[3].difficulty, 'hard');
@@ -130,7 +137,7 @@ test('rematch: a held seat goes to a stranger only when no other seat is Open', 
   const res = host.start();
   await waitFor(() => token);
   assert.ok(host.reopen());
-  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'open']);
+  assert.deepEqual(kinds(host.state), ['host', 'open', 'open', 'open', 'open', 'open']);
   const finn = await join(host, 'Finn');
   assert.notEqual(finn.mySlot, 1, 'Cleo\'s seat stays hers');
   const cleo2 = await join(host, 'Cleo', { rematch: token });
@@ -153,7 +160,7 @@ test('rematch in a room carried on by a new host: the seats come from the game\'
   const lobby = LobbyHost.forGame(ep, { transport: 'loopback', tokens });
   assert.ok(lobby.reopen({ setup, myIndex: 1, name: 'Cleo' }));
   const s = lobby.state;
-  assert.deepEqual(kinds(s), ['host', 'open', 'ai', 'closed']);
+  assert.deepEqual(kinds(s), ['host', 'open', 'ai', 'closed', 'closed', 'closed']);
   assert.equal(s.slots[0].name, 'Cleo');
   assert.equal(s.slots[0].team, 2);
   assert.equal(s.slots[0].color, 1);

@@ -713,6 +713,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       ['coop', 'Co-op vs AI', 'All humans together against AI opponents'],
       ['1v1', '1v1', 'One against one on a small map'],
       ['2v2', '2v2', 'Two teams of two'],
+      ['3v3', '3v3', 'Two teams of three on a bigger map'],
       ['ffa', 'Free-for-all', 'Every player for themselves'],
     ].map(([id, label, title]) => h('button.mw-chip-btn', { type: 'button', title, dataset: { preset: id }, onclick: () => {
       try {
@@ -725,6 +726,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         toast(err?.message || 'Could not apply that preset.');
       }
     } }, label));
+    const mapTileLabels = new Map(); // size id → its "96×96" label, redrawn when five or six seats make the map bigger
     const mapBtns = Object.entries(MAP_SIZES).map(([id, n]) => h('button.mw-seg', {
       type: 'button',
       dataset: { size: id },
@@ -735,7 +737,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
           toast(err?.message || 'Could not change the map size.');
         }
       },
-    }, h('span', id === 'small' ? 'Small' : 'Medium'), h('small', `${n}×${n}`)));
+    }, h('span', id === 'small' ? 'Small' : 'Medium'), mapTileLabels.set(id, h('small', `${n}×${n}`)).get(id)));
     const mapStatic = h('div.mw-map-static');
     // Landscape (DESIGN 6.7): the ground between the bases, or Random (drawn when the game starts).
     const landBtns = LANDSCAPE_CHOICES.map((id) => {
@@ -985,7 +987,12 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       const size = st().mapSize;
       mapBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.size === size));
       presetBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.preset === st().preset));
-      mapStatic.textContent = `${size === 'medium' ? 'Medium' : 'Small'} (${MAP_SIZES[size] || '?'}×${MAP_SIZES[size] || '?'})`;
+      for (const [id, label] of mapTileLabels) {
+        const t = M.mapSizeTiles(st(), id);
+        label.textContent = `${t}×${t}`;
+      }
+      const tiles = M.mapSizeTiles(st());
+      mapStatic.textContent = `${size === 'medium' ? 'Medium' : 'Small'} (${tiles}×${tiles})`;
       const land = M.landscapeChoice(st());
       landBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.landscape === land));
       landNote.textContent = landscapeInfo(land).blurb;

@@ -5,7 +5,7 @@
 // shows a veiled card. The map is made a moment after a change (setTimeout), so a click on a chip never waits on it,
 // and kept per landscape, size and seating.
 import { generateMap } from '../sim/mapgen.js';
-import { MAP_SIZES, TERRAIN, PLAYER_COLORS } from '../config.js';
+import { MAP_SIZES, MAX_PLAYERS, TERRAIN, PLAYER_COLORS } from '../config.js';
 import { landscapeInfo } from '../data/landscapes.js';
 
 const SAMPLE_SEED = 'lobby-preview';
@@ -33,7 +33,7 @@ export function previewSpec(state) {
   const together = state && state.survival === true;
   const colors = seats.map((s) => PLAYER_COLORS[s.color] || PLAYER_COLORS[0]);
   const teams = seats.map((s, i) => (together ? 1 : s.team ?? i + 1));
-  const count = Math.max(1, Math.min(4, seats.length || 2));
+  const count = Math.max(1, Math.min(MAX_PLAYERS, seats.length || 2));
   return { landscape, mapSize, colors: colors.slice(0, count), teams: teams.slice(0, count), key: `${landscape}|${mapSize}|${teams.slice(0, count).join(',') || count}` };
 }
 

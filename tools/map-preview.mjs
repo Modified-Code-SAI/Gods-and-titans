@@ -17,7 +17,7 @@ import { deflateSync } from 'node:zlib';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { generateMap, mapHash, validateMap } from '../src/sim/mapgen.js';
-import { TERRAIN, PLAYER_COLORS, MAP_SIZES } from '../src/config.js';
+import { TERRAIN, PLAYER_COLORS, MAP_SIZES, CROWDED_MAP_SIZES } from '../src/config.js';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => {
@@ -236,7 +236,7 @@ for (const landscape of landscapes) for (const size of sizes) {
 
 if (sheet) {
   const pad = 8;
-  const cell = Math.max(...Object.values(MAP_SIZES)) * scale;
+  const cell = Math.max(...Object.values(MAP_SIZES), ...(players.some((p) => p >= 5) ? Object.values(CROWDED_MAP_SIZES) : [])) * scale;
   const cols = seeds.length;
   const cv = new Canvas(cols * (cell + pad) + pad, rows.length * (cell + pad) + pad);
   rows.forEach((row, r) => row.forEach(({ map }, c) => drawMap(cv, map, pad + c * (cell + pad), pad + r * (cell + pad), scale)));

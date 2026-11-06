@@ -17,9 +17,18 @@
 // top edge, so each team shares one side of the map (teammates about 0.46 of
 // the map apart, the nearest enemy about 0.67) and gets a shared expansion
 // between its two bases. A team of three takes three neighbouring corners.
+//
+// Five and six players (startPlan 'ring'): six bases on a ring around the center, 180°
+// symmetric with three canonical bases (two near the top edge, one at the left edge) on a regular
+// hexagon, so every base is as far from the center and from its two neighbours. Ring position j runs clockwise
+// from the top-left base: 0 top-left, 1 top-right, 2 right, 3 bottom-right, 4 bottom-left,
+// 5 left; the 180° image of position j is j + 3. Between every two neighbouring bases sits one
+// contested expansion (the top and bottom edge, and the four corners), so each base has one
+// on either side. Teams sit in neighbouring positions; a 3v3 is exactly fair (the west three
+// are the 180° image of the east three). A free sixth base becomes a rich expansion.
 
 import { RNG, hashSeed } from './rng.js';
-import { MAP_SIZES, TERRAIN, TREE_WOOD, GOLD_MINE_AMOUNT, EXPANSION_MINE_AMOUNT, SITE_CLEAR } from '../config.js';
+import { mapTiles, TERRAIN, TREE_WOOD, GOLD_MINE_AMOUNT, EXPANSION_MINE_AMOUNT, SITE_CLEAR } from '../config.js';
 import { BUILDINGS, GOLD_MINE } from '../data/buildings.js';
 import { isLandscape } from '../data/landscapes.js';
 
@@ -77,7 +86,8 @@ const START_IMAGES = { 1: [0], 2: [0, 2], 3: [0, 2, 1], 4: [0, 3, 1, 2] };
  * result depends only on the teams (deterministic in every browser).
  */
 export function startPlan(playerCount, teams = null) {
-  const pc = Math.min(4, Math.max(1, Math.floor(Number(playerCount)) || 2));
+  const pc = Math.min(RING_SLOTS, Math.max(1, Math.floor(Number(playerCount)) || 2));
+  if (pc >= RING_MIN) return ringPlan(pc, teams);
   const classic = { mode: 'corners', slots: START_IMAGES[pc].slice() };
   if (pc === 1 || !Array.isArray(teams)) return classic;
   const groups = new Map();
@@ -100,6 +110,32 @@ export function startPlan(playerCount, teams = null) {
   // A team of three: corners around the map in order (top-left, top-right, bottom-right, bottom-left).
   order.forEach((p, j) => { slots[p] = j; });
   return { mode: 'corners', slots };
+}
+
+/** Most players a map holds, and the fewest that use the six-base ring layout. */
+export const RING_SLOTS = 6;
+export const RING_MIN = 5;
+// The west three ring positions (left, bottom-left... read clockwise: 4, 5, 0) come first, so the
+// first team of a 3v3 takes the west side and the second team (positions 1, 2, 3) is its 180° image.
+const RING_ORDER = [4, 5, 0, 1, 2, 3];
+
+/**
+ * Ring positions for five or six players: every team in neighbouring positions, biggest team
+ * first (ties by lowest player index), clockwise from the bottom-left base. With no teams, or
+ * every player alone, players take the ring in turn. Deterministic in every browser.
+ */
+function ringPlan(pc, teams) {
+  const groups = new Map();
+  for (let i = 0; i < pc; i++) {
+    const t = Array.isArray(teams) ? teams[i] ?? i + 1 : i + 1;
+    const key = typeof t === 'number' || typeof t === 'string' ? String(t) : `#${i}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(i);
+  }
+  const list = [...groups.values()].sort((a, b) => b.length - a.length || a[0] - b[0]);
+  const slots = new Array(pc);
+  list.flat().forEach((p, j) => { slots[p] = RING_ORDER[j]; });
+  return { mode: 'ring', slots };
 }
 
 // Neighbour offsets: the first 4 are orthogonal (step cost 10), the last 4 diagonal (14).
@@ -464,9 +500,9 @@ function ringTiles(n, x, y, s) {
 function planLayout(rng, sym, pc, plan, LS = LANDSCAPE_RULES.classic) {
   const { n, order, ks } = sym;
   const half = n / 2;
-  const sc = n / 96;
   const teamMode = plan.mode === 'teams';
   const edge = n >= 112 ? 8 : 7; // mine distance from the map edge for edge expansions
+  if (plan.mode === 'ring') return planRing(rng, sym, plan, LS, edge);
 
   // Canonical start (top-left). Town center center (cx, cy), footprint top-left (tx, ty).
   // The team layout moves it along the top edge toward the middle, and adds its mirror.
@@ -542,6 +578,114 @@ function planLayout(rng, sym, pc, plan, LS = LANDSCAPE_RULES.classic) {
     }
   }
 
+  return finishLayout(rng, sym, bases, canon, LS, kindRoll(rng, LS, order === 2 && !teamMode));
+}
+
+/** The center feature: a river only on a plain two-base duel map (its lakes would sit in another layout's bases). */
+function kindRoll(rng, LS, riverOk) {
+  const roll = rng.next();
+  let kind = riverOk ? (roll < 0.34 ? 'river' : roll < 0.67 ? 'lake' : 'camp') : (roll < 0.5 ? 'lake' : 'camp');
+  // A landscape may draw from its own center features ('open': plain ground with a site or a lane crossing).
+  if (LS.centers) kind = LS.centers[Math.floor(roll * LS.centers.length)];
+  return kind;
+}
+
+/**
+ * The six-base ring (startPlan 'ring'): three canonical bases (top-left, top-right, left) and their
+ * 180° images, on a regular hexagon around the center; one
+ * contested expansion between every two neighbouring bases, as far from both (the top edge's
+ * middle, and a spot on each side between a top base and the side base); on a big map also an inner
+ * natural in front of each base.
+ */
+function planRing(rng, sym, plan, LS, edge) {
+  const { n, ks } = sym;
+  const half = n / 2;
+  // A regular hexagon around the center: the side bases B tiles from the side edges, the top bases
+  // 60° round from them, so every base is r from the center and r from both of its neighbours.
+  const B = Math.round(n * 0.165);
+  const r = half - B;
+  const a = Math.round(half - r / 2);
+  const top = Math.round(half - (r * Math.sqrt(3)) / 2);
+  const side = rng.int(3, 5);
+  const lat = (o) => (o ? -side : TC_SIZE - MINE_SIZE + side); // the mine's sideways offset from the footprint
+  // Top-left base, start mine behind it (toward the top edge), and its mirror on the top-right.
+  const cx = a + rng.int(-1, 1);
+  const cy = top + rng.int(-1, 1);
+  const tx = cx - TC_SIZE / 2;
+  const ty = cy - TC_SIZE / 2;
+  const mx = tx + lat(rng.chance(0.5));
+  const my = ty - START_MINE_GAP - MINE_SIZE;
+  // Left base, start mine behind it (toward the left edge).
+  const lcx = B + rng.int(-1, 1);
+  const lcy = half + rng.int(-1, 1);
+  const ltx = lcx - TC_SIZE / 2;
+  const lty = lcy - TC_SIZE / 2;
+  const canonBases = [
+    { tx, ty, mx, my },
+    { tx: n - TC_SIZE - tx, ty, mx: n - MINE_SIZE - mx, my },
+    { tx: ltx, ty: lty, mx: ltx - START_MINE_GAP - MINE_SIZE, my: lty + lat(rng.chance(0.5)) },
+  ];
+  // Ring position of canonical base ci at image k (RING_ORDER's clockwise numbering).
+  const POS = [[0, 3], [1, 4], [5, 2]];
+  const bases = [];
+  canonBases.forEach((c, ci) => {
+    for (const k of ks) {
+      const [btx, bty] = sym.rect(k, c.tx, c.ty, TC_SIZE);
+      const [bmx, bmy] = sym.rect(k, c.mx, c.my, MINE_SIZE);
+      const bcx = btx + TC_SIZE / 2;
+      const bcy = bty + TC_SIZE / 2;
+      const [ux, uy] = unit(half - bcx, half - bcy);
+      const pos = POS[ci][k === 0 ? 0 : 1];
+      bases.push({ ci, k, pos, tx: btx, ty: bty, cx: bcx, cy: bcy, ux, uy, mx: bmx, my: bmy, player: plan.slots.indexOf(pos) });
+    }
+  });
+  const at = (pos) => bases.find((b) => b.pos === pos);
+  const toward = (mx0, my0, hx, hy, wHome) => {
+    const mcx = mx0 + MINE_SIZE / 2;
+    const mcy = my0 + MINE_SIZE / 2;
+    const [ax, ay] = unit(half - mcx, half - mcy);
+    const [bx, by] = unit(hx - mcx, hy - mcy);
+    return unit(ax + wHome * bx, ay + wHome * by);
+  };
+  const canon = [];
+  // Between the two top bases: the middle of the top edge.
+  const emx = half - 2;
+  canon.push({ mx: emx, my: edge, f: [0, 1], level: 2 });
+  // Between a top base and the side base below it: on their bisector, as far from both as the top one.
+  const reach = dist(emx + MINE_SIZE / 2, edge + MINE_SIZE / 2, at(0).cx, at(0).cy);
+  for (const [p, q] of [[5, 0], [1, 2]]) {
+    const P = at(p);
+    const Q = at(q);
+    const midX = (P.cx + Q.cx) / 2;
+    const midY = (P.cy + Q.cy) / 2;
+    const halfGap = dist(P.cx, P.cy, Q.cx, Q.cy) / 2;
+    const out = Math.sqrt(Math.max(0, reach * reach - halfGap * halfGap));
+    let [px, py] = unit(Q.cy - P.cy, P.cx - Q.cx);
+    if (px * (half - midX) + py * (half - midY) > 0) { px = -px; py = -py; } // away from the center
+    const mx1 = Math.round(midX + px * out - MINE_SIZE / 2);
+    const my1 = Math.round(midY + py * out - MINE_SIZE / 2);
+    canon.push({ mx: mx1, my: my1, f: toward(mx1, my1, half, half, 0), level: 2 });
+  }
+  if (n >= 140) {
+    // Inner naturals: in front of each canonical base, a little off the line to the center.
+    for (const c of canonBases) {
+      const hx = c.tx + TC_SIZE / 2;
+      const hy = c.ty + TC_SIZE / 2;
+      const [dx, dy] = unit(half - hx, half - hy);
+      const D = n * 0.21;
+      const imx = Math.round(hx + dx * D - dy * 3 - MINE_SIZE / 2);
+      const imy = Math.round(hy + dy * D + dx * 3 - MINE_SIZE / 2);
+      canon.push({ mx: imx, my: imy, f: toward(imx, imy, hx, hy, 2), level: 2 });
+    }
+  }
+  return finishLayout(rng, sym, bases, canon, LS, kindRoll(rng, LS, false));
+}
+
+/** Expansions into images, spare bases, the center feature, keep-out zones and side lakes. */
+function finishLayout(rng, sym, bases, canon, LS, kind) {
+  const { n, order, ks } = sym;
+  const half = n / 2;
+  const sc = n / 96;
   // Expand expansions into symmetry images.
   const expansions = [];
   canon.forEach((c, ci) => {
@@ -571,11 +715,6 @@ function planLayout(rng, sym, pc, plan, LS = LANDSCAPE_RULES.classic) {
   }
 
   // Center feature.
-  const roll = rng.next();
-  // (No river in the team layout: its lakes would sit in the top-right base.)
-  let kind = order === 2 && !teamMode ? (roll < 0.34 ? 'river' : roll < 0.67 ? 'lake' : 'camp') : (roll < 0.5 ? 'lake' : 'camp');
-  // A landscape may draw from its own center features ('open': plain ground with a site or a lane crossing).
-  if (LS.centers) kind = LS.centers[Math.floor(roll * LS.centers.length)];
   const center = { kind, x: half, y: half, r: 0, level: n >= 112 ? 3 : 2 };
   const lakes = []; // all images: { x, y, r }
   let river = null;
@@ -656,21 +795,24 @@ function planLayout(rng, sym, pc, plan, LS = LANDSCAPE_RULES.classic) {
 // ---------------------------------------------------------------------------
 // Map construction
 
-function resolveSize(mapSize) {
+function resolveSize(mapSize, pc = 2) {
   if (typeof mapSize === 'number' && Number.isFinite(mapSize)) {
-    return Math.max(64, Math.min(256, Math.floor(mapSize / 2) * 2));
+    return Math.max(pc >= RING_MIN ? RING_MIN_TILES : 64, Math.min(256, Math.floor(mapSize / 2) * 2));
   }
-  return MAP_SIZES[mapSize] || MAP_SIZES.small;
+  return mapTiles(mapSize, pc);
 }
+/** Smallest map the six-base ring fits on (its guard camps keep CAMP_MIN_START_DIST from every base). */
+const RING_MIN_TILES = 112;
 
 function buildMap(seed, n, pc, attempt, plan, landscape = 'classic') {
   const teamMode = plan.mode === 'teams';
-  const order = pc <= 2 || teamMode ? 2 : 4;
+  const ringMode = plan.mode === 'ring';
+  const order = pc <= 2 || teamMode || ringMode ? 2 : 4;
   const sym = new Symmetry(n, order);
   const { ks } = sym;
   const LS = LANDSCAPE_RULES[landscape];
   const tag = landscape === 'classic' ? '' : `|${landscape}`; // the classic map keeps its original seeds
-  const rng = new RNG(hashSeed(`mythicwar-map|${seed}|${n}|${pc}|${attempt}${teamMode ? '|teams' : ''}${tag}`));
+  const rng = new RNG(hashSeed(`mythicwar-map|${seed}|${n}|${pc}|${attempt}${teamMode ? '|teams' : ringMode ? '|ring' : ''}${tag}`));
   const N = n * n;
   const half = n / 2;
   const sc = n / 96;
@@ -1285,7 +1427,8 @@ function placeSacredSites(n, sym, T, foot, L, starts, allMines, camps, dEdge, wi
     return false;
   };
   const four = sym.order === 4;
-  const teams = L.bases.length > 0 && L.bases.some((b) => b.ci === 1);
+  const ring = L.bases.some((b) => b.ci === 2);
+  const teams = !ring && L.bases.length > 0 && L.bases.some((b) => b.ci === 1);
   // The center: one site on the fixed point when the middle is open.
   const middle = L.center.kind !== 'lake' && L.center.kind !== 'camp' && ok(half, half, []);
   if (middle) sites.push({ x: half, y: half });
@@ -1294,6 +1437,7 @@ function placeSacredSites(n, sym, T, foot, L, starts, allMines, camps, dEdge, wi
   // also takes the center's place).
   let plan;
   if (four) plan = [[0.5, 0.3, 20], [0.36, 0.36, 16], [0.5, 0.2, 16]]; // between each pair of neighbouring corners
+  else if (ring) plan = [[0.5, 0.32, 14], [0.36, 0.38, 14], [0.64, 0.38, 14], [0.5, 0.24, 14]]; // inside the ring, between the two top bases
   else if (teams) plan = [[0.2, 0.5, 20], [0.38, 0.5, 14], [0.5, 0.3, 14]]; // on the side edges, between the two teams
   else {
     // A pair as far from one corner as from the other, or, when a river runs along that diagonal, one on each corner's flank.
@@ -1577,8 +1721,8 @@ export function mapOptions(setup) {
  *   camps:{x:number,y:number,level:number}[], decor:{x:number,y:number,kind:string,rot:number,scale:number}[] }}
  */
 export function generateMap({ seed = 1, mapSize = 'small', playerCount = 2, teams = null, landscape = 'classic' } = {}) {
-  const n = resolveSize(mapSize);
-  const pc = Math.min(4, Math.max(1, Math.floor(Number(playerCount)) || 2));
+  const pc = Math.min(RING_SLOTS, Math.max(1, Math.floor(Number(playerCount)) || 2));
+  const n = resolveSize(mapSize, pc);
   const plan = startPlan(pc, teams);
   const ls = isLandscape(landscape) ? landscape : 'classic';
   let built = null;

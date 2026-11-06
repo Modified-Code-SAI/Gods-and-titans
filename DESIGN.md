@@ -14,7 +14,7 @@ Hindu, Japanese, Chinese, Aztec, Celtic, Mesopotamian, West African). Human
 **Village → Town → City**, and **pray at Shrines and Temples to earn Faith**.
 Faith summons the pantheon's **mythical creatures** (Shrine), **gods** (Temple,
 hero units that level up and cast 3 abilities) and one colossal **Titan**
-(Titan Gate, City only). Mortal soldiers come from the Barracks. Up to 4 slots,
+(Titan Gate, City only). Mortal soldiers come from the Barracks. Up to 6 slots,
 each a human or an AI, on teams: co-op against AI, or players battle each
 other. Online play is peer-to-peer with a room code; the host's browser runs
 the authoritative simulation.
@@ -725,7 +725,7 @@ has 3 to 5 (`mapData.sacred`, 6.7); they exist in every game. Rules in `src/sim/
   near to the sites as every other: a site on the center when the middle is open ground (not a lake or camp), then
   an orbit between the starts (duel: two equidistant from both corners, or one on each corner's flank on a river
   map; 3–4 players: one between each pair of neighbouring corners; team layout: one on each side edge, between
-  the teams), and stand-in orbits until there are 3 (4 on four-fold maps). Each needs open, footprint-free,
+  the teams; ring layout: a pair inside the ring between the two top bases and the two bottom ones), and stand-in orbits until there are 3 (4 on four-fold maps). Each needs open, footprint-free,
   reachable ground within `SITE_CLEAR` (3) tiles, at least `SITE_MIN_START_DIST` (16) from a start's Town Center,
   7 from a gold mine, 12 from a creep camp (9 if nothing fits) and 12 from another site; the search walks outward
   from the target and keeps the first tile whose every image qualifies.
@@ -1184,7 +1184,18 @@ the 2v1 the spare bottom-left base becomes a rich expansion. A team of three (3v
 neighbouring corners in order (top-left, top-right, bottom-right) and the lone player the last.
 Every player on one team (2 to 4 players, the Trial of the Titans, 5.14) also takes the team layout,
 in player order (top-left, top-right, bottom-right, bottom-left); spare bases become rich expansions.
-`meta.layout` is `'corners'` or `'teams'`.
+Five and six players take the **ring layout** (`meta.layout` `'ring'`), on a bigger map of the
+same name (`mapTiles` in config.js: Small 120, Medium 152 tiles instead of 96 and 128, about as
+much ground per player as four have): six bases on a regular hexagon around the center (the left
+and right bases 16.5% in from their side edges, the four others 60° round from them), 180°
+symmetric, so every base is as far from the center as from both of its neighbours. Between every
+two neighbouring bases sits one contested expansion as far from both (the middle of the top and
+bottom edge, and one on each side between a top or bottom base and the side base); Medium also
+gives each base an inner natural toward the center. Teams take neighbouring bases, the biggest team
+first, clockwise from the bottom-left base: a 3v3 puts the first team on the west three and the
+second on their 180° images (exactly fair), a 2v2v2 gives each pair two neighbours. A five-player
+game leaves one base free as a rich guarded expansion. No river center feature.
+`meta.layout` is `'corners'`, `'teams'` or `'ring'`.
 ```js
 {
   width, height, seed,
@@ -1319,16 +1330,18 @@ in player order (top-left, top-right, bottom-right, bottom-left); spare bases be
 - Lobby (`src/net/lobby.js`):
   ```js
   const host = await LobbyHost.create({ transport: 'peer'|'local'|'none', name });
-  host.roomCode; host.state; host.onChange(cb); host.setSlot(i, patch); host.applyPreset('coop'|'1v1'|'2v2'|'ffa');
+  host.roomCode; host.state; host.onChange(cb); host.setSlot(i, patch); host.applyPreset('coop'|'1v1'|'2v2'|'3v3'|'ffa');
   host.setMapSize('small'|'medium'); host.setPeace(0|30|45|60); host.canStart(); host.onChat(cb); host.sendChat(text);
   const { setup, myIndex, conns } = host.start(); // conns: Map<playerIndex, conn>; resolves 'random' pantheons with the seed
   const client = await LobbyClient.join({ transport, roomCode, name });
   client.state; client.mySlot; client.onChange(cb); client.setMine({ pantheon, team, color });
   client.onStart(cb({ setup, myIndex, conn })); client.onKicked(cb(reason)); client.onChat(cb); client.sendChat(text);
   ```
-  LobbyState: `{ roomCode, mapSize, landscape (a landscape id from 6.7 or 'random'; `LobbyHost.setLandscape`), peace (0 = standard game, or 30 | 45 | 60 for the Decade of Peace, 5.10), sacred (bool, Sacred Victory, 5.11; `LobbyHost.setSacred`; off in a trial), survival (true for the Trial of the Titans, 5.14; never beside a peace), slots: [4 × { kind: 'host'|'human'|'ai'|'open'|'closed', name, pantheon ('random' allowed), team (1–4), color (index into PLAYER_COLORS), difficulty ('easy'|'normal'|'hard'|'brutal'), peerId }] }`.
-  Presets: `coop` = humans team 1 + AI Normal on team 2 filling remaining slots (2 humans vs 2 AI on medium);
-  `1v1` = 2 slots, teams 1/2, small map; `2v2` = teams 1,1,2,2; `ffa` = each its own team.
+  LobbyState: `{ roomCode, mapSize, landscape (a landscape id from 6.7 or 'random'; `LobbyHost.setLandscape`), peace (0 = standard game, or 30 | 45 | 60 for the Decade of Peace, 5.10), sacred (bool, Sacred Victory, 5.11; `LobbyHost.setSacred`; off in a trial), survival (true for the Trial of the Titans, 5.14; never beside a peace), slots: [6 × { kind: 'host'|'human'|'ai'|'open'|'closed', name, pantheon ('random' allowed), team (1–6), color (index into PLAYER_COLORS), difficulty ('easy'|'normal'|'hard'|'brutal'), peerId }] }`.
+  Presets: `coop` = humans team 1 + AI Normal on team 2 filling the first four slots (2 humans vs 2 AI on medium;
+  four or five humans use all six); `1v1` = 2 slots, teams 1/2, small map; `2v2` = teams 1,1,2,2; `3v3` = teams
+  1,1,1,2,2,2; `ffa` = four players, each its own team. Seats a preset does not use are Closed (the host can open
+  them, up to six players). The lobby's map size buttons show the tiles for the filled seats (`mapSizeTiles`).
   Online (any transport but `none`) the seats a preset gives other players are Open for friends (coop keeps its
   AI opponents); against the computer they are AI. An online lobby starts with every seat Open on two sides,
   row by row (teams 1,2,1,2, no preset lit, small map), so up to three friends can come in by the room code.
