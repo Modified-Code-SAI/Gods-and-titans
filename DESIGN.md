@@ -2108,8 +2108,12 @@ per-frame budget, so a revealed army appears over a few frames.
   above it, never over it), join screen (name + code), a notice pinned to the title and join screens
   (`menu.setNotice`, set by `boot` in main.js: no WebGL 2, and on a phone or tablet, `isTouchOnly` in menu-model.js:
   `(pointer: coarse)` matches and `(any-pointer: fine)` does not, `TOUCH_NOTICE` "This game needs a mouse and
-  keyboard: it has no touch controls yet."; both join into one line), how-to-play (the rules in eight steps, then tips: Learn to
-  Play, the Campaign, the Daily Challenge, saving and loading, replays), settings
+  keyboard: it has no touch controls yet."; both join into one line), how-to-play (five tabs, as Settings, the last one
+  kept for the visit, `howToPages` in menu-howto.js: The Basics (gathering, prayer, the tiers, summoning, god
+  levels, your pantheon), War (fighting, ranks, god powers, walls, relics, sacred sites), Game Modes (Decade of
+  Peace, Trial of the Titans, Sacred Victory), Controls (the mouse and hotkey tables in two columns) and Beyond the
+  Battle (Learn to Play, the Campaign with its chapters counted from the data, the Daily Challenge, saving,
+  replays, renown); each step a card, two to a row; on a phone the tab bar scrolls sideways), settings
   (name, volume, graphics quality, time of day, intro film: a narration toggle and a "Watch it now" button, edge scrolling). Pantheon picker shows each pantheon's gods,
   titan and creatures (from data) so choosing is fun, plus its two blessings and its elite soldier; the lobby
   preview shows the same rows.
