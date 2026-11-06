@@ -12,6 +12,7 @@
 //   overlays     waiting, in-game menu (F10), game over, host left
 // Only the panels take pointer events; everything else falls through to the canvas.
 import { setIconVar } from './icons.js';
+import { playEnding } from './hud-ending.js';
 import { UNITS, PANTHEONS } from '../data/index.js';
 import { PANTHEON_EMBLEMS } from './menu-model.js';
 import { getCommandCard, withCardKeys } from './command-card.js';
@@ -906,6 +907,13 @@ export class Hud {
   }
 
   /** Big centred announcement under the top bar. */
+  /** The ending (hud-ending.js): letterbox bars and the result carved across the screen; `done` follows it. */
+  showEnding(words, result, ms, done) {
+    this.banner.hidden = true;
+    if (this.taunt) this.taunt.hidden = true;
+    return playEnding(this.root, words, result, ms, done);
+  }
+
   showBanner(text, kind = 'info') {
     this.banner.textContent = text;
     this.banner.className = `hud-banner is-${kind}`;

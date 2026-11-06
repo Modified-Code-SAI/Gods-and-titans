@@ -55,6 +55,7 @@ import { ReplaySession } from './replay-session.js';
 import { ReplayBar } from '../ui/hud-replay.js';
 import { MatchSaver, loadSaveGame, isSettled, packView, restoreView, settleMatch } from './game-saves.js';
 import { AUTO_SLOT } from './save-store.js';
+import { FallTracker, endingWords, ENDING_MS, ENDING_DISTANCE } from './match-end.js';
 
 const AMBIENT_MS = 800; // worker chop / mine / build sounds near the camera
 const BREACH_MESSAGE_MS = 6000; // between two "wall breached" messages
@@ -232,6 +233,27 @@ function dropTicket(launch) {
 /** Forget the ticket a host keeps into its heir's room (DESIGN 7): the game ended, or nobody carries it on. */
 function dropHostTicket(launch, token) {
   if (token && !(launch && launch.role === 'client')) clearTicket(undefined, token);
+}
+
+/**
+ * The ending (match-end.js): the camera glides to where the match was decided and the result is carved
+ * across the screen, then `show` brings the game-over screen. Without a HUD that can play it (tests, a
+ * replay) the screen follows after a short pause for the last explosions.
+ */
+function startEnding(game, info, show) {
+  const hud = game.hud;
+  if (!hud || typeof hud.showEnding !== 'function') {
+    setTimeout(show, 1200);
+    return;
+  }
+  const cam = game.renderer && game.renderer.camera;
+  const at = game.falls ? game.falls.focus(info.result, game.viewState.myTeam) : null;
+  if (cam && at) {
+    cam.centerOn(at.x, at.y, true);
+    if (cam.goalDistance > ENDING_DISTANCE) cam.setDistance(ENDING_DISTANCE);
+  }
+  if (game.selection && typeof game.selection.set === 'function') game.selection.set([]); // no rings or panel over the moment
+  game.ending = hud.showEnding(endingWords(info), info.result, ENDING_MS, show);
 }
 
 export class Game {
@@ -995,10 +1017,11 @@ export class Game {
       // (A defeat already heard when the local player fell is not played again.)
       if (result === 'victory') sfx.play('victory');
       else if (!this.defeatSounded) sfx.play('defeat');
-      // Give the last explosions a moment before the screen.
-      setTimeout(() => {
+      const show = () => {
+        this.ending = null;
         if (!this.disposed) this.hud.overlays.showGameOver({ result, winningTeam: wt, unlocked, how: vs.gameOver.how, medal, tutorial: !!this.tutorial, wave, record, daily, mission });
-      }, 1200);
+      };
+      startEnding(this, { result, how: vs.gameOver.how, wave, mission: !!mission, tutorial: !!this.tutorial }, show);
     } else if (!vs.gameOver && vs.me && vs.me.defeated && !this.hud.overlays.defeatShown) {
       if (this.input) this.input.cancelMode();
       this.defeatSounded = true;
@@ -1168,6 +1191,10 @@ export class Game {
   onEvent(ev) {
     if (this.disposed || !this.hud) return;
     const vs = this.viewState;
+    if (ev.type === 'death' && ev.k === 'b' && typeof vs.teamOf === 'function') {
+      if (!this.falls) this.falls = new FallTracker();
+      this.falls.note(ev, (o) => vs.teamOf(o), vs.time);
+    }
     const me = vs.myIndex;
     const hud = this.hud;
     switch (ev.type) {
@@ -1524,6 +1551,8 @@ export class Game {
     this.disposed = true;
     ambience.stop();
     cancelAnimationFrame(this.raf);
+    if (this.ending) this.ending.dispose();
+    this.ending = null;
     this.setLoading(false);
     for (const off of this.offs.splice(0)) {
       try {
