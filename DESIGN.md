@@ -2499,7 +2499,8 @@ per-frame budget, so a revealed army appears over a few frames.
   distance attenuation from `sfx.setListener(x, y, scale)` (the camera target; `scale` follows the
   zoom, 0.8 close, 1 at the default zoom, 4.5 at the 170 tile far limit, and stretches the hearing
   range so a zoomed-out view still hears its far side).
-  Names: click, select, move, attack_melee, attack_ranged, hit, death, build, building_complete,
+  Names: click, hover (a faint tick, about 11 dB under the click, when the pointer moves onto a menu or game-menu
+  button; not on touch), select, move, attack_melee, attack_ranged, hit, death, build, building_complete,
   train, summon_god, summon_titan, lightning, fire, magic, heal, error, victory, defeat,
   tier_up, chop, mine, pray, horn, ping, ping_urgent.
   Impacts by material and size (`src/audio/sfx-impacts.js`): hit_armor (a melee blow on armor 2+ or a god), hit_pierce

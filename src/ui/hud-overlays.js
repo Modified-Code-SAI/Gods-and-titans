@@ -101,6 +101,7 @@ function btn(text, cls, onClick) {
     sfx.play('click');
     onClick(e);
   });
+  b.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch' && !b.disabled) sfx.play('hover'); });
   return b;
 }
 
