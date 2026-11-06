@@ -12,7 +12,7 @@
 //   overlays     waiting, in-game menu (F10), game over, host left
 // Only the panels take pointer events; everything else falls through to the canvas.
 import { SkyDial } from './hud-sky.js';
-import { ArrivalCard } from './hud-arrival.js';
+import { ArrivalCard, ageSpec } from './hud-arrival.js';
 import { hourAt } from '../render/day-clock.js';
 import { setIconVar } from './icons.js';
 import { playEnding } from './hud-ending.js';
@@ -927,7 +927,17 @@ export class Hud {
 
   /** My god or Titan has arrived: the arrival card, which takes the banner's place while it shows. */
   showArrival(def) {
-    if (!this.arrival.show(def)) return false;
+    return this.takeBanner(this.arrival.show(def));
+  }
+
+  /** My settlement reached `tier`: the same card, with the tier's name and what it opens. */
+  showAge(tier) {
+    const me = this.vs && this.vs.me;
+    return this.takeBanner(this.arrival.showSpec(ageSpec(tier, me && me.pantheon)));
+  }
+
+  takeBanner(shown) {
+    if (!shown) return false;
     clearTimeout(this.bannerTimer);
     this.banner.classList.remove('is-on');
     this.banner.hidden = true;

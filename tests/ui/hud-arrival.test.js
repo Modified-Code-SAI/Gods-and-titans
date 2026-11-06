@@ -1,7 +1,8 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { installFakeDom } from './fake-dom.js';
-import { arrivalSpec, ArrivalCard } from '../../src/ui/hud-arrival.js';
+import { arrivalSpec, ageSpec, ArrivalCard } from '../../src/ui/hud-arrival.js';
+import { PANTHEON_LIST } from '../../src/data/index.js';
 import { UNITS } from '../../src/data/index.js';
 
 before(() => installFakeDom());
@@ -36,5 +37,30 @@ test('the card shows the god and hides again', () => {
   assert.equal(card.show(titans[0]), true);
   assert.ok(card.el.className.includes('is-titan'));
   assert.equal(card.el.findAll('hud-arrival-name').length, 1, 'a second arrival replaces the first');
+  card.cleanup();
+});
+
+test('growing into a Town or a City shows what the new age opens, for every pantheon', () => {
+  for (const p of PANTHEON_LIST) {
+    const town = ageSpec(2, p.id);
+    assert.equal(town.kind, 'age');
+    assert.equal(town.name, 'A Town');
+    assert.match(town.kicker, /Village/);
+    assert.ok(town.powers.length >= 2 && town.powers.length <= 5, p.id);
+    const city = ageSpec(3, p.id);
+    assert.equal(city.name, 'A City');
+    assert.ok(city.powers.some((x) => x.name === Object.values(UNITS).find((u) => u.class === 'titan' && u.pantheon === p.id).name), `${p.id}: the City opens the Titan`);
+    const others = Object.values(UNITS).filter((u) => u.pantheon && u.pantheon !== p.id).map((u) => u.name);
+    assert.ok(!city.powers.some((x) => others.includes(x.name) && !Object.values(UNITS).some((u) => u.pantheon === p.id && u.name === x.name)), `${p.id}: nothing of another pantheon`);
+  }
+  assert.equal(ageSpec(1, 'greek'), null);
+  assert.equal(ageSpec(undefined, 'greek'), null);
+});
+
+test('the age card says Now open over the list', () => {
+  const card = new ArrivalCard();
+  card.showSpec(ageSpec(2, 'greek'));
+  assert.ok(card.el.className.includes('is-age'));
+  assert.ok(card.el.find('hud-arrival-opens'));
   card.cleanup();
 });
