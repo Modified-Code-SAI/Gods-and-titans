@@ -295,3 +295,14 @@ test('deletePlan: who needs a second press and what the question says', () => {
   );
   assert.equal(deletePlan([{ id: 1, t: 'no_such_unit' }]).confirm, false, 'an unknown type is a plain unit');
 });
+
+test('the Destroy button asks for another tap of itself, and a second tap destroys', () => {
+  const { select, sent, messages, input } = setup();
+  const units = select(DELETE_CONFIRM_ABOVE + 2);
+  input.deleteSelected('Tap 💀 again');
+  assert.deepEqual(messages, [[`Tap 💀 again to destroy ${units.length} units.`, 'error']]);
+  assert.equal(kills(sent).length, 0);
+  input.deleteSelected('Tap 💀 again');
+  assert.equal(kills(sent).length, 1, 'the second tap');
+  input.dispose();
+});

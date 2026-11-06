@@ -13,11 +13,12 @@ function listNames(names) {
 }
 
 /**
- * What a Delete press does to these units (view entities `{ id, t }`, all the player's own).
+ * What a Delete press does to these units (view entities `{ id, t }`, all the player's own). `again` opens the
+ * question: the key's 'Press Delete again', or the HUD's Destroy button's 'Tap Destroy again'.
  * @returns {{ ids: number[], confirm: boolean, prompt: string }} `confirm`: a second press is needed first,
  *   and `prompt` says what it would destroy
  */
-export function deletePlan(units) {
+export function deletePlan(units, again = 'Press Delete again') {
   const ids = units.map((u) => u.id);
   const named = [];
   for (const u of units) {
@@ -28,5 +29,5 @@ export function deletePlan(units) {
   if (!confirm) return { ids, confirm, prompt: '' };
   const what = ids.length === 1 ? named[0] || 'this unit' : `${ids.length} units`;
   const among = ids.length > 1 && named.length ? `, including ${listNames(named)}` : '';
-  return { ids, confirm, prompt: `Press Delete again to destroy ${what}${among}.` };
+  return { ids, confirm, prompt: `${again} to destroy ${what}${among}.` };
 }
