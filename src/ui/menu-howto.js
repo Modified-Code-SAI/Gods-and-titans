@@ -1,5 +1,6 @@
-// How to Play: the rules (DESIGN 5) and controls (DESIGN 9) in friendly words.
+// How to Play: the rules (DESIGN 5) and controls (DESIGN 9) in friendly words, as pages behind tabs (DESIGN 9).
 import { h } from './menu-dom.js';
+import { CHAPTERS } from '../data/campaign.js';
 import { BUILDINGS } from '../data/index.js';
 import { RANK_NAMES } from '../data/ranks.js';
 import { MANOR, mergeRule } from '../data/houses.js';
@@ -139,6 +140,26 @@ function godSlots() {
   return GOD_SLOT_TIER.slice(0, MAX_GODS).map((t, i) => (t <= 1 ? `the ${NTH[i]} in the Village` : `the ${NTH[i]} once you are ${TIER_WORDS[t - 1]}`)).join(', ');
 }
 
+// The words of How to Play, one paragraph each (the pages below put them in order).
+const GATHER_1 = `You start with a Town Center (${TOWN_CENTER_NAMES}), ${START_WORKERS} Worshippers, ${START_RESOURCES.gold} gold and ${START_RESOURCES.wood} wood. Select worshippers (drag a box around them) and right-click a gold mine or the forest. They carry ${CARRY_AMOUNT} at a time back to the Town Center or a Storehouse.`;
+const GATHER_2 = `Only ${MINE_SLOTS} worshippers can dig in a gold mine at once (${MINE_TIME} seconds per trip); the others wait their turn, so 5–6 on one mine is plenty. Send the rest to the forest or to pray. Town Centers and Storehouses must be built at least ${DROPOFF_MINE_GAP} tiles away from a gold mine.`;
+const PRAY = `Build a Shrine, then right-click it with worshippers (or press P). Every kneeling worshipper earns Faith each second (Shrine ${faithRate('shrine')}/s, Temple ${faithRate('temple')}/s) until you give them another order. Faith is what summons the divine.`;
+const GROW = `Houses raise your population limit (up to ${POP_MAX}). ${MANOR_TEXT} Barracks train Warriors, Archers, Priests and Battering Rams, and from the Town on one elite soldier that only your pantheon fields. Grow your Town Center (U) to unlock stronger creatures, more gods and finally the Titan Gate.`;
+const SUMMON_1 = 'Shrines summon your pantheon\'s mythical creatures: one per tier, Village, Town and City. Temples summon gods: heroes who level up and cast spells.';
+const SUMMON_2 = () => `You may lead ${MAX_GODS} gods at once: ${godSlots()}. In the City, raise a Titan Gate and summon one colossal Titan.`;
+const LEVEL = `Gods gain experience when enemies fall nearby and rise to level ${GOD_MAX_LEVEL}. Their first ability (Q) is ready at once, the second (W) at level 2 and the ultimate (R) at level 4. A fallen god can be revived at the Temple for ${REVIVE_COST_MULT === 0.5 ? 'half' : `${Math.round(REVIVE_COST_MULT * 100)}% of`} the price and time, keeping its level.`;
+const PANTHEON = 'Every pantheon plays its own way. Each has two blessings that work from the first second, an elite soldier trained at the Barracks, its own look, and its own creatures, gods and Titan. Hover the pantheon chip at the top left of the battlefield, or open Pantheons on the menu, to read yours.';
+const FIGHT = `Armor softens blows; arrows and spells never miss. Spells ignore armor but deal only ${Math.round(SPELL_VS_BUILDING * 100)}% to buildings. Only units that can hit air can strike flyers. Neutral creatures guard camps across the map and pay a gold bounty. A player with no buildings left is defeated, and the last team standing wins.`;
+const RANKS = () => `Soldiers from the Barracks earn experience for the enemies and buildings they destroy (Priests for the wounds they mend) and rise from ${RANK_NAMES[0]} to ${rankLadder()}. Each rank adds ${Math.round(RANK_DAMAGE * 100)}% damage, ${Math.round(RANK_HP * 100)}% health and ${RANK_ARMOR} armor, and small bronze, silver and gold diamonds over a soldier show its rank.`;
+const POWERS_1 = 'Each pantheon has three god powers, each usable once per game: a blessing in the Village (a richer harvest, a festival of prayer, a healing rain or a caravan of gifts), a strike from the Town (a storm of thunderbolts, a hammer from the sky, a plague of locusts…) and a cataclysm in the City (an earthquake, a great flood, an endless winter…).';
+const POWERS_2 = 'Press a glowing button on the left of the minimap, then click the map or the minimap where the power should fall: a ring shows its area. Strikes and cataclysms need a spot you can see and wait out a Decade of Peace. The computer players use theirs too, so keep your army from bunching up.';
+const WALLS = `Worshippers can lay walls too: choose Wooden Wall in the build menu (W), then press on a tile and drag to lay a line of up to ${MAX_WALL_LINE} segments, which your Worshippers build one by one; a line goes up only within ${WALL_PLACE_RANGE} tiles of the Worshippers you order. Walls block every ground unit, yours too, so enemy armies have to break through them; ranged units can shoot over a wall at anything within range. Select a wall and press U to upgrade it to stone (${WALL_UPGRADE_TEXT}). A Tower raised on a wall, or in line with one, becomes part of the wall, and you can dismantle a segment (D) to open a gap of your own.`;
+const RELICS = `The bigger camps, marked by a beam of light, guard a relic from world myth (${RELIC_NAMES}). When the camp's last creature falls the relic drops: right-click it with a Worshipper or a god, who carries it to your Temple. While it rests there it gives you a lasting bonus, such as more health for your soldiers or faster research. A carrier that dies drops it, and a Temple that falls frees what rested in it.`;
+const SITES = `Sacred sites ${SITE_ICON}, rings of standing stones around a glowing altar, lie between the bases. A Worshipper or Priest standing at one with no enemy near captures it in ${SITE_CAPTURE_TIME} seconds (a rival's site takes ${SITE_NEUTRALIZE_TIME} more to tear down first), and each site you hold gives ${SITE_FAITH} faith a second. Soldiers cannot capture, but any enemy at a site stops a capture. The chip beside the clock counts the sites your side holds.`;
+const PEACE = `The host can pick the ${PEACE_NAME} game mode in the lobby: for ${PEACE_MINUTES_TEXT} no player can harm another with weapons or spells and nobody can build within ${PEACE_BUILD_GAP} tiles of an enemy Town Center (that ground turns red when you place a building), so everyone has time to build up and mass armies for one great battle. A countdown beside the game clock shows what is left, creatures still fight, and a horn sounds when the peace ends.`;
+const SURVIVAL = `In the ${SURVIVAL_NAME}, every player and AI in the lobby plays on one team against waves of mythical monsters that come out of the map's edges, the first after ${SURVIVAL_FIRST_WAVE / 60} minutes and then one every ${SURVIVAL_INTERVAL} seconds, more and stronger each time, with a hostile Titan leading every ${SURVIVAL_BOSS_EVERY}th wave. Beating a wave pays every survivor gold. The trial ends when the last of you has no buildings left, and your score is the wave you reached; the chip beside the game clock counts down to the next one, and the lobby remembers your best.`;
+const SACRED = `When the host turns on ${SACRED_NAME} in the lobby, a side that holds every site for ${SACRED_HOLD / 60} minutes in a row also wins.`;
+
 function step(num, icon, title, ...body) {
   return h('section.mw-howto-step',
     h('div.mw-howto-num', { 'aria-hidden': 'true' }, icon),
@@ -149,44 +170,69 @@ function step(num, icon, title, ...body) {
   );
 }
 
-/** The How to Play content (rules column + controls column). */
-export function renderHowToContent() {
-  const rules = h('div.mw-howto-rules',
+/** A campaign line from the chapters: "three chapters of five linked missions, for the Greeks, the Norse and the Egyptians". */
+function campaignLine() {
+  const n = CHAPTERS.length;
+  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
+  const peoples = CHAPTERS.map((c) => c.people);
+  const list = peoples.length > 1 ? `${peoples.slice(0, -1).join(', ')} and ${peoples.at(-1)}` : peoples.join('');
+  const per = CHAPTERS[0] ? CHAPTERS[0].missions.length : 0;
+  return `the Campaign on the title screen is ${words[n] || n} chapter${n === 1 ? '' : 's'} of ${words[per] || per} linked missions, for ${list}, each mission with its own objectives and a narrated briefing. Win one to open the next.`;
+}
+
+/**
+ * How to Play as pages, [id, label, children] each, for the title screen's tab bar (menu.js settingsPages):
+ * the basics, war, the game modes, the controls, and what lies beyond a single battle.
+ */
+export function howToPages() {
+  const steps = (...list) => h('div.mw-howto-steps', ...list);
+  const basics = [
     h('p.mw-lead', 'Lead a people devoted to their gods. Your worshippers gather, build and pray; your prayers call down creatures, gods and a colossal titan. Destroy every building of the enemy to win.'),
-    step(1, '⛏️', 'Gather gold and wood',
-      `You start with a Town Center (${TOWN_CENTER_NAMES}), ${START_WORKERS} Worshippers, ${START_RESOURCES.gold} gold and ${START_RESOURCES.wood} wood. Select worshippers (drag a box around them) and right-click a gold mine or the forest. They carry ${CARRY_AMOUNT} at a time back to the Town Center or a Storehouse.`,
-      `Only ${MINE_SLOTS} worshippers can dig in a gold mine at once (${MINE_TIME} seconds per trip); the others wait their turn, so 5–6 on one mine is plenty. Send the rest to the forest or to pray. Town Centers and Storehouses must be built at least ${DROPOFF_MINE_GAP} tiles away from a gold mine.`),
-    step(2, '🙏', 'Pray for Faith',
-      `Build a Shrine, then right-click it with worshippers (or press P). Every kneeling worshipper earns Faith each second (Shrine ${faithRate('shrine')}/s, Temple ${faithRate('temple')}/s) until you give them another order. Faith is what summons the divine.`),
-    step(3, '🏛️', 'Grow from Village to Town to City',
-      `Houses raise your population limit (up to ${POP_MAX}). ${MANOR_TEXT} Barracks train Warriors, Archers, Priests and Battering Rams, and from the Town on one elite soldier that only your pantheon fields. Grow your Town Center (U) to unlock stronger creatures, more gods and finally the Titan Gate.`),
-    step(4, '✨', 'Summon creatures, gods and a Titan',
-      'Shrines summon your pantheon\'s mythical creatures: one per tier, Village, Town and City. Temples summon gods: heroes who level up and cast spells.',
-      `You may lead ${MAX_GODS} gods at once: ${godSlots()}. In the City, raise a Titan Gate and summon one colossal Titan.`),
-    step(5, '⚡', 'Level up your gods',
-      `Gods gain experience when enemies fall nearby and rise to level ${GOD_MAX_LEVEL}. Their first ability (Q) is ready at once, the second (W) at level 2 and the ultimate (R) at level 4. A fallen god can be revived at the Temple for ${REVIVE_COST_MULT === 0.5 ? 'half' : `${Math.round(REVIVE_COST_MULT * 100)}% of`} the price and time, keeping its level.`),
-    step(6, '🌩️', 'Call on your god powers',
-      'Each pantheon has three god powers, each usable once per game: a blessing in the Village (a richer harvest, a festival of prayer, a healing rain or a caravan of gifts), a strike from the Town (a storm of thunderbolts, a hammer from the sky, a plague of locusts…) and a cataclysm in the City (an earthquake, a great flood, an endless winter…).',
-      'Press a glowing button on the left of the minimap, then click the map or the minimap where the power should fall: a ring shows its area. Strikes and cataclysms need a spot you can see and wait out a Decade of Peace. The computer players use theirs too, so keep your army from bunching up.'),
-    step(7, '⚔️', 'Wage war',
-      `Armor softens blows; arrows and spells never miss. Spells ignore armor but deal only ${Math.round(SPELL_VS_BUILDING * 100)}% to buildings. Only units that can hit air can strike flyers. Neutral creatures guard camps across the map and pay a gold bounty. A player with no buildings left is defeated, and the last team standing wins.`,
-      `The bigger camps, marked by a beam of light, guard a relic from world myth (${RELIC_NAMES}). When the camp's last creature falls the relic drops: right-click it with a Worshipper or a god, who carries it to your Temple. While it rests there it gives you a lasting bonus, such as more health for your soldiers or faster research. A carrier that dies drops it, and a Temple that falls frees what rested in it.`,
-      `Soldiers from the Barracks earn experience for the enemies and buildings they destroy (Priests for the wounds they mend) and rise from ${RANK_NAMES[0]} to ${rankLadder()}. Each rank adds ${Math.round(RANK_DAMAGE * 100)}% damage, ${Math.round(RANK_HP * 100)}% health and ${RANK_ARMOR} armor, and small bronze, silver and gold diamonds over a soldier show its rank.`,
-      `Worshippers can lay walls too: choose Wooden Wall in the build menu (W), then press on a tile and drag to lay a line of up to ${MAX_WALL_LINE} segments, which your Worshippers build one by one; a line goes up only within ${WALL_PLACE_RANGE} tiles of the Worshippers you order. Walls block every ground unit, yours too, so enemy armies have to break through them; ranged units can shoot over a wall at anything within range. Select a wall and press U to upgrade it to stone (${WALL_UPGRADE_TEXT}). A Tower raised on a wall, or in line with one, becomes part of the wall, and you can dismantle a segment (D) to open a gap of your own.`,
-      `The host can pick the ${PEACE_NAME} game mode in the lobby: for ${PEACE_MINUTES_TEXT} no player can harm another with weapons or spells and nobody can build within ${PEACE_BUILD_GAP} tiles of an enemy Town Center (that ground turns red when you place a building), so everyone has time to build up and mass armies for one great battle. A countdown beside the game clock shows what is left, creatures still fight, and a horn sounds when the peace ends.`,
-      `Or the ${SURVIVAL_NAME}: every player and AI in the lobby plays on one team against waves of mythical monsters that come out of the map's edges, the first after ${SURVIVAL_FIRST_WAVE / 60} minutes and then one every ${SURVIVAL_INTERVAL} seconds, more and stronger each time, with a hostile Titan leading every ${SURVIVAL_BOSS_EVERY}th wave. Beating a wave pays every survivor gold. The trial ends when the last of you has no buildings left, and your score is the wave you reached; the chip beside the game clock counts down to the next one, and the lobby remembers your best.`,
-      `Sacred sites ${SITE_ICON}, rings of standing stones around a glowing altar, lie between the bases. A Worshipper or Priest standing at one with no enemy near captures it in ${SITE_CAPTURE_TIME} seconds (a rival's site takes ${SITE_NEUTRALIZE_TIME} more to tear down first), and each site you hold gives ${SITE_FAITH} faith a second. Soldiers cannot capture, but any enemy at a site stops a capture. The chip beside the clock counts the sites your side holds. When the host turns on ${SACRED_NAME} in the lobby, a side that holds every site for ${SACRED_HOLD / 60} minutes in a row also wins.`),
-    step(8, '🔱', 'Know your pantheon',
-      'Every pantheon plays its own way. Each has two blessings that work from the first second, an elite soldier trained at the Barracks, its own look, and its own creatures, gods and Titan. Hover the pantheon chip at the top left of the battlefield, or open Pantheons on the menu, to read yours.'),
+    steps(
+      step(1, '⛏️', 'Gather gold and wood', GATHER_1, GATHER_2),
+      step(2, '🙏', 'Pray for Faith', PRAY),
+      step(3, '🏛️', 'Grow from Village to Town to City', GROW),
+      step(4, '✨', 'Summon creatures, gods and a Titan', SUMMON_1, SUMMON_2()),
+      step(5, '⚡', 'Level up your gods', LEVEL),
+      step(6, '🔱', 'Know your pantheon', PANTHEON)),
+  ];
+  const war = [
+    steps(
+      step(1, '⚔️', 'Fight', FIGHT),
+      step(2, '🎖️', 'Earn ranks', RANKS()),
+      step(3, '🌩️', 'Call on your god powers', POWERS_1, POWERS_2),
+      step(4, '🧱', 'Raise walls', WALLS),
+      step(5, '🏺', 'Claim relics', RELICS),
+      step(6, '🗿', 'Hold the sacred sites', SITES)),
+  ];
+  const modes = [
+    h('p.mw-lead', 'The host picks the rules in the lobby. Any of them can be played against the computer, with friends online, or both.'),
+    steps(
+      step(1, '🕊️', PEACE_NAME, PEACE),
+      step(2, '🐉', SURVIVAL_NAME, SURVIVAL),
+      step(3, '✨', SACRED_NAME, SACRED)),
+  ];
+  const beyond = [
     h('p.mw-tip', h('strong', 'New here? '), 'Learn to Play on the title screen walks you through a whole first match, one objective at a time, against a sleeping camp of raiders, and gives a medal for the time you win in.'),
-    h('p.mw-tip', h('strong', 'A story to play: '), 'the Campaign on the title screen is two chapters of five linked missions, the first for the Greeks and the second for the Norse, each mission with its own objectives and a narrated briefing. Win one to open the next.'),
+    h('p.mw-tip', h('strong', 'A story to play: '), campaignLine()),
     h('p.mw-tip', h('strong', 'Every day: '), 'the Daily Challenge on the title screen is one game against the computer, the same for everyone today, with a twist such as a Golden Age or a Worthy Foe. Your best score of the day is kept, and playing on the next day builds a streak.'),
     h('p.mw-tip', h('strong', 'Save and carry on: '), 'in a game against the computer, Save Game in the menu (F10) keeps the battle in one of three slots, and it is autosaved every three minutes. Continue and Load Game on the title screen, or Load Game in the F10 menu, bring it back.'),
     h('p.mw-tip', h('strong', 'Watch it again: '), 'the newest twelve games you played against the computer or hosted are kept as replays. Watch Replay on the game-over screen, or Replays on the Career screen, plays it from any player\'s eyes at up to eight times the speed.'),
+    h('p.mw-tip', h('strong', 'Your career: '), 'every game played to the end, every win and every achievement adds to your renown, and renown earns a commander\'s title, from Initiate to Ascended. The Career screen shows it.'),
     h('p.mw-tip', h('strong', 'Tip: '), 'Keep a few worshippers praying from the very start. Faith accumulates slowly, and the side that summons its first god earlier usually wins the early fights.'),
-  );
-  const controls = h('div.mw-howto-controls', renderControls(h));
-  return h('div.mw-howto', rules, controls);
+  ];
+  return [
+    ['basics', 'The Basics', basics],
+    ['war', 'War', war],
+    ['modes', 'Game Modes', modes],
+    ['controls', 'Controls', [h('div.mw-howto-controls', renderControls(h))]],
+    ['beyond', 'Beyond the Battle', beyond],
+  ];
+}
+
+/** Every page of How to Play in one block (tests read its words; the title screen shows howToPages behind tabs). */
+export function renderHowToContent() {
+  return h('div.mw-howto', ...howToPages().map(([id, , kids]) => h('section', { dataset: { id } }, ...kids)));
 }
 
 /**

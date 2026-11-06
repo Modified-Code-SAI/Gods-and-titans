@@ -21,7 +21,7 @@ import { h, setChildren, copyText } from './menu-dom.js';
 import { createMenuBackdrop } from './menu-fx.js';
 import { createLiveBackdrop, liveWanted } from './menu-live.js';
 import { openPantheonPicker, pantheonLabel, pantheonEmblem, summaryFor, unitRow, blessingRow, styleLine } from './menu-pantheons.js';
-import { renderHowToContent } from './menu-howto.js';
+import { howToPages } from './menu-howto.js';
 import { renderCareerContent } from './menu-career.js';
 import { renderReplays } from './menu-replays.js';
 import { getCareer, markSeen, hasBeatenComputer } from '../game/career.js';
@@ -54,19 +54,19 @@ export function hideMenu() {
 }
 
 /** 'fifth' for 5 (the boss rhythm of the Trial of the Titans), else '5th'. */
-/** The Settings tab shown last (this visit only): the screen opens on it again. */
-let settingsTab = 'general';
+/** The tab shown last on each tabbed screen (this visit only): the screen opens on it again. */
+const lastTab = { settings: 'general', howto: 'basics' };
 
 /**
- * The Settings screen's pages behind a tab bar: [id, label, fields] each; only the chosen page shows, the others
- * stay in the screen hidden.
+ * A screen's pages behind a tab bar (Settings, How to Play): [id, label, fields] each; only the chosen page shows,
+ * the others stay in the screen hidden. `memo` names the screen whose last tab is remembered.
  */
-export function settingsPages(list) {
+export function settingsPages(list, memo = 'settings') {
   const buttons = [];
   const pages = [];
-  if (!list.some(([id]) => id === settingsTab)) settingsTab = list[0][0];
+  if (!list.some(([id]) => id === lastTab[memo])) lastTab[memo] = list[0][0];
   const pick = (id) => {
-    settingsTab = id;
+    lastTab[memo] = id;
     for (const b of buttons) {
       const on = b.dataset.id === id;
       b.classList.toggle('is-active', on);
@@ -76,7 +76,7 @@ export function settingsPages(list) {
   };
   for (const [id, label, fields] of list) {
     const b = h('button.mw-stab', { type: 'button', role: 'tab', onclick: () => {
-      if (settingsTab !== id) sfx.play('click');
+      if (lastTab[memo] !== id) sfx.play('click');
       pick(id);
     } }, label);
     b.dataset.id = id;
@@ -86,7 +86,7 @@ export function settingsPages(list) {
     pages.push(pg);
   }
   const tabs = h('div.mw-stabs', { role: 'tablist' }, ...buttons);
-  pick(settingsTab);
+  pick(lastTab[memo]);
   return { tabs, pages, pick };
 }
 
@@ -1408,11 +1408,13 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
   // ---------------------------------------------------------- how to play
 
   function howToScreen() {
+    const pages = settingsPages(howToPages(), 'howto');
     const backBtn = h('button.mw-btn.mw-btn--ghost', { type: 'button', onclick: () => go('title') }, '‹ Back');
     const el = h('div.mw-center-screen.mw-wide-screen',
       h('section.mw-panel.mw-howto-panel',
         h('header.mw-panel-head', backBtn, h('h2.mw-h2', 'How to Play'), h('span.mw-head-spacer')),
-        h('div.mw-scroll', renderHowToContent()),
+        pages.tabs,
+        h('div.mw-scroll', h('div.mw-howto', ...pages.pages)),
       ),
     );
     return { el, focus: backBtn, onEscape: () => go('title') };

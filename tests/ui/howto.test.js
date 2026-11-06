@@ -90,7 +90,7 @@ test('team pings and markers are explained: the gestures, the buttons and who se
 });
 
 test('the Trial of the Titans game mode is explained with its clock and its boss waves', () => {
-  assert.match(text, /Or the Trial of the Titans: every player and AI in the lobby plays on one team/);
+  assert.match(text, /In the Trial of the Titans, every player and AI in the lobby plays on one team/);
   assert.match(text, /the first after 2 minutes and then one every 90 seconds/);
   assert.match(text, /a hostile Titan leading every 5th wave/);
   assert.match(text, /your score is the wave you reached/);
@@ -109,4 +109,14 @@ test('the newer features each get a line: god powers, relics, saved games, repla
   assert.match(text, /Load Game in the F10 menu/);
   assert.match(text, /kept as replays/);
   assert.match(text, /Daily Challenge on the title screen/);
+});
+
+test('How to Play comes as five pages, and the campaign tip counts the real chapters', async () => {
+  const { howToPages } = await import('../../src/ui/menu-howto.js');
+  const { CHAPTERS } = await import('../../src/data/campaign.js');
+  const pages = howToPages();
+  assert.deepEqual(pages.map(([id]) => id), ['basics', 'war', 'modes', 'controls', 'beyond']);
+  for (const [, , kids] of pages) assert.ok(kids.length > 0);
+  assert.equal(CHAPTERS.length, 3);
+  assert.match(text, /the Campaign on the title screen is three chapters of five linked missions, for the Greeks, the Norse and the Egyptians/);
 });
