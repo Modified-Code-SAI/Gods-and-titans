@@ -389,3 +389,20 @@ test('a carrier whose drop-off is walled in retries rarely instead of searching 
   assert.equal(w.players[0].gold, gold);
   assert.ok(w.paths.stats.searches - s0 <= 14, `path searches ${w.paths.stats.searches - s0}`);
 });
+
+test('each load brought in is a deposit event, packed small on the wire', async () => {
+  const { encode, apply } = await import('../../src/net/delta.js');
+  const w = makeWorld();
+  const ws = workers(w);
+  w.issueCommand(0, { type: 'gather', units: ws.map((u) => u.id), target: w.mineList[0].id });
+  const deps = eventsOf(runCollect(w, 30), 'deposit');
+  const gained = w.players[0].gold - 400;
+  assert.ok(deps.length > 0);
+  assert.equal(deps.reduce((s, e) => s + e.amount, 0), gained, 'the events add up to the gold brought in');
+  assert.ok(deps.every((e) => e.player === 0 && e.res === 'g' && Number.isFinite(e.x) && Number.isFinite(e.y)));
+  const prev = { tick: 1, time: 0, players: [], entities: [], events: [] };
+  const next = { tick: 2, time: 0.1, players: [], entities: [], events: [deps[0]] };
+  const d = encode(prev, next);
+  assert.ok(Array.isArray(d.e[0]) && typeof d.e[0][0] === 'number', 'a known shape, sent as a short array');
+  assert.deepEqual(apply(prev, d).events, [deps[0]]);
+});

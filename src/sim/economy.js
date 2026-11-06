@@ -99,6 +99,8 @@ export function deposit(world, u) {
       p.stats.wood += amount;
     }
     p.stats.gathered += amount;
+    // The owner's renderer floats the "+N" over the drop-off, as the load lands (DESIGN 9, "Drop-off numbers").
+    world.emit({ type: 'deposit', player: u.owner, amount, res: u.carry, x: Math.round(u.x * 10) / 10, y: Math.round(u.y * 10) / 10 });
   }
   u.carry = 0;
   u.carryAmount = 0;
