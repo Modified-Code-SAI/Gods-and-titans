@@ -22,6 +22,9 @@ the authoritative simulation.
 ## 2. Technology
 
 - Plain ES modules, **no build step**. Served as static files (GitHub Pages).
+- Installable on a phone or tablet: `manifest.webmanifest` (full screen, landscape, the gold-bolt icon in
+  `assets/icons/`, drawn from `icon.svg`) and the theme-color and apple-mobile-web-app meta tags in `index.html`;
+  `tools/build-site.mjs` copies the manifest. No service worker: the game is not offline.
 - Three.js **0.186.1** vendored at `vendor/three/three.module.js` (+ `three.core.js`).
   Import as `import * as THREE from 'three'`; addons as
   `import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'`
