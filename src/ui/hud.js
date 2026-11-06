@@ -319,6 +319,10 @@ export class Hud {
       onSave: (n) => {
         if (!game.replay && game.selection.saveGroup(n)) this.message(`Group ${n} assigned.`, 'info', { icon: '👥' });
       },
+      // and no Shift+digit: holding a chip adds the selection to that group
+      onAdd: (n) => {
+        if (!game.replay && game.selection.addToGroup(n)) this.message(`Added to group ${n}.`, 'info', { icon: '👥' });
+      },
       touch: isTouchOnly(),
     });
     this.bottom.appendChild(this.groupBar.root);

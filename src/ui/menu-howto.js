@@ -244,7 +244,7 @@ const TOUCH = [
   [kbd('Two-finger tap'), 'Clear the selection, or call off a building or an aimed order'],
   [kbd('Hold a button'), 'Read its tooltip without pressing it'],
   [kbd('Tap', 'Tap'), 'A god power on the ground: the first tap places the ring, the second on it calls the power down'],
-  [label('+ over the selection'), 'Save the selection as the next control group; tap a group to select it'],
+  [label('+ over the selection'), 'Save the selection as the next control group; tap a group to select it, hold it to add the selection to it'],
   [label('Chat button'), 'Online games: write to the other players'],
 ];
 

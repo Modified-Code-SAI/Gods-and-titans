@@ -2316,6 +2316,9 @@
 .hud-groups[hidden] { display: none; }
 .hud-group {
   pointer-events: auto;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* a held chip adds to its group, not iOS's callout */
   position: relative;
   display: flex;
   align-items: center;

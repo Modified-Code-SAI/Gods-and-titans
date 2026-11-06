@@ -3,7 +3,7 @@
 // selected, gone when the group is empty; a click picks the group. Fake DOM.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { GroupBar, groupChips, saveSlot, FIGHT_MS } from '../../src/ui/hud-groups.js';
+import { GroupBar, HOLD_ADD_MS, groupChips, saveSlot, FIGHT_MS } from '../../src/ui/hud-groups.js';
 import { Selection } from '../../src/ui/hud-selection.js';
 import { installFakeDom } from './fake-dom.js';
 
@@ -108,4 +108,37 @@ test('touch: a "+" chip after the groups saves the selection as the next free gr
   const mouse = new GroupBar({ selection: sel, viewState: vs, onPick: () => {}, onSave: () => {} });
   mouse.update(0);
   assert.equal(mouse.root.find('is-new'), null);
+});
+
+test('touch: a finger held on a group chip adds the selection to that group; the lifted finger does not recall it', (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const { vs, sel } = world();
+  const picked = [];
+  const added = [];
+  sel.set([1]);
+  sel.saveGroup(1);
+  const bar = new GroupBar({ selection: sel, viewState: vs, onPick: (n) => picked.push(n), onSave: () => {}, onAdd: (n) => { added.push(n); sel.addToGroup(n); }, touch: true });
+  bar.update(0);
+  const chip = bar.root.children.find((c) => c.dataset.group === '1');
+  assert.match(chip.title, /Keep holding to add/);
+  sel.set([2]);
+  chip.fire('pointerdown', { pointerType: 'touch' });
+  t.mock.timers.tick(HOLD_ADD_MS - 1);
+  assert.deepEqual(added, [], 'not yet');
+  t.mock.timers.tick(1);
+  chip.fire('pointerup', { pointerType: 'touch' });
+  chip.click();
+  assert.deepEqual(added, [1]);
+  assert.deepEqual(picked, [], 'the hold does not also recall the group');
+  assert.deepEqual(sel.groupIds(1), [1, 2]);
+  chip.fire('pointerdown', { pointerType: 'touch' });
+  t.mock.timers.tick(100);
+  chip.fire('pointerup', { pointerType: 'touch' });
+  chip.click();
+  t.mock.timers.tick(HOLD_ADD_MS);
+  assert.deepEqual(picked, [1], 'a tap recalls it');
+  assert.deepEqual(added, [1]);
+  chip.fire('pointerdown', { pointerType: 'mouse' });
+  t.mock.timers.tick(HOLD_ADD_MS * 2);
+  assert.deepEqual(added, [1], 'a mouse held down does nothing new (Shift+digit is its add)');
 });
