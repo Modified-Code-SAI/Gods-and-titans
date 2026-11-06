@@ -1357,7 +1357,8 @@ kbd {
   }
   .mw-lobby-dock { padding: 0 1.2em 1em; }
   .mw-lobby-side { flex-direction: row; flex-wrap: wrap; min-height: auto; }
-  .mw-lobby-side > .mw-panel { flex: 1 1 20em; }
+  /* min(…, 100%) and min-width 0: on a phone a 20em basis (plus a long unit line) is wider than the screen */
+  .mw-lobby-side > .mw-panel { flex: 1 1 min(20em, 100%); min-width: 0; }
   .mw-chat { min-height: 14em; }
   .mw-howto { grid-template-columns: minmax(0, 1fr); }
 }
