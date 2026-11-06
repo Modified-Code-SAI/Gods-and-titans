@@ -175,3 +175,24 @@ test('the "[Allies]" colour is the allies selection-ring colour and follows the 
     setTeamPalette('standard');
   }
 });
+
+test('touch: a Chat button in the top bar opens and closes the chat, on a touch-only device in an online game', () => {
+  const { hud, game } = setup([0, 1]);
+  hud.updateChatButton();
+  assert.equal(hud.chatBtn.hidden, true, 'offline, and not a touch-only device here');
+  hud.touchOnly = true;
+  hud.updateChatButton();
+  assert.equal(hud.chatBtn.hidden, true, 'no chat in a game against the computer');
+  Object.defineProperty(game, 'online', { value: true, configurable: true });
+  hud.updateChatButton();
+  assert.equal(hud.chatBtn.hidden, false);
+  hud.chatBtn.click();
+  assert.equal(hud.chatOpen, true, 'a tap opens the box (and the phone its keyboard)');
+  hud.updateChatButton();
+  assert.ok(hud.chatBtn.classList.contains('is-on'));
+  hud.chatBtn.click();
+  assert.equal(hud.chatOpen, false, 'a second tap closes it');
+  game.ended = true;
+  hud.updateChatButton();
+  assert.equal(hud.chatBtn.hidden, true, 'gone once the game is over');
+});
