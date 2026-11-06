@@ -11,6 +11,8 @@
 //                first match its objective panel instead, a pin at the objective and lit card buttons
 //   overlays     waiting, in-game menu (F10), game over, host left
 // Only the panels take pointer events; everything else falls through to the canvas.
+import { SkyDial } from './hud-sky.js';
+import { hourAt } from '../render/day-clock.js';
 import { setIconVar } from './icons.js';
 import { playEnding } from './hud-ending.js';
 import { UNITS, PANTHEONS } from '../data/index.js';
@@ -167,6 +169,9 @@ export class Hud {
     this.top = el('div', 'hud-top hud-panel',
       el('div', 'hud-top-left', this.menuBtn, this.marketBtn, el('div', 'hud-time', el('i', 'hud-res-i', '⏳'), this.clock), this.peaceChip, this.siteChip, this.waveChip, this.twistChip, this.ping, this.rPantheon.n, this.rRelics.n),
       this.topRight = el('div', 'hud-top-right', this.rGold.n, this.rWood.n, this.rFaith.n, this.rPop.n, this.rTier.n));
+    // The sky dial in the banner at the centre of the bar: the hour of the day/night cycle (hud-sky.js).
+    this.sky = new SkyDial();
+    this.top.appendChild(this.sky.el);
 
     // God portraits and idle workers.
     this.gods = el('div', 'hud-gods');
@@ -411,6 +416,8 @@ export class Hud {
     // No player of mine (a replay seen by everyone): no resources to show, so no empty boxes either.
     setHidden(this.topRight, !me);
     setText(this.clock, formatClock(vs.time));
+    const atmo = game.renderer && game.renderer.atmo;
+    this.sky.update(atmo ? atmo.hour : hourAt(vs.renderTime || vs.time || 0));
     if (!this.taunt.hidden && this.endScreenUp()) this.hideTaunt();
     this.updatePeace();
     this.updateRelics();

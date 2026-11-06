@@ -2350,3 +2350,89 @@
 @media (prefers-reduced-motion: reduce) {
   .hud-ending-bar, .hud-ending-title, .hud-ending-line, .hud-ending-rule { transition-duration: 0.01s; transition-delay: 0s; }
 }
+
+/* ---- the sky dial over the banner's centre jewel (hud-sky.js): sun by day, moon by night, sky colours by hour */
+.hud-sky {
+  --sky-top: #3f86d6;
+  --sky-bottom: #a8d4f2;
+  position: absolute;
+  left: 50%;
+  top: 0.42em;
+  width: 1.9em;
+  height: 1.9em;
+  transform: translateX(-50%);
+  z-index: 3;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom) 78%);
+  box-shadow:
+    0 0 0 1.5px #201404,
+    0 0 0 3px #d9a94a,
+    0 0 0 4px #4a3312,
+    0 2px 6px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(0, 0, 0, 0.45);
+  transition: background 1.5s linear;
+}
+.hud-sky::after {
+  /* glass highlight */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.35), transparent 42%);
+  pointer-events: none;
+}
+.hud-sky.is-night::before {
+  /* a few stars */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 22% 30%, #fff 0.6px, transparent 1.2px),
+    radial-gradient(circle at 70% 22%, #fff 0.5px, transparent 1px),
+    radial-gradient(circle at 56% 44%, rgba(255, 255, 255, 0.8) 0.4px, transparent 1px),
+    radial-gradient(circle at 34% 54%, rgba(255, 255, 255, 0.7) 0.4px, transparent 1px),
+    radial-gradient(circle at 84% 48%, rgba(255, 255, 255, 0.8) 0.5px, transparent 1px);
+}
+.hud-sky-arm {
+  /* the body rides an arm pivoting on the horizon's centre */
+  position: absolute;
+  left: 50%;
+  bottom: 24%;
+  width: 0;
+  height: 42%;
+  transform-origin: 50% 100%;
+  transform: rotate(var(--a, 0deg));
+  transition: transform 1.5s linear;
+}
+.hud-sky-body {
+  position: absolute;
+  left: -0.3em;
+  top: -0.05em;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fffbe0, #ffd75a 55%, #f39a2a);
+  box-shadow: 0 0 5px 2px rgba(255, 214, 90, 0.75);
+}
+.is-night .hud-sky-body {
+  background: radial-gradient(circle at 40% 38%, #ffffff, #e6e9f4 60%, #b8bfd6);
+  box-shadow: 0 0 5px 1px rgba(210, 220, 255, 0.55), inset -0.16em -0.05em 0 rgba(60, 70, 110, 0.35);
+}
+.hud-sky-hills {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 30%;
+  background:
+    radial-gradient(ellipse 55% 90% at 25% 100%, #2f4a26 98%, transparent 100%),
+    radial-gradient(ellipse 60% 80% at 78% 100%, #253d1f 98%, transparent 100%),
+    #1d3018;
+  border-top: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 40% 40% 0 0 / 60% 60% 0 0;
+}
+.is-night .hud-sky-hills { filter: brightness(0.5) saturate(0.7); }
+@media (prefers-reduced-motion: reduce) {
+  .hud-sky, .hud-sky-arm { transition: none; }
+}

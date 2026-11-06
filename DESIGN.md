@@ -2129,7 +2129,12 @@ per-frame budget, so a revealed army appears over a few frames.
   the centre banner: when its chips (Market, clock, sites, peace or wave, ping, pantheon, relics) run long, the
   pantheon's name gives way and ends in an ellipsis (the name alone is hidden under 1100 px wide).
 - `hud.js` (+ `hud.css`): WC3-like layout. Top bar: gold, wood, faith (+rate), population,
-  game clock, menu button. Bottom panel: minimap (left), selection (center: single unit
+  game clock, menu button, and in the centre banner the sky dial (`src/ui/hud-sky.js`, `SkyDial`): a round window
+  where the sun climbs from the left horizon, crosses the top at noon and sets on the right, then the moon crosses
+  the night, over a sky that warms at dawn and dusk and darkens with stars at night. It shows the renderer's hour
+  (`atmo.hour`, so a time of day held in Settings shows too), and before a renderer the match clock's
+  (`hourAt`, in `src/render/day-clock.js`, the three.js-free part of the clock that `atmosphere.js` re-exports).
+  Its tooltip names the hour and the part of the day ("14:30 · Afternoon"). Bottom panel: minimap (left), selection (center: single unit
   portrait/icon, name, hp, armor, damage, level/xp bar, statuses, queue with progress and
   cancel; multi-select grid of icons with hp), command card (right, 4×3 buttons with hotkeys,
   tooltips with cost/description, cooldown overlays, disabled when unaffordable/locked).
