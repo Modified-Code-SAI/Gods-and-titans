@@ -2561,6 +2561,13 @@ per-frame budget, so a revealed army appears over a few frames.
   sources sounding at once and of nodes made per second, the two things that load tracks, inside limits above
   today's. `tools/music-lab.html` plays any theme at any intensity.
 
+**Game menu** (F10 or Esc; `src/ui/hud-overlays.js` `openMenu`, `optionPages`). The buttons (Resume, Save Game,
+Load Game, Surrender, Save & Quit, Quit to Menu, and the online and mission ones) stand in a column on the left; the
+options sit beside them on four tabs, so the menu fits the screen without scrolling: Gameplay (game speed, tips,
+alerts, the background-tab choice, edge scrolling, health bars), Graphics (quality, time of day, weather, interface
+size, team colours), Audio (sound effects and music) and Keys (the command-key layout, Controls, Change keys). The
+tab looked at last opens next time (for the visit). Phone widths stack the buttons above the tabs.
+
 **Group selection** (`src/ui/hud-info.js` `buildMulti`, `buildSummary`). Several selected: the portraits (up to 24,
 two rows of 12, each with its health bar and rank) on the left, and a summary column beside them: how many are
 selected, their health added up with one bar, and one chip per type (icon, name, count) that selects only that type.

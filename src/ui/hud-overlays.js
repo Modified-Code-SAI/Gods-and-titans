@@ -51,6 +51,48 @@ function nextChapter(mission) {
   return a && b && a !== b ? b : null;
 }
 
+/** The options tab the game menu opens on: the one looked at last (this visit only). */
+let optionTab = 'play';
+
+/**
+ * The game menu's option pages: a tab bar (one button per page) and the pages, only the chosen one shown.
+ * @param {[string, string, (HTMLElement|null)[]][]} list [id, label, rows]
+ */
+export function optionPages(list) {
+  const tabs = el('div', 'hud-otabs');
+  tabs.setAttribute('role', 'tablist');
+  const pages = [];
+  const buttons = [];
+  if (!list.some(([id]) => id === optionTab)) optionTab = list[0][0];
+  const pick = (id) => {
+    optionTab = id;
+    for (const b of buttons) {
+      const on = b.dataset.id === id;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    for (const pg of pages) pg.hidden = pg.dataset.id !== id;
+  };
+  for (const [id, label, rows] of list) {
+    const b = el('button', 'hud-otab', label);
+    b.type = 'button';
+    b.dataset.id = id;
+    b.setAttribute('role', 'tab');
+    b.addEventListener('click', () => {
+      if (optionTab !== id) sfx.play('click');
+      pick(id);
+    });
+    buttons.push(b);
+    tabs.appendChild(b);
+    const pg = el('div', 'hud-opage', ...rows.filter(Boolean));
+    pg.dataset.id = id;
+    pg.setAttribute('role', 'tabpanel');
+    pages.push(pg);
+  }
+  pick(optionTab);
+  return { tabs, pages, pick };
+}
+
 function btn(text, cls, onClick) {
   const b = el('button', `mw-btn hud-obtn ${cls || ''}`, text);
   b.type = 'button';
@@ -284,30 +326,20 @@ export class Overlays {
       this.confirm('Quit to Menu?', quitHint, 'Quit', () => game.quitToMenu(), () => this.openMenu());
     }));
 
+    // The options sit on four pages behind tabs beside the buttons; every row stays in the page (hidden on the
+    // other tabs), and the last tab looked at comes back next time.
+    const pages = optionPages([
+      ['play', 'Gameplay', [speed && speed.row, tips.row, hints.row, aiChat.row, alerts.row, tabAlerts.row, edge.row, bars.row]],
+      ['look', 'Graphics', [quality.row, sky.row, weather.row, uiScale.row, teamColors.row]],
+      ['sound', 'Audio', [el('label', 'hud-vol', el('span', null, 'Sound effects'), vol, volText), musicOn.row, el('label', 'hud-vol', el('span', null, 'Music volume'), musicVol, musicText)]],
+      ['keys', 'Keys', [cardKeys.row, el('div', 'hud-keys-btns', controlsBtn, keysBtn)]],
+    ]);
     const node = this.panel(replay ? 'Replay Menu' : 'Game Menu', paused ? (replay ? 'The replay is paused.' : 'The game is paused.') : `Game time ${formatClock(vs.time)}`,
-      el('div', 'hud-obtns is-col', ...buttons),
-      el('div', 'hud-options',
-        el('div', 'mw-label', 'Options'),
-        speed && speed.row,
-        quality.row,
-        sky.row,
-        weather.row,
-        uiScale.row,
-        teamColors.row,
-        cardKeys.row,
-        el('div', 'hud-keys-btns', controlsBtn, keysBtn),
-        bars.row,
-        edge.row,
-        tips.row,
-        hints.row,
-        aiChat.row,
-        alerts.row,
-        tabAlerts.row,
-        el('label', 'hud-vol', el('span', null, 'Sound effects'), vol, volText),
-        musicOn.row,
-        el('label', 'hud-vol', el('span', null, 'Music volume'), musicVol, musicText),
-      ),
+      el('div', 'hud-menu-body',
+        el('div', 'hud-obtns is-col', ...buttons),
+        el('div', 'hud-options', el('div', 'mw-label', 'Options'), pages.tabs, ...pages.pages)),
       el('div', 'hud-ohint', 'Press F10 or Esc to resume.'));
+    node.classList.add('is-menu');
     const wrap = this.show('menu', node, () => this.closeMenu());
     this.current.onHide = () => game.setPaused(false);
     setTimeout(() => resume.focus({ preventScroll: true }), 0);
