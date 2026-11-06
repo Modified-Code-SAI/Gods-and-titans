@@ -313,7 +313,7 @@ function boot() {
   if (!webgl2) {
     notices.push('This game needs WebGL 2, which this browser is not providing. Turn on hardware acceleration in your browser settings, or try a current Chrome, Edge, Firefox or Safari.');
   }
-  if (isTouchOnly()) notices.push(TOUCH_NOTICE); // a phone or tablet: no touch controls (DESIGN 9)
+  if (isTouchOnly()) notices.push(TOUCH_NOTICE); // a phone or tablet: how the touch controls work (DESIGN 9)
   if (notices.length) menu.setNotice(notices.join(' '));
   const intro = introWanted({ search: location.search, webdriver: navigator.webdriver === true, webgl2 });
   // the film has the machine to itself; the game's code is fetched once it is over

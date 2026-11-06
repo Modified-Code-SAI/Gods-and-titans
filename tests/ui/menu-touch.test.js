@@ -1,5 +1,5 @@
-// Phones and tablets (no touch controls): the title and Join screens say the game needs a mouse and
-// keyboard (src/ui/menu-model.js isTouchOnly, TOUCH_NOTICE; main.js passes it to menu.setNotice).
+// Phones and tablets: the title and Join screens say how the touch controls work
+// (src/ui/menu-model.js isTouchOnly, TOUCH_NOTICE; main.js passes it to menu.setNotice).
 // Fake DOM, set up as in menu-tutorial.test.js.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,7 +34,7 @@ test('isTouchOnly: a coarse pointer and no fine one anywhere; a mouse or trackpa
   assert.equal(isTouchOnly(media({ '(pointer: fine)': true, '(any-pointer: fine)': true, '(any-pointer: coarse)': true })), false, 'a touch-screen laptop');
   assert.equal(isTouchOnly(undefined), false, 'no matchMedia: assume a computer');
   assert.equal(isTouchOnly(() => { throw new Error('nope'); }), false);
-  assert.match(TOUCH_NOTICE, /mouse and keyboard/);
+  assert.match(TOUCH_NOTICE, /tap to select.*pinch to zoom.*hold then drag/);
 });
 
 test('the notice shows on the title screen and on the Join screen an invite link opens', () => {
@@ -42,10 +42,10 @@ test('the notice shows on the title screen and on the Join screen an invite link
   const m = menu.createMenu({ root, onStart() {} });
   m.go('title');
   m.setNotice(TOUCH_NOTICE);
-  assert.match(root.textContent, /needs a mouse and keyboard/, 'title');
+  assert.match(root.textContent, /Touch controls: tap to select/, 'title');
   m.go('join', { code: 'ABCDE' });
-  assert.match(root.textContent, /needs a mouse and keyboard/, 'join');
+  assert.match(root.textContent, /Touch controls: tap to select/, 'join');
   m.setNotice(null);
-  assert.doesNotMatch(root.textContent, /needs a mouse and keyboard/, 'cleared, and the Join screen drawn again');
+  assert.doesNotMatch(root.textContent, /Touch controls: tap to select/, 'cleared, and the Join screen drawn again');
   assert.ok(root.all('input').some((i) => (i.value ?? i.getAttribute('value')) === 'ABCDE'), 'the Join screen drawn again keeps the invite code');
 });
