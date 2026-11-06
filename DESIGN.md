@@ -2354,6 +2354,7 @@ per-frame budget, so a revealed army appears over a few frames.
 - Worshipper tasks: a bar bottom-left, next to the idle button, counts own Worshippers per task
   (snapshot `tk`: gold, wood, pray, build, repair, idle, other); clicking a count selects them
   (Shift adds). A multi-selection with Worshippers shows the same counts for the selection.
+  The idle button flashes gold once (`.is-new`, 0.9 s) whenever the idle count rises, not for the first count of a game.
 - Player list (`src/ui/hud-roster.js`, `RosterView`): a small panel under the top bar, beside the god
   portraits, with every player of the match: colour swatch (in the colour-blind palette when that is on),
   pantheon emblem, name, settlement tier and live score (the game-over screen's `scoreOf`). Players are grouped
@@ -2667,7 +2668,7 @@ a focused one), stops the native list and opens `.mw-selmenu` under it (over it 
 options as rows, the current one gold with a tick, disabled ones dimmed. Arrows, Home and End move, Enter or Space
 picks, Escape (refocusing the select) or Tab closes, as do a press outside, a scroll, a resize and the window losing
 focus. The select stays the source of truth: a pick sets its `value` and fires `input` and `change`, so menu code
-and tests are unchanged. Touch keeps the native picker.
+and tests are unchanged; a pick plays the menu click. Touch keeps the native picker.
 
 ### 9.1 Career and achievements (src/game/career.js, src/game/career-tracker.js, src/data/achievements.js, src/game/renown.js, src/ui/menu-career.js)
 
