@@ -2590,3 +2590,16 @@
     font-size: calc(clamp(8.5px, min(1.48vh, 0.84vw), 28px) * var(--hud-scale, 1));
   }
 }
+
+/* A narrow window (a phone held upright): both halves of the top bar meet in the middle, so the hanging banner and
+   the sky dial give way to the counts, the chips drop their minimum width, and what the hover text or another panel
+   also gives is left out: the gold and wood rates, the tier's name, the menu button's label, the pantheon and relic
+   chips and the ping. */
+@media (max-width: 600px) {
+  .hud-top::before, .hud-sky { display: none; }
+  .hud-res { min-width: 0; padding-left: 0.35em; padding-right: 0.4em; }
+  .hud-res-rate { display: none; }
+  .hud-res.is-tier .hud-res-v { display: none; }
+  .hud-menu-btn > span:not(.hud-menu-ico), .hud-menu-btn > kbd, .hud-top-left > .hud-res, .hud-ping { display: none; }
+  .hud-top-left, .hud-top-right { gap: 0.25em; }
+}
