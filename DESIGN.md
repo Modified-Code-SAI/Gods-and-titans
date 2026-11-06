@@ -2288,7 +2288,9 @@ per-frame budget, so a revealed army appears over a few frames.
   instead (`buildMissionCard`, `missionCardSpec`): "Chapter I · The Long Winter · Mission 3 of 5", the mission's
   title in carved gold and its place, the chapter map (`campaign-map.js`) with the road walked so far and this stop
   lit, and the objectives the panel shows at the start (required, then the ones to protect, then the bonus ones;
-  hidden ones stay hidden). The guided first match keeps the plain veil; one general tip under it all. When the scene is ready the loading veil and the start notice
+  hidden ones stay hidden). The guided first match shows its own (`buildTutorialCard`, `tutorialCardSpec`): "Learn to
+  Play · A guided first match", "Your First Battle", and its steps (`TUTORIAL_STEPS`) as a numbered path in two
+  columns read top to bottom (one column on a phone), the last one, the fight, in red. One general tip under it all. When the scene is ready the loading veil and the start notice
   dissolve over 0.8 s (`setLoading(false, true)`, `#start-message.is-leaving`; at once with reduced motion or on a failure).
   **Sounds** (`src/audio/sfx-alerts.js`, merged into the tables of `sfx.js`): `nudge` (two soft notes: a
   reminder), `drums` (four war-drum beats), `gong` (the peace is about to end), `research` (an upgrade
