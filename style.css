@@ -1711,3 +1711,37 @@ kbd {
   /* more tabs than fit (How to Play): the bar scrolls sideways instead of wrapping each label */
   .mw-stabs { flex: none; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 }
+
+/* The campaign mission's loading card (src/ui/match-loading.js buildMissionCard): chapter, title, map, objectives */
+.mw-ld-mission { display: flex; flex-direction: column; align-items: center; gap: 0.35em; width: min(44em, 100% - 32px); text-transform: none; letter-spacing: 0; }
+.mw-ld-kicker { font: 600 0.7em/1.4 var(--mw-font-body); letter-spacing: 0.28em; text-transform: uppercase; color: var(--mw-ink-dim); text-align: center; animation: mw-ld-fade 0.6s 0.1s both; }
+.mw-ld-title {
+  font: 700 2.3em/1.1 var(--mw-font-display); letter-spacing: 0.03em; text-align: center;
+  background: linear-gradient(180deg, #fff3c4 0%, #e3b84f 52%, #9a6a24 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 16px rgba(227, 184, 79, 0.3));
+  animation: mw-ld-rise 0.7s 0.2s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+.mw-ld-place { font: italic 400 1em/1.4 var(--mw-font-body); color: var(--mw-ink); animation: mw-ld-fade 0.6s 0.45s both; }
+.mw-ld-mapframe {
+  width: 100%; margin-top: 0.9em; padding: 5px; box-sizing: border-box; border-radius: 12px;
+  background: linear-gradient(180deg, #3b2a14, #1a1209);
+  box-shadow: 0 0 0 1px #000, 0 0 0 2px rgba(201, 154, 70, 0.55), 0 14px 36px rgba(0, 0, 0, 0.6);
+  animation: mw-ld-fade 0.8s 0.5s both;
+}
+.mw-ld-mapframe .mw-cmap-stop { cursor: default; }
+.mw-ld-goals { list-style: none; margin: 1em 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em 0.7em; }
+.mw-ld-goal {
+  display: flex; align-items: center; gap: 0.5em; padding: 0.4em 0.85em 0.4em 0.55em;
+  font: 600 0.82em/1.3 var(--mw-font-body); color: var(--mw-ink);
+  background: linear-gradient(180deg, rgba(34, 40, 58, 0.92), rgba(14, 17, 27, 0.95));
+  border: 1px solid rgba(196, 146, 72, 0.4); border-radius: 4px;
+  animation: mw-ld-rise 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) both; animation-delay: calc(var(--i, 0) * 90ms + 750ms);
+}
+.mw-ld-goal.is-optional { color: var(--mw-ink-dim); border-style: dashed; }
+.mw-ld-goal-icon { font-size: 1.15em; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)); }
+@keyframes mw-ld-rise { from { opacity: 0; transform: translateY(0.8em); } }
+@media (max-width: 720px) { .mw-ld-title { font-size: 1.7em; } }
+@media (prefers-reduced-motion: reduce) {
+  .mw-ld-kicker, .mw-ld-title, .mw-ld-place, .mw-ld-mapframe, .mw-ld-goal { animation: none; }
+}

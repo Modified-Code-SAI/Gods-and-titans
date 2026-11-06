@@ -55,7 +55,7 @@ import { ReplaySession } from './replay-session.js';
 import { ReplayBar } from '../ui/hud-replay.js';
 import { MatchSaver, loadSaveGame, isSettled, packView, restoreView, settleMatch } from './game-saves.js';
 import { AUTO_SLOT } from './save-store.js';
-import { buildMatchup } from '../ui/match-loading.js';
+import { buildMatchup, buildMissionCard, missionCardSpec } from '../ui/match-loading.js';
 import { FallTracker, endingWords, ENDING_MS, ENDING_DISTANCE } from './match-end.js';
 
 const AMBIENT_MS = 800; // worker chop / mine / build sounds near the camera
@@ -591,6 +591,14 @@ export class Game {
       node.style.background = ''; // the painted backdrop and the sides' glows come from style.css
       node.setAttribute('aria-label', `Preparing the battlefield: ${line}`);
       node.append(versus);
+    }
+    const mission = versus ? null : buildMissionCard(setup);
+    if (mission) {
+      node.className = 'mw-loading';
+      node.style.background = '';
+      const spec = missionCardSpec(setup);
+      node.setAttribute('aria-label', `Preparing the battlefield: ${spec.kicker}, ${spec.title}, ${spec.place}`);
+      node.append(mission);
     }
     node.append(row);
     const tip = getSettings().hints ? loadingHint() : null;

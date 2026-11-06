@@ -2279,8 +2279,11 @@ per-frame budget, so a revealed army appears over a few frames.
   the name, the pantheon and who plays it ("You", "Computer · Hard", "Player"), a carved "vs" between the sides (the
   cards slide in from their side), and under them the landscape, the map size and the rules that change the game
   (`matchTerms`: Trial of the Titans, Decade of Peace, Sacred Victory). Phone widths stack the sides. `matchupLine`
-  ("Greek & Hindu vs Norse & Celtic · Islands") is the screen's spoken label. None of it for a campaign mission or the
-  guided first match, which keep the plain veil; one general tip under it all. When the scene is ready the loading veil and the start notice
+  ("Greek & Hindu vs Norse & Celtic · Islands") is the screen's spoken label. A campaign mission shows its own card
+  instead (`buildMissionCard`, `missionCardSpec`): "Chapter I · The Long Winter · Mission 3 of 5", the mission's
+  title in carved gold and its place, the chapter map (`campaign-map.js`) with the road walked so far and this stop
+  lit, and the objectives the panel shows at the start (required, then the ones to protect, then the bonus ones;
+  hidden ones stay hidden). The guided first match keeps the plain veil; one general tip under it all. When the scene is ready the loading veil and the start notice
   dissolve over 0.8 s (`setLoading(false, true)`, `#start-message.is-leaving`; at once with reduced motion or on a failure).
   **Sounds** (`src/audio/sfx-alerts.js`, merged into the tables of `sfx.js`): `nudge` (two soft notes: a
   reminder), `drums` (four war-drum beats), `gong` (the peace is about to end), `research` (an upgrade
