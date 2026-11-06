@@ -2128,8 +2128,11 @@ per-frame budget, so a revealed army appears over a few frames.
   emblem and name, and its tooltip lists the blessings and the elite soldier. The top bar's left group stops short of
   the centre banner: when its chips (Market, clock, sites, peace or wave, ping, pantheon, relics) run long, the
   pantheon's name gives way and ends in an ellipsis (the name alone is hidden under 1100 px wide).
-- `hud.js` (+ `hud.css`): WC3-like layout. Top bar: gold, wood, faith (+rate), population,
-  game clock, menu button, and in the centre banner the sky dial (`src/ui/hud-sky.js`, `SkyDial`): a round window
+- `hud.js` (+ `hud.css`): WC3-like layout. Top bar: gold, wood, faith, each with its rate a minute beside it,
+  population, game clock (the rates, `src/ui/hud-income.js`: gold and wood are what was gathered over the last 60 s of
+  game time, read from `stats.gold`/`stats.wood` so spending never pulls them down, hidden until 15 s of history and
+  restarted when the clock runs back or leaps; faith is the sim's `faithRate` × 60; each chip's hover text repeats
+  the rate in words), menu button, and in the centre banner the sky dial (`src/ui/hud-sky.js`, `SkyDial`): a round window
   where the sun climbs from the left horizon, crosses the top at noon and sets on the right, then the moon crosses
   the night, over a sky that warms at dawn and dusk and darkens with stars at night. It shows the renderer's hour
   (`atmo.hour`, so a time of day held in Settings shows too), and before a renderer the match clock's

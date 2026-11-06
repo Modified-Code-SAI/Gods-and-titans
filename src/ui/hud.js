@@ -29,6 +29,7 @@ import { CardView } from './hud-card.js';
 import { InfoView } from './hud-info.js';
 import { Overlays } from './hud-overlays.js';
 import { Minimap } from './minimap.js';
+import { IncomeMeter, rateLabel, rateTitle } from './hud-income.js';
 import { TipsView } from './hud-tips.js';
 import { TutorialView, GuidePointer, lightCard } from './hud-tutorial.js';
 import { CampaignView, missionPointer } from './hud-campaign.js';
@@ -155,9 +156,15 @@ export class Hud {
     };
     this.rGold = res('is-gold', '💰', 'Gold');
     this.rWood = res('is-wood', '🌲', 'Wood');
-    this.rFaith = res('is-faith', '✨', 'Faith — earned by worshippers praying at Shrines and Temples');
+    this.rFaith = res('is-faith', '✨', 'Faith — earned by Worshippers praying at Shrines and Temples');
     this.rFaithRate = el('small', 'hud-res-rate');
     this.rFaith.n.appendChild(this.rFaithRate);
+    // Gold and wood a minute, from what was gathered over the last minute (hud-income.js).
+    this.rGoldRate = el('small', 'hud-res-rate');
+    this.rGold.n.appendChild(this.rGoldRate);
+    this.rWoodRate = el('small', 'hud-res-rate');
+    this.rWood.n.appendChild(this.rWoodRate);
+    this.income = { gold: new IncomeMeter(), wood: new IncomeMeter(), sig: '' };
     this.rPop = res('is-pop', '👥', `Population — build Houses to raise the limit (up to ${POP_MAX})`);
     this.rTier = res('is-tier', '🏛️', 'Settlement tier');
     // Your pantheon: hover for its blessings and elite soldier (filled in by showPantheon).
@@ -400,6 +407,26 @@ export class Hud {
 
   // ---------------------------------------------------------------- per frame
 
+  /** The +N/min beside gold, wood and faith, and their hover text (hud-income.js). */
+  updateIncome(me, time) {
+    const st = me.stats || {};
+    const inc = this.income;
+    inc.gold.sample(time, st.gold);
+    inc.wood.sample(time, st.wood);
+    const gold = inc.gold.perMinute();
+    const wood = inc.wood.perMinute();
+    const faith = me.faithRate > 0 ? me.faithRate * 60 : 0;
+    setText(this.rGoldRate, rateLabel(gold));
+    setText(this.rWoodRate, rateLabel(wood));
+    setText(this.rFaithRate, rateLabel(faith));
+    const sig = `${gold === null ? '-' : Math.round(gold)}|${wood === null ? '-' : Math.round(wood)}|${Math.round(faith)}`;
+    if (sig === inc.sig) return;
+    inc.sig = sig;
+    this.rGold.n.title = rateTitle('Gold', 'mined by Worshippers at gold mines', gold);
+    this.rWood.n.title = rateTitle('Wood', 'cut by Worshippers in the forest', wood);
+    this.rFaith.n.title = rateTitle('Faith', 'earned by Worshippers praying at Shrines and Temples', faith, 'Your Worshippers earn', 'Nobody is praying right now.');
+  }
+
   /** Refresh the HUD; cheap when nothing changed. */
   update(now = performance.now()) {
     const vs = this.vs;
@@ -411,7 +438,7 @@ export class Hud {
       setText(this.rGold.v, fmt(me.gold));
       setText(this.rWood.v, fmt(me.wood));
       setText(this.rFaith.v, fmt(me.faith));
-      setText(this.rFaithRate, me.faithRate > 0 ? `+${(Math.round(me.faithRate * 10) / 10).toFixed(1)}/s` : '');
+      this.updateIncome(me, vs.time);
       setText(this.rPop.v, `${me.pop}/${me.popCap}`);
       setClass(this.rPop.n, 'is-capped', me.pop >= me.popCap);
       setText(this.rTier.v, tierName(me.tier));
