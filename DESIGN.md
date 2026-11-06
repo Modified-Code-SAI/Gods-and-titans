@@ -2355,6 +2355,9 @@ per-frame budget, so a revealed army appears over a few frames.
   (snapshot `tk`: gold, wood, pray, build, repair, idle, other); clicking a count selects them
   (Shift adds). A multi-selection with Worshippers shows the same counts for the selection.
   The idle button flashes gold once (`.is-new`, 0.9 s) whenever the idle count rises, not for the first count of a game.
+- Short of a resource: an error that says gold, wood, faith or population is short ("Not enough wood.",
+  "Population limit reached", from the sim or the command card) also flashes that top-bar count red once
+  (`Hud.flashShort`, `.is-short`, 0.75 s, a small shake), so the eye goes to the number that stopped the order.
 - Player list (`src/ui/hud-roster.js`, `RosterView`): a small panel under the top bar, beside the god
   portraits, with every player of the match: colour swatch (in the colour-blind palette when that is on),
   pantheon emblem, name, settlement tier and live score (the game-over screen's `scoreOf`). Players are grouped

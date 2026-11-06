@@ -2538,3 +2538,16 @@
   100% { transform: scale(1); box-shadow: 0 0 0 0.9em rgba(255, 216, 98, 0), 0 0 0 rgba(255, 216, 98, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .hud-idle.is-new { animation: none; } }
+
+/* An order failed for want of gold, wood, faith or room (Hud.flashShort): that count flashes red once. */
+.hud-res.is-short { animation: hud-res-short 0.75s ease-out; }
+.hud-res.is-short .hud-res-v { animation: hud-res-short-v 0.75s ease-out; }
+@keyframes hud-res-short {
+  0%, 40% { border-color: rgba(255, 96, 72, 0.95); box-shadow: 0 0 0.9em rgba(255, 70, 50, 0.55), inset 0 0 0.6em rgba(255, 70, 50, 0.35); }
+  10% { transform: translateX(-2px); }
+  20% { transform: translateX(2px); }
+  30% { transform: translateX(-1px); }
+  100% { transform: none; border-color: rgba(196, 146, 72, 0.25); box-shadow: none; }
+}
+@keyframes hud-res-short-v { 0%, 45% { color: #ff7a62; } }
+@media (prefers-reduced-motion: reduce) { .hud-res.is-short { animation: none; border-color: rgba(255, 96, 72, 0.95); } }
