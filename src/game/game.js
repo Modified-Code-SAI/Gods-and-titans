@@ -48,6 +48,7 @@ import { medalFor } from '../data/medals.js';
 import { missionOf } from '../sim/campaign.js';
 import { nextMission } from '../data/campaign.js';
 import { CampaignVoice } from './campaign-voice.js';
+import { TauntVoice } from './taunt-voice.js';
 import { recordMission } from './campaign-progress.js';
 import { ReplayRecorder } from './replay.js';
 import { saveReplay } from './replay-store.js';
@@ -427,6 +428,10 @@ export class Game {
       this.voice = new CampaignVoice({ mission: this.mission, parts: ['victory', 'events'] });
       this.offs.push(() => this.voice.stop());
     }
+    // The computer players speak their lines (DESIGN 10.1), each in its pantheon's voice: their clips download now.
+    this.taunts = new TauntVoice();
+    this.taunts.preload((session.setup && session.setup.players || []).map((p, i) => p && p.kind === 'ai' && (this.viewState.players[i] || p).pantheon));
+    this.offs.push(() => this.taunts.stop());
 
     this.hud = new Hud({ root: this.hudRoot, game: this });
     this.applyUiScale();
@@ -956,7 +961,12 @@ export class Game {
     if (!this.hud || !showChatLine(line)) return;
     // A computer player's line (DESIGN 10.1) is a taunt at the top centre with a snarl of drums and brass.
     if (line.voice && !line.system) {
-      if (this.hud.showTaunt(line)) sfx.play('taunt');
+      if (this.hud.showTaunt(line)) {
+        sfx.play('taunt');
+        const vs = this.viewState;
+        const p = Number.isInteger(line.from) ? (vs && vs.players[line.from]) || (this.setup && this.setup.players[line.from]) : null;
+        if (p && this.taunts) this.taunts.say(line, p.pantheon);
+      }
       return;
     }
     this.hud.chat(line);

@@ -43,7 +43,7 @@ function cleanName(name) {
  * `hints` whether a gameplay tip appears now and then, `tabAlerts` what a background tab does
  * when the game needs the player ('off', 'title', 'notify'). The intro film plays on every launch (src/ui/intro.js),
  * with no setting to turn it off; `narration` has a voice read its captions aloud
- * (src/intro/narrator.js). `aiChat` shows the computer players' in-character chat lines (src/ai/voice.js). `volume` is the sound effects; `musicVolume` (0..1) and `musicMuted`
+ * (src/intro/narrator.js). `aiChat` shows the computer players' in-character chat lines (src/ai/voice.js), and `aiVoices` has them say those lines aloud (src/game/taunt-voice.js). `volume` is the sound effects; `musicVolume` (0..1) and `musicMuted`
  * are the background music's own (src/audio/music.js). `gameSpeed` is the pace of a match against the
  * computer (online games always run at normal speed) and `uiScale` the size of the in-game interface.
  * `teamColors` draws the teams in the lobby's colours or a colour-blind-safe set (src/team-colors.js),
@@ -51,7 +51,7 @@ function cleanName(name) {
  * the keys changed from their defaults (src/ui/key-bindings.js), kept per device like the rest.
  */
 export function defaultSettings() {
-  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: Object.freeze({}) };
+  return { name: randomName(), volume: 0.7, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', cardKeys: 'classic', keyBindings: Object.freeze({}) };
 }
 
 /** Merge a raw object onto base, keeping only valid values. */
@@ -73,6 +73,7 @@ function sanitize(raw, base) {
   if (TAB_ALERTS.includes(raw.tabAlerts)) out.tabAlerts = raw.tabAlerts;
   if (typeof raw.narration === 'boolean') out.narration = raw.narration;
   if (typeof raw.aiChat === 'boolean') out.aiChat = raw.aiChat;
+  if (typeof raw.aiVoices === 'boolean') out.aiVoices = raw.aiVoices;
   if (typeof raw.musicVolume === 'number' && Number.isFinite(raw.musicVolume)) out.musicVolume = Math.min(1, Math.max(0, raw.musicVolume));
   if (typeof raw.musicMuted === 'boolean') out.musicMuted = raw.musicMuted;
   if (SPEEDS.includes(raw.gameSpeed)) out.gameSpeed = raw.gameSpeed;
@@ -126,7 +127,7 @@ function load() {
 
 /**
  * Current settings (a frozen object; use saveSettings to change it).
- * @returns {{ name: string, volume: number, quality: 'low'|'medium'|'high'|'ultra', timeOfDay: 'cycle'|'golden'|'day'|'dusk'|'night'|'dawn', weather: boolean, liveMenu: boolean, edgeScroll: boolean, showAllBars: boolean, tipsDismissed: boolean, rosterOpen: boolean, alerts: 'all'|'important'|'off', hints: boolean, tabAlerts: 'off'|'title'|'notify', narration: boolean, aiChat: boolean, musicVolume: number, musicMuted: boolean, gameSpeed: 'slow'|'normal'|'fast'|'faster', uiScale: 'small'|'normal'|'large'|'larger', teamColors: 'standard'|'colorblind', cardKeys: 'classic'|'grid', keyBindings: Object<string, string> }}
+ * @returns {{ name: string, volume: number, quality: 'low'|'medium'|'high'|'ultra', timeOfDay: 'cycle'|'golden'|'day'|'dusk'|'night'|'dawn', weather: boolean, liveMenu: boolean, edgeScroll: boolean, showAllBars: boolean, tipsDismissed: boolean, rosterOpen: boolean, alerts: 'all'|'important'|'off', hints: boolean, tabAlerts: 'off'|'title'|'notify', narration: boolean, aiChat: boolean, aiVoices: boolean, musicVolume: number, musicMuted: boolean, gameSpeed: 'slow'|'normal'|'fast'|'faster', uiScale: 'small'|'normal'|'large'|'larger', teamColors: 'standard'|'colorblind', cardKeys: 'classic'|'grid', keyBindings: Object<string, string> }}
  */
 export function getSettings() {
   return load();
