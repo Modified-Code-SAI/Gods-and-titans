@@ -2039,9 +2039,10 @@ export class GameRenderer {
       const wall = b.def.wall === true;
       if (selected || hovered) {
         const col = RELATION_COLORS[b.relation] || RELATION_COLORS.neutral;
-        const r = wall ? 0.6 : b.size * 0.66;
-        if (selected) rings.add(bx, b.baseY + 0.06, by, null, r, col, 0.95, (wall ? 0.07 : 0.1) * ringLine);
-        if (hovered && !selected) rings.add(bx, b.baseY + 0.06, by, null, r, col, 0.55, (wall ? 0.05 : 0.07) * ringLine, 0.6);
+        // a rounded square just outside the footprint (half the side plus a margin), as a building stands on tiles
+        const r = wall ? 0.62 : b.size * 0.5 + 0.38;
+        if (selected) rings.add(bx, b.baseY + 0.06, by, null, r, col, 0.95, (wall ? 0.07 : 0.1) * ringLine, 0, 1);
+        if (hovered && !selected) rings.add(bx, b.baseY + 0.06, by, null, r, col, 0.55, (wall ? 0.05 : 0.07) * ringLine, 0.6, 1);
       }
       const mhp = e.mhp || 1;
       const unfinished = (e.bp ?? 1) < 1;
