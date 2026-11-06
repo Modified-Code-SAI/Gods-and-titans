@@ -2191,3 +2191,80 @@
   pointer-events: none;
 }
 .hud.is-replay .hud-groups { display: none; }
+
+/* The ending (hud-ending.js, DESIGN 9 "The ending"): letterbox bars, the HUD stepping aside, the result carved
+   across the middle until the game-over screen. */
+.hud.is-ending > :not(.hud-ending) { opacity: 0; pointer-events: none; transition: opacity 0.6s ease; }
+.hud-ending {
+  --end-accent: var(--mw-gold-hi);
+  --end-glow: rgba(227, 184, 79, 0.55);
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.hud-ending.is-defeat { --end-accent: #f2a28c; --end-glow: rgba(200, 40, 24, 0.55); }
+.hud-ending.is-draw, .hud-ending.is-survival { --end-accent: #e6dcc4; --end-glow: rgba(200, 190, 160, 0.4); }
+.hud-ending-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 11vh;
+  background: #050302;
+  box-shadow: 0 0 3vh rgba(0, 0, 0, 0.85);
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hud-ending-bar.is-top { top: 0; transform: translateY(-101%); }
+.hud-ending-bar.is-bottom { bottom: 0; transform: translateY(101%); }
+.hud-ending.is-on .hud-ending-bar { transform: none; }
+.hud-ending-card {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.5em;
+  width: min(90vw, 60em);
+  text-align: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 45%, transparent 70%);
+  padding: 2.4em 0;
+}
+.hud-ending-title {
+  font: 700 clamp(3.2em, 9vw, 7.5em)/1 var(--mw-font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--end-accent);
+  background: linear-gradient(180deg, #fffaf0 0%, var(--end-accent) 48%, color-mix(in srgb, var(--end-accent) 55%, #3a2208) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0.04em 0 #000) drop-shadow(0 0 0.35em var(--end-glow));
+  opacity: 0;
+  transform: scale(1.18);
+  letter-spacing: 0.4em;
+  transition: opacity 1s ease 0.35s, transform 1.6s cubic-bezier(0.16, 0.9, 0.2, 1) 0.35s, letter-spacing 1.6s cubic-bezier(0.16, 0.9, 0.2, 1) 0.35s;
+}
+.hud-ending.is-on .hud-ending-title { opacity: 1; transform: none; letter-spacing: 0.14em; }
+.hud-ending-line {
+  font: italic 400 clamp(1.1em, 2.2vw, 1.6em)/1.3 var(--mw-font-body);
+  color: #efe3c6;
+  text-shadow: 0 2px 0 #000, 0 0 10px #000;
+  opacity: 0;
+  transition: opacity 0.9s ease 1.1s;
+}
+.hud-ending.is-on .hud-ending-line { opacity: 1; }
+.hud-ending-rule {
+  width: min(40em, 70vw);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--end-accent) 30%, var(--end-accent) 70%, transparent);
+  box-shadow: 0 0 12px var(--end-glow);
+  transform: scaleX(0);
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s;
+}
+.hud-ending.is-on .hud-ending-rule { transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) {
+  .hud-ending-bar, .hud-ending-title, .hud-ending-line, .hud-ending-rule { transition-duration: 0.01s; transition-delay: 0s; }
+}

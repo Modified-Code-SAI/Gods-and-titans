@@ -2557,6 +2557,15 @@ per-frame budget, so a revealed army appears over a few frames.
   sources sounding at once and of nodes made per second, the two things that load tracks, inside limits above
   today's. `tools/music-lab.html` plays any theme at any intensity.
 
+**The ending** (`src/game/match-end.js`, `src/ui/hud-ending.js`). When a match ends, the game-over screen does not
+appear at once. First the camera glides to where the match was decided: on a win, the last building the losing
+team lost; on a loss, the local team's last fallen building; in a draw, the most recent fall. With no fall (a
+sacred victory far from any battle) the camera stays where it is. It closes in to 22 tiles when it is further out,
+and the selection is cleared. Letterbox bars slide in, the HUD panels fade aside, and the result (Victory, Defeat,
+Draw, Wave N, Mission Complete or Failed, Lesson Complete) is carved across the middle with one line under it, in the
+result's colours. This holds for 3.6 s, then the game-over screen follows; a click or a key after the first 0.7 s
+goes straight on. Replays and HUD stubs without `showEnding` keep the old 1.2 s pause.
+
 **Icons.** The data, HUD and menus still name every icon with an emoji (`icon: '🛡️'`), but none is shown as an
 emoji: emoji are drawn by the operating system, so the same button looked different on Windows, macOS and Android
 and never matched the carved HUD. `src/ui/icon-map.js` maps each emoji (without U+FE0F) to a game-icons.net
