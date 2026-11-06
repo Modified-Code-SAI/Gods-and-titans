@@ -2218,6 +2218,9 @@ per-frame budget, so a revealed army appears over a few frames.
   The base is clamp(11px, min(1.48vh, 0.84vw), 28px); in a window under 520 px tall (a phone held sideways) the
   floor is 8.5 px and the smallest text 8 px instead (`--mw-min-text`), so the bottom console keeps to about a
   quarter of the height rather than two fifths.
+  In a window under 600 px wide (a phone held upright) the two halves of the top bar would meet, so the hanging banner
+  and sky dial, the gold and wood rates, the tier's name, the menu button's label, the pantheon and relic chips and the
+  ping are left out there (each is also in a hover text or another panel), and the chips lose their minimum width.
   Graphics quality (`QUALITY_OPTIONS`, same file) is in both places too: `GameRenderer.setQuality` applies it live.
   **Team colours, keys and readable text** (settings `teamColors`, `cardKeys`, `keyBindings`; all per device, in
   Settings and the F10 menu). *Colour-blind safe* (`src/team-colors.js`) draws each lobby colour as a stand-in from a set
