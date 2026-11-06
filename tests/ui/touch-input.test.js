@@ -3,7 +3,7 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { installFakeDom } from './fake-dom.js';
-import { TouchInput, tapButton, HOLD_MS, TAP_SLOP } from '../../src/ui/touch-input.js';
+import { TouchInput, tapButton, HOLD_MS, TAP_SLOP, TWO_TAP_MS } from '../../src/ui/touch-input.js';
 
 before(installFakeDom);
 
@@ -129,4 +129,47 @@ test('a god power that needs no spot is still one tap', () => {
   a.fire('touchstart', [a.pt(80, 80)], [a.pt(80, 80)], 1000);
   a.fire('touchend', [], [a.pt(80, 80)], 1050);
   assert.deepEqual(a.log, [['down', 0, 80, 80], ['up', 0, 80, 80]]);
+});
+
+test('a two-finger tap is Esc for the map: it clears the selection, or calls off a placement or targeted order', () => {
+  const a = setup({ selected: [3] });
+  let cleared = 0;
+  let cancelled = 0;
+  a.input.sel.clear = () => cleared++;
+  a.input.cancelMode = () => cancelled++;
+  // the fingers land one after the other, as they do on glass, and lift one after the other
+  a.fire('touchstart', [a.pt(100, 100, 0)], [a.pt(100, 100, 0)], 1000);
+  a.fire('touchstart', [a.pt(100, 100, 0), a.pt(160, 100, 1)], [a.pt(160, 100, 1)], 1030);
+  a.fire('touchmove', [a.pt(101, 101, 0), a.pt(161, 100, 1)], [a.pt(101, 101, 0)], 1060);
+  a.fire('touchend', [a.pt(161, 100, 1)], [a.pt(101, 101, 0)], 1120);
+  a.fire('touchend', [], [a.pt(161, 100, 1)], 1140);
+  assert.equal(cleared, 1, 'the selection went');
+  assert.equal(a.log.filter((l) => l[0] !== 'pan').length, 0, 'and nothing was ordered or clicked');
+  a.input.mode = { kind: 'place' };
+  a.fire('touchstart', [a.pt(100, 100, 0), a.pt(160, 100, 1)], [a.pt(100, 100, 0), a.pt(160, 100, 1)], 2000);
+  a.fire('touchend', [], [a.pt(100, 100, 0), a.pt(160, 100, 1)], 2100);
+  assert.deepEqual([cleared, cancelled], [1, 1], 'a placement is called off, the selection kept');
+});
+
+test('a pinch, a slow two-finger rest, three fingers and a pan joined by a finger are not two-finger taps', () => {
+  const a = setup({ selected: [3] });
+  let cleared = 0;
+  a.input.sel.clear = () => cleared++;
+  // a pinch
+  a.fire('touchstart', [a.pt(100, 100, 0), a.pt(160, 100, 1)], [a.pt(100, 100, 0), a.pt(160, 100, 1)], 1000);
+  a.fire('touchmove', [a.pt(80, 100, 0), a.pt(180, 100, 1)], [a.pt(80, 100, 0), a.pt(180, 100, 1)], 1050);
+  a.fire('touchend', [], [a.pt(80, 100, 0), a.pt(180, 100, 1)], 1100);
+  // held too long
+  a.fire('touchstart', [a.pt(100, 100, 0), a.pt(160, 100, 1)], [a.pt(100, 100, 0), a.pt(160, 100, 1)], 2000);
+  a.fire('touchend', [], [a.pt(100, 100, 0), a.pt(160, 100, 1)], 2000 + TWO_TAP_MS + 50);
+  // three fingers
+  a.fire('touchstart', [a.pt(100, 100, 0), a.pt(160, 100, 1)], [a.pt(100, 100, 0), a.pt(160, 100, 1)], 3000);
+  a.fire('touchstart', [a.pt(100, 100, 0), a.pt(160, 100, 1), a.pt(130, 150, 2)], [a.pt(130, 150, 2)], 3020);
+  a.fire('touchend', [], [a.pt(100, 100, 0), a.pt(160, 100, 1), a.pt(130, 150, 2)], 3080);
+  // one finger panning, then a second joins
+  a.fire('touchstart', [a.pt(100, 100, 0)], [a.pt(100, 100, 0)], 4000);
+  a.fire('touchmove', [a.pt(130, 100, 0)], [a.pt(130, 100, 0)], 4030);
+  a.fire('touchstart', [a.pt(130, 100, 0), a.pt(190, 100, 1)], [a.pt(190, 100, 1)], 4060);
+  a.fire('touchend', [], [a.pt(130, 100, 0), a.pt(190, 100, 1)], 4100);
+  assert.equal(cleared, 0);
 });

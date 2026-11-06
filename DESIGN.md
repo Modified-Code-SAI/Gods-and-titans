@@ -2127,8 +2127,8 @@ per-frame budget, so a revealed army appears over a few frames.
   above it, never over it), join screen (name + code), a notice pinned to the title and join screens
   (`menu.setNotice`, set by `boot` in main.js: no WebGL 2, and on a phone or tablet, `isTouchOnly` in menu-model.js:
   `(pointer: coarse)` matches and `(any-pointer: fine)` does not, `TOUCH_NOTICE` "Touch controls: tap to select, tap
-  the ground to send, drag to look around, pinch to zoom, hold then drag to select a group. A mouse and keyboard play
-  best."; both join into one line), how-to-play (five tabs, as Settings, the last one
+  the ground to send, drag to look around, pinch to zoom, hold then drag to select a group, tap with two fingers to
+  deselect or cancel. A mouse and keyboard play best."; both join into one line), how-to-play (five tabs, as Settings, the last one
   kept for the visit, `howToPages` in menu-howto.js: The Basics (gathering, prayer, the tiers, summoning, god
   levels, your pantheon), War (fighting, ranks, god powers, walls, relics, sacred sites), Game Modes (Decade of
   Peace, Trial of the Titans, Sacred Victory), Controls (the mouse and hotkey tables in two columns) and Beyond the
@@ -2706,7 +2706,10 @@ press: its click is swallowed, a long press never toggles autocast, and the hove
 Whether a press was a hold is judged on the events' timestamps at release. On the minimap a finger is the left button
 (a tap jumps the camera, a drag sweeps it). A god power aimed at the ground takes two taps, as it is used once: the
 first puts its ring where the finger was (with a line saying so), the second within `AIM_SLOP` (48 px) of it casts,
-and a tap elsewhere moves the ring; a power that needs no spot, and every other order, is one tap.
+and a tap elsewhere moves the ring; a power that needs no spot, and every other order, is one tap. Two fingers
+tapped together (down under `TWO_TAP_MS`, 320 ms from the first finger, and barely moving) are Esc for the map: a
+placement or targeted order is called off, otherwise the selection is cleared, since a tap on the ground with units
+selected is always an order. A pinch, a third finger or a drag the second finger joined is never that tap.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).

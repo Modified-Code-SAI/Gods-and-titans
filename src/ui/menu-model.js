@@ -477,7 +477,7 @@ export function friendlyJoinError(err, code) {
 }
 
 /** The title (and Join) screen's notice on a phone or tablet: how the touch controls work (touch-input.js). */
-export const TOUCH_NOTICE = 'Touch controls: tap to select, tap the ground to send, drag to look around, pinch to zoom, hold then drag to select a group. A mouse and keyboard play best.';
+export const TOUCH_NOTICE = 'Touch controls: tap to select, tap the ground to send, drag to look around, pinch to zoom, hold then drag to select a group, tap with two fingers to deselect or cancel. A mouse and keyboard play best.';
 
 /**
  * True on a device whose only pointer is coarse (a phone or tablet with no mouse or trackpad attached):
