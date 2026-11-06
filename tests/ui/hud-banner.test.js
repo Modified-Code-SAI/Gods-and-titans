@@ -139,3 +139,18 @@ test('the pantheon chip names your pantheon and lists its blessings and elite so
   hud.update(1000);
   assert.equal(hud.rPantheon.n.hidden, true);
 });
+
+test('the idle button flashes when a Worshipper runs out of work, not at the start of a game', () => {
+  const { hud, vs } = setup();
+  const workers = [...vs.entities.values()].filter((e) => e.k === 'u' && e.o === 0);
+  for (const e of workers) e.st = 'gather';
+  hud.updateIdle();
+  assert.equal(hud.idleBtn.classList.contains('is-new'), false, 'nobody idle yet');
+  workers[0].st = 'idle';
+  hud.updateIdle();
+  assert.equal(hud.idleBtn.classList.contains('is-new'), true);
+  assert.equal(hud.idleN.textContent, '1');
+  const fresh = setup().hud;
+  fresh.updateIdle();
+  assert.equal(fresh.idleBtn.classList.contains('is-new'), false, 'the first count is not news');
+});

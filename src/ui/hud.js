@@ -704,6 +704,13 @@ export class Hud {
     const n = this.idleIds.length;
     setHidden(this.idleBtn, n === 0);
     setText(this.idleN, String(n));
+    // A Worshipper who just ran out of work: the button flashes once, so the eye finds it (not at the start of a game).
+    if (this.idlePrev !== undefined && n > this.idlePrev) {
+      setClass(this.idleBtn, 'is-new', false);
+      void this.idleBtn.offsetWidth; // restart the animation
+      setClass(this.idleBtn, 'is-new', true);
+    }
+    this.idlePrev = n;
     const tasks = workerTasks(this.vs);
     this.taskIds = tasks.ids;
     for (const t of WORKER_TASKS) {

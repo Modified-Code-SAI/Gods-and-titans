@@ -8,6 +8,7 @@
 //   menuItems(select)                → [{ value, label, disabled, selected }]   (pure enough for the fake DOM)
 //   nextEnabled(items, from, step)   → index                                     (pure: arrow-key movement)
 //   installSelectMenus(doc, sel)     → { close, dispose }                        (DOM)
+import { sfx } from '../audio/sfx.js';
 
 /** The selects that get the game's list. */
 export const SELECT_MENU_SELECTOR = 'select.mw-select, select.hud-rp-vision';
@@ -48,6 +49,7 @@ export function installSelectMenus(doc = document, selector = SELECT_MENU_SELECT
     if (!it || it.disabled) return;
     const changed = String(select.value) !== it.value;
     close(true);
+    sfx.play('click'); // as every menu button does
     if (!changed) return;
     select.value = it.value;
     select.dispatchEvent(new win.Event('input', { bubbles: true }));
