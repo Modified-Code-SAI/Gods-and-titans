@@ -1,6 +1,7 @@
 // The campaign's chapter screen (DESIGN 9.6, 5.16): a tab per chapter, the chosen chapter's five missions down the
 // left (locked, open, won with the best time), and the chosen mission's briefing on the right, read aloud by the
-// narrator, with its objectives and a Begin button. A mission opens once the one before it is won, so a chapter opens
+// narrator, with its objectives, a Begin button and, under them, a map of the chapter's road (src/ui/campaign-map.js).
+// A mission opens once the one before it is won, so a chapter opens
 // with the last mission of the chapter before (src/game/campaign-progress.js).
 //
 //   campaignScreen({ go, onBegin, mission, brief }) → { el, focus, onEscape, cleanup }
@@ -10,6 +11,7 @@ import { PANTHEONS } from '../data/index.js';
 import { chapterUnlocked, getProgress, isUnlocked, nextToPlay, wonCount } from '../game/campaign-progress.js';
 import { CampaignVoice } from '../game/campaign-voice.js';
 import { getSettings } from '../settings.js';
+import { buildChapterMap } from './campaign-map.js';
 
 function clock(sec) {
   return `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
@@ -43,6 +45,7 @@ export function campaignScreen({ go, onBegin, mission = null, makeVoice = (m) =>
   const detail = h('div.mw-briefing', { 'aria-live': 'polite' });
   let shownChapter = null;
   let items = [];
+  let map = null;
   const tabs = CHAPTERS.map((c) => {
     const open = chapterUnlocked(c.id, progress);
     const done = wonCount(progress, c.id) === c.missions.length;
@@ -88,6 +91,11 @@ export function campaignScreen({ go, onBegin, mission = null, makeVoice = (m) =>
       list.appendChild(h('li', b));
       return b;
     });
+    map = buildChapterMap(c, {
+      isOpen: (m) => isUnlocked(m.id, progress),
+      isWon: (m) => progress.won[m.id],
+      onPick: (m) => choose(m, true),
+    });
   }
 
   function speak() {
@@ -118,7 +126,9 @@ export function campaignScreen({ go, onBegin, mission = null, makeVoice = (m) =>
         allies.length ? h('span', h('b', 'Beside you: '), allies.join(', ')) : null),
       h('h4.mw-label', 'Objectives'),
       h('ul.mw-briefing-goals', m.objectives.filter((o) => !o.hidden).map((o) => h('li', { class: o.optional ? 'is-optional' : o.kind === 'protect' ? 'is-protect' : '' }, h('span.mw-goal-icon', o.icon || '•'), h('span', o.text)))),
-      h('div.mw-briefing-btns', begin, hear));
+      h('div.mw-briefing-btns', begin, hear),
+      h('div.mw-cmap-frame', map.el));
+    map.select(m);
     return begin;
   }
 

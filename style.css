@@ -1326,6 +1326,10 @@ kbd {
   .mw-nav-row { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mw-lobby-head { grid-template-columns: auto 1fr; }
   .mw-lobby-head .mw-head-spacer { display: none; }
+  /* a long screen title ("Chapter I: The Long Winter", "Career of …") sits beside Back instead of under it */
+  .mw-panel-head { grid-template-columns: auto minmax(0, 1fr); }
+  .mw-panel-head .mw-head-spacer { display: none; }
+  .mw-panel-head .mw-h2 { font-size: 1.25em; letter-spacing: 0.08em; text-align: right; overflow-wrap: anywhere; }
 }
 /* short windows (1280×720, 1366×768): a smaller crest and tighter hero so the menu and footer fit without scrolling */
 @media (max-height: 820px) {
@@ -1424,6 +1428,46 @@ kbd {
 .mw-briefing-goals li.is-protect { color: var(--mw-ink-dim); }
 .mw-goal-icon { width: 1.4em; text-align: center; font-family: var(--mw-emoji); }
 .mw-briefing-btns { display: flex; flex-wrap: wrap; gap: 0.7em; align-items: center; }
+/* The chapter map under the briefing (src/ui/campaign-map.js): land, contours and the road between the five stops. */
+.mw-cmap-frame {
+  margin-top: 1.4em; padding: 0.35em; border: 1px solid rgba(200, 160, 80, 0.35); border-radius: 12px;
+  background: linear-gradient(180deg, rgba(60, 46, 26, 0.55), rgba(20, 16, 10, 0.75));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.mw-cmap { display: block; width: 100%; height: auto; border-radius: 9px; font-family: var(--mw-font-display);
+  --sea: #1c3550; --sea-hi: #2c5274; --land: #6f7b5c; --land-hi: #8b9670; --coast: #d8cfa8; --ring: rgba(40, 46, 30, 0.45); }
+.mw-cmap.is-wolf_age { --sea: #18242f; --sea-hi: #2a3d4d; --land: #8c97a0; --land-hi: #c3ccd2; --coast: #e9eef2; --ring: rgba(60, 72, 84, 0.45); }
+.mw-cmap.is-chaos_sea { --sea: #123a3c; --sea-hi: #1f5a58; --land: #b08c56; --land-hi: #d2b177; --coast: #f0dfb0; --ring: rgba(96, 66, 30, 0.42); }
+.mw-cmap-sea { fill: var(--sea); }
+.mw-cmap-waves path { fill: none; stroke: var(--sea-hi); stroke-width: 1.4; stroke-linecap: round; opacity: 0.8; }
+.mw-cmap-coast path { fill: none; stroke: var(--coast); stroke-width: 5; stroke-linejoin: round; opacity: 0.55; }
+.mw-cmap-land path { fill: var(--land); }
+.mw-cmap-rings path { fill: none; stroke: var(--ring); stroke-width: 1; }
+.mw-cmap-rings path:nth-child(2n) { fill: var(--land-hi); fill-opacity: 0.22; }
+.mw-cmap-road path { fill: none; stroke: rgba(30, 22, 12, 0.7); stroke-width: 2.4; stroke-dasharray: 1 6; stroke-linecap: round; }
+.mw-cmap-road path.is-walked { stroke: var(--mw-gold, #e0b860); stroke-width: 3; stroke-dasharray: 7 5; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8)); }
+.mw-cmap-compass circle { fill: rgba(0, 0, 0, 0.25); stroke: rgba(232, 214, 160, 0.5); stroke-width: 1; }
+.mw-cmap-compass path { fill: rgba(232, 214, 160, 0.55); }
+.mw-cmap-compass path.is-n { fill: #e8c46a; }
+.mw-cmap-compass text { fill: #e8d6a0; font-size: 9px; text-anchor: middle; letter-spacing: 0.05em; }
+.mw-cmap-stop { cursor: pointer; }
+.mw-cmap-stop.is-locked { cursor: default; opacity: 0.75; }
+.mw-cmap-ring { fill: #2a2015; stroke: #c8a050; stroke-width: 2.2; transition: stroke 0.15s, fill 0.15s; }
+.mw-cmap-stop.is-open:hover .mw-cmap-ring { stroke: #ffe2a0; fill: #3a2c1a; }
+.mw-cmap-stop.is-locked .mw-cmap-ring { fill: #1d1d20; stroke: #6c6a66; }
+.mw-cmap-stop.is-won .mw-cmap-ring { stroke: var(--mw-ok, #6cd08a); fill: #1d3322; }
+.mw-cmap-n { fill: #f2dfae; font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.mw-cmap-stop.is-won .mw-cmap-n { fill: var(--mw-ok, #6cd08a); }
+.mw-cmap-stop.is-locked .mw-cmap-n { fill: #9a968e; }
+.mw-cmap-halo { fill: rgba(255, 210, 120, 0.18); stroke: rgba(255, 220, 140, 0.75); stroke-width: 1.4; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.mw-cmap-stop.is-selected .mw-cmap-halo { opacity: 1; animation: mw-cmap-pulse 2.2s ease-in-out infinite; }
+.mw-cmap-stop.is-selected .mw-cmap-ring { stroke: #ffe2a0; stroke-width: 2.8; }
+@keyframes mw-cmap-pulse { 0%, 100% { transform: scale(0.9); opacity: 0.95; } 50% { transform: scale(1.12); opacity: 0.55; } }
+.mw-cmap-label { pointer-events: none; }
+.mw-cmap-label rect { fill: rgba(16, 12, 8, 0.82); stroke: rgba(200, 160, 80, 0.6); stroke-width: 1; }
+.mw-cmap-title { fill: #f3d68c; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-anchor: middle; }
+.mw-cmap-place { fill: #c9bfa6; font: 8.5px var(--mw-font-ui); text-anchor: middle; }
+@media (prefers-reduced-motion: reduce) { .mw-cmap-stop.is-selected .mw-cmap-halo { animation: none; } }
 @media (max-width: 760px) {
   .mw-campaign-body { grid-template-columns: 1fr; }
 }

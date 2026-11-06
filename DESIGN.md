@@ -2804,13 +2804,21 @@ its ticks, and checksums.
   each kept game with its sides, result, date, mode and length, Watch, Save (a `.mwreplay` file, the packed
   record) and Delete, and Open a replay file.
 
-### 9.6 Campaign (src/ui/menu-campaign.js, src/ui/hud-campaign.js, src/game/campaign-progress.js, src/game/campaign-voice.js)
+### 9.6 Campaign (src/ui/menu-campaign.js, src/ui/campaign-map.js, src/ui/hud-campaign.js, src/game/campaign-progress.js, src/game/campaign-voice.js)
 Campaign (title screen, under Learn to Play: "Chapter I: The Long Winter · n of 5 missions won", naming the chapter
 of the next mission to play) opens the chapter screen: a tab per chapter (each locked until the last mission of the
 chapter before is won), the chosen chapter's five missions down the left (locked with a padlock until the one before is won, a tick and
 the best time once won) and the chosen one's briefing on the right (where, who you face and who stands with
 you, the shown objectives, Begin Mission, Hear the briefing). Progress lives in localStorage
 `mythicwar-campaign` (`{ won: { id: { best, at } } }`); missions are not games of the career, nor saved (9.4); a mission is kept as a replay (9.5), whose panel and narrator follow the mission.
+- The chapter map (src/ui/campaign-map.js), under the briefing: the chapter's five missions as stops on a road
+  across a drawn landscape (land with a pale shore and contour rings, waves on the sea, a compass in the emptiest
+  corner), seeded from the chapter id so a chapter always looks the same, in the chapter's colours (an Aegean
+  blue and olive for the Greeks, ice and slate for the Norse, sand and a dark Nile green for the Egyptians). The road
+  is solid gold as far as it is open and dotted beyond; a won stop has a green tick, a locked one is dim, the chosen
+  one glows and shows its title and place on a plate. A click on an open stop chooses that mission (the map is
+  for the pointer only, hidden from screen readers: the mission list is the control). On a phone a long screen
+  title sits beside Back.
 - The narrator: every briefing, every event's line and every victory text is a recorded clip in
   assets/narration/campaign (Kokoro "George", as the intro film: `tools/narration/render.py --lines`, with the
   list from `tools/narration/campaign-lines.mjs`), named `<mission>-<part>-<hash of the words>.mp3`, so new
