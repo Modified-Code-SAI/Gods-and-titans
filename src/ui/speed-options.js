@@ -48,6 +48,13 @@ export const SCROLL_SPEED_OPTIONS = [
 ];
 export const SCROLL_SCALE = { slow: 0.6, normal: 1, fast: 1.5, faster: 2.2 };
 
+// "Frame rate limit" (setting `frameCap`): at most this many frames a second (src/game/frame-pace.js FRAME_CAP_MS).
+export const FRAME_CAP_OPTIONS = [
+  ['off', 'None', 'As many frames as the screen shows.'],
+  ['60', '60', 'At most 60 a second: a fast screen spends less power.'],
+  ['30', '30', 'At most 30 a second: a laptop or a phone runs cooler and its battery lasts longer.'],
+];
+
 /** The explanation of one option id ('' for an unknown one). */
 export function optionNote(options, id) {
   const o = options.find((x) => x[0] === id);

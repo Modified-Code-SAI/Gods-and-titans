@@ -18,6 +18,8 @@ const ALERT_LEVELS = ['all', 'important', 'off'];
 const SHAKES = ['full', 'reduced', 'off'];
 // How fast the keys, the screen edge and a stick move the camera (src/ui/speed-options.js SCROLL_SCALE).
 const SCROLLS = ['slow', 'normal', 'fast', 'faster'];
+// At most this many frames a second (src/game/frame-pace.js), or 'off' for as many as the screen shows.
+const FRAME_CAPS = ['off', '60', '30'];
 const unit = (v) => typeof v === 'number' && Number.isFinite(v);
 // What a tab in the background does when the game needs the player (src/ui/tab-attention.js):
 // nothing, flash the tab's title, or also raise a desktop notification (needs the browser's permission).
@@ -63,6 +65,8 @@ function cleanName(name) {
  * computer (online games always run at normal speed) and `uiScale` the size of the in-game interface.
  * `screenShake` is how far blasts shake the camera ('full', 'reduced', 'off'; 'reduced' by default when the system asks
  * for reduced motion). `scrollSpeed` is how fast the keys, the screen edge and a controller's stick move the camera.
+ * `frameCap` holds a match to at most '60' or '30' frames a second ('off': none), and `showFps` puts a frame-rate
+ * counter in a corner (src/game/frame-pace.js).
  * `teamColors` draws the teams in the lobby's colours or a colour-blind-safe set (src/team-colors.js),
  * `cardKeys` is the command card's key layout ('classic' letters or 'grid' by position) and `keyBindings`
  * the keys changed from their defaults (src/ui/key-bindings.js), kept per device like the rest.
@@ -74,7 +78,7 @@ export function voiceLevel(s) {
 }
 
 export function defaultSettings() {
-  return { name: randomName(), volume: 0.7, voiceVolume: 1, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: reducedMotion() ? 'reduced' : 'full', scrollSpeed: 'normal', cardKeys: 'classic', keyBindings: Object.freeze({}) };
+  return { name: randomName(), volume: 0.7, voiceVolume: 1, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: reducedMotion() ? 'reduced' : 'full', scrollSpeed: 'normal', frameCap: 'off', showFps: false, cardKeys: 'classic', keyBindings: Object.freeze({}) };
 }
 
 /** Merge a raw object onto base, keeping only valid values. */
@@ -105,6 +109,8 @@ function sanitize(raw, base) {
   if (TEAM_PALETTES.includes(raw.teamColors)) out.teamColors = raw.teamColors;
   if (SHAKES.includes(raw.screenShake)) out.screenShake = raw.screenShake;
   if (SCROLLS.includes(raw.scrollSpeed)) out.scrollSpeed = raw.scrollSpeed;
+  if (FRAME_CAPS.includes(raw.frameCap)) out.frameCap = raw.frameCap;
+  if (typeof raw.showFps === 'boolean') out.showFps = raw.showFps;
   if (CARD_LAYOUTS.includes(raw.cardKeys)) out.cardKeys = raw.cardKeys;
   if (raw.keyBindings && typeof raw.keyBindings === 'object' && raw.keyBindings !== base.keyBindings) {
     const kb = cleanBindings(raw.keyBindings);

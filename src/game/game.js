@@ -42,6 +42,7 @@ import { getCareer } from './career.js';
 import { recordTutorial } from './career.js';
 import { TutorialDirector } from './tutorial.js';
 import { SlowFrameWatch } from './slow-hint.js';
+import { FrameCap, FpsMeter, FRAME_CAP_MS } from './frame-pace.js';
 import { isTutorial } from '../sim/tutorial.js';
 import { recordDaily, dailyChallenge } from './daily.js';
 import { scoreOf } from '../data/score.js';
@@ -553,6 +554,7 @@ export class Game {
     this.resize();
     this.applyShowAllBars();
     this.applyShake();
+    this.applyFps();
     this.applySpeed();
     if (!(this.saver && this.saver.restoreCamera())) this.centerOnStart();
     if (resumed) this.hud.message('Saved game loaded.', 'system', { icon: '💾' });
@@ -787,6 +789,12 @@ export class Game {
   frame(now) {
     if (this.disposed) return;
     this.raf = requestAnimationFrame((t) => this.frame(t));
+    // The Frame rate limit setting (frame-pace.js): an animation frame off the limit's beat draws nothing.
+    if (this.frameCap && !this.frameCap.due(now, FRAME_CAP_MS[this.settings.frameCap] || 0)) return;
+    if (this.fpsMeter) {
+      const text = this.fpsMeter.frame(now);
+      if (text !== null && this.fpsEl) this.fpsEl.textContent = text;
+    }
     const dt = Math.min(MAX_DT, Math.max(0, (now - this.lastFrame) / 1000));
     this.lastFrame = now;
     const t0 = performance.now();
@@ -934,6 +942,26 @@ export class Game {
     this.applyShowAllBars();
   }
 
+  /** The Show frame rate setting: the corner counter (frame-pace.js FpsMeter) on or off. */
+  applyFps() {
+    if (!this.frameCap) this.frameCap = new FrameCap();
+    const on = !!(this.settings && this.settings.showFps);
+    if (!on) {
+      this.fpsMeter = null;
+      if (this.fpsEl) this.fpsEl.remove();
+      this.fpsEl = null;
+      return;
+    }
+    if (!this.fpsMeter) this.fpsMeter = new FpsMeter();
+    if (!this.fpsEl && this.hudRoot && typeof document !== 'undefined') {
+      this.fpsEl = document.createElement('div');
+      this.fpsEl.className = 'hud-fps';
+      this.fpsEl.setAttribute('aria-hidden', 'true');
+      this.fpsEl.textContent = '… fps';
+      this.hudRoot.appendChild(this.fpsEl);
+    }
+  }
+
   /** The Screen shake setting: how far the renderer lets blasts shake the camera (and a controller rumble). */
   applyShake() {
     const r = this.renderer;
@@ -988,6 +1016,7 @@ export class Game {
     }
     // (the renderer rebuilt its models in the new team colours when the palette changed, src/team-colors.js)
     if (changed.includes('screenShake')) this.applyShake();
+    if (changed.includes('showFps')) this.applyFps();
     if (changed.includes('weather') && this.renderer && typeof this.renderer.setWeather === 'function') this.renderer.setWeather(s.weather === false ? 'off' : 'auto');
     if (changed.includes('teamColors')) this.needsRender = true;
   }

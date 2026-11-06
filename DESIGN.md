@@ -2484,6 +2484,10 @@ per-frame budget, so a revealed army appears over a few frames.
   **Camera spots** (`src/ui/camera-spots.js`): Ctrl+F6..F9 (Shift works too, for systems that keep Ctrl with a
   function key) keeps where the camera is going and how far out it is; F6..F9 brings it back at once, and an empty
   spot says how to fill it. Four spots for the match, not saved; F5 stays the browser's reload.
+  **Frame rate** (`src/game/frame-pace.js`): the Frame rate limit setting (`frameCap`: None, 60, 30) has
+  `Game.frame` skip an animation frame that comes before the limit's beat (`FrameCap.due`, on a beat rather than a gap,
+  so a 144 Hz screen held to 60 averages 60); Show frame rate (`showFps`) puts "60 fps · 16.7 ms" under the top bar's
+  right end, counted over half a second (`FpsMeter`). Both are in Settings → Graphics and the F10 menu.
   **Army keys**: Ctrl+A (Cmd+A) selects the whole army, every own unit but the Worshippers, gods and Titans
   first (`armyIds` in hud-data.js); a second tap within 350 ms centers on it. A whole-army selection (Ctrl+A,
   Ctrl+Alt+A, Shift+,: `Selection.set(ids, { army: true })`, `sel.army`) is not held to the 24 of `MAX_SELECTION`
