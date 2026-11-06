@@ -43,6 +43,7 @@ import { recordTutorial } from './career.js';
 import { TutorialDirector } from './tutorial.js';
 import { SlowFrameWatch } from './slow-hint.js';
 import { FrameCap, FpsMeter, FRAME_CAP_MS } from './frame-pace.js';
+import { PhotoMode, saveCanvas } from '../ui/photo-mode.js';
 import { isTutorial } from '../sim/tutorial.js';
 import { recordDaily, dailyChallenge } from './daily.js';
 import { scoreOf } from '../data/score.js';
@@ -450,6 +451,11 @@ export class Game {
     this.offs.push(() => this.taunts.stop());
 
     this.hud = new Hud({ root: this.hudRoot, game: this });
+    // Photo mode (src/ui/photo-mode.js): the interface and the overlays out of the picture, P saves it.
+    this.photo = new PhotoMode({ root: this.hudRoot, onChange: (on) => {
+      if (this.renderer && typeof this.renderer.setPhotoMode === 'function') this.renderer.setPhotoMode(on);
+      this.needsRender = true;
+    } });
     this.applyUiScale();
     if (this.replay) {
       this.replayBar = new ReplayBar({ root: this.hudRoot, game: this, onSeekBack: (tick) => this.replayFrom(tick) });
@@ -809,8 +815,13 @@ export class Game {
         this.selection.prune();
         this.input.update(dt);
         this.renderer.update(this.paused || this.netPause ? 0 : dt);
-        if (this.renderer.setPortrait) this.renderer.setPortrait(this.hud && this.hud.infoView ? this.hud.infoView.portraitTarget : null);
+        if (this.renderer.setPortrait) this.renderer.setPortrait(this.hud && this.hud.infoView && !(this.photo && this.photo.on) ? this.hud.infoView.portraitTarget : null);
         this.renderer.render(now);
+        if (this.wantShot) {
+          // read in the same task as the frame that drew it (a WebGL canvas keeps it only until then)
+          this.wantShot = false;
+          saveCanvas(this.canvas, undefined, (ok) => this.photo && this.photo.showTip(ok ? 'Picture saved to your downloads.' : 'The picture could not be saved here.'));
+        }
         const slow = this.slowWatch ? this.slowWatch.frame(now, this.settings.quality) : null;
         if (slow && this.hud) this.hud.message(slow, 'system', { icon: '🐢' });
       }
@@ -940,6 +951,14 @@ export class Game {
   setShowAllBars(held) {
     this.showAllBarsHeld = !!held;
     this.applyShowAllBars();
+  }
+
+  /** Photo mode's P: the next drawn frame is saved as a PNG (drawn now even when paused). */
+  takePhoto() {
+    if (!this.photo || !this.photo.on) return false;
+    this.wantShot = true;
+    this.needsRender = true;
+    return true;
   }
 
   /** The Show frame rate setting: the corner counter (frame-pace.js FpsMeter) on or off. */
@@ -1082,6 +1101,7 @@ export class Game {
     const vs = this.viewState;
     if (this.replay) return; // the replay bar says when it is over
     if (vs.gameOver && !this.overShown) {
+      if (this.photo) this.photo.set(false); // the result is not hidden behind photo mode
       this.overShown = true;
       const wt = vs.gameOver.winningTeam;
       const survival = typeof vs.survivalActive === 'function' && vs.survivalActive();
@@ -1649,6 +1669,7 @@ export class Game {
     this.disposed = true;
     ambience.stop();
     cancelAnimationFrame(this.raf);
+    if (this.photo) this.photo.dispose();
     if (this.ending) this.ending.dispose();
     this.ending = null;
     this.setLoading(false);

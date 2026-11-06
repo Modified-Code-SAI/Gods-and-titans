@@ -27,6 +27,7 @@ import { POWERS, powersFor, powerRadius, isHarmfulPower } from '../data/powers.j
 import { powerState } from './hud-powers.js';
 import { SCROLL_SCALE } from './speed-options.js';
 import { CameraSpots, cameraSpotKey, cameraSpotLine } from './camera-spots.js';
+import { photoKey } from './photo-mode.js';
 
 const DRAG_THRESHOLD = 5; // px before a left press becomes a box
 const DOUBLE_MS = 350;
@@ -1479,6 +1480,18 @@ export class InputController {
     // (hold W to queue more) use that; everything else acts once per press.
     const rep = e.repeat === true;
     const overlays = hud.overlays;
+    // Photo mode (photo-mode.js): Alt+H in and out, Esc out, P saves the picture; F10 brings the interface back first.
+    const photo = this.game.photo;
+    const pk = overlays.open || !photo ? null : photoKey(e, photo.on);
+    if (pk) {
+      e.preventDefault();
+      if (rep) return;
+      if (pk === 'toggle') photo.toggle();
+      else if (pk === 'exit') photo.set(false);
+      else if (pk === 'shot') this.game.takePhoto();
+      return;
+    }
+    if (photo && photo.on && key === 'F10') photo.set(false);
     if (overlays.open) {
       if (key === 'Escape' || key === 'F10') {
         e.preventDefault();
