@@ -55,7 +55,8 @@ test('every pantheon raises a Temple with its own icon, not another pantheon\'s 
 
 test('UI strings stay within Emoji 11 too (HUD chips, command card, menu, tips)', () => {
   const dir = new URL('../../src/ui/', import.meta.url);
-  const files = readdirSync(dir).filter((f) => f.endsWith('.js'));
+  // icon-map.js lists emoji only to swap them for painted icons, so it may name newer ones
+  const files = readdirSync(dir).filter((f) => f.endsWith('.js') && f !== 'icon-map.js');
   assert.ok(files.length > 10, 'found the src/ui modules');
   for (const f of files) {
     readFileSync(new URL(f, dir), 'utf8').split('\n').forEach((line, i) => {

@@ -4,6 +4,7 @@
 // pings and the team's pings and markers. Left click / drag moves the camera,
 // right click issues a smart order, Alt+click or a middle click pings the team;
 // the input controller receives them all through `onPointer`.
+import { drawIcon } from './icons.js';
 import { TERRAIN, NEUTRAL_COLOR } from '../config.js';
 import { BUILDINGS, UNITS } from '../data/index.js';
 import { MARKS } from '../data/marks.js';
@@ -417,8 +418,10 @@ export class Minimap {
       ctx.fill();
       ctx.strokeStyle = this.colorOf(m.from);
       ctx.stroke();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(def.icon, x, y + 0.5);
+      if (!drawIcon(ctx, def.icon, x, y, r * 1.35)) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(def.icon, x, y + 0.5);
+      }
     }
     ctx.restore();
   }

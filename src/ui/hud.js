@@ -11,6 +11,7 @@
 //                first match its objective panel instead, a pin at the objective and lit card buttons
 //   overlays     waiting, in-game menu (F10), game over, host left
 // Only the panels take pointer events; everything else falls through to the canvas.
+import { setIconVar } from './icons.js';
 import { UNITS, PANTHEONS } from '../data/index.js';
 import { PANTHEON_EMBLEMS } from './menu-model.js';
 import { getCommandCard, withCardKeys } from './command-card.js';
@@ -747,6 +748,7 @@ export class Hud {
   feedCard(kind, icon, content) {
     const line = el('div', `hud-msg is-${kind}`, el('span', 'hud-msg-text', content));
     line.dataset.icon = messageIcon(kind, icon);
+    setIconVar(line, line.dataset.icon); // the painted emblem the stylesheet draws in place of the emoji
     return line;
   }
 
@@ -853,6 +855,7 @@ export class Hud {
     const t = this.taunt;
     t.replaceChildren(who, quote);
     t.dataset.icon = (p && PANTHEON_EMBLEMS[p.pantheon]) || '⚔️';
+    setIconVar(t, t.dataset.icon);
     t.style.setProperty('--taunt-accent', displayColor(safeColor(p && p.color, '#ff7a4a')));
     t.hidden = false;
     t.classList.remove('is-on');

@@ -68,3 +68,7 @@ then open http://localhost:8080/. Checks (CI runs all four on every pull request
 The deployed site is the same code bundled by `node tools/build-site.mjs` (the Pages workflow runs it): a few minified files with hashed names instead of ~270 modules. Browser tools pick their browser through `tools/browser.mjs`; set `CHROMIUM_PATH` to use another one.
 
 `DESIGN.md` is the full design spec. The game rules live in `src/sim/` (plain JavaScript that also runs in Node), rendering in `src/render/`, the interface in `src/ui/`, online play in `src/net/` and the computer players in `src/ai/`.
+
+## Credits
+
+Typefaces Cinzel, EB Garamond and Inter (SIL Open Font License, `vendor/fonts/`). Icons from game-icons.net by Lorc, Delapouite and contributors (CC BY 3.0, `vendor/game-icons/LICENSE.md`). Three.js and PeerJS (MIT, `vendor/`).

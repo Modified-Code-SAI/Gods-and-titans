@@ -427,6 +427,15 @@
   border: 2px solid var(--taunt-accent);
   background: radial-gradient(circle, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.65));
 }
+/* a painted emblem (src/ui/icons.js setIconVar) in place of the emoji */
+.hud-msg.has-ico::before, .hud-taunt.has-ico::before {
+  content: '';
+  background-image: var(--ico), radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--msg-accent, var(--taunt-accent)) 48%, #1c150c), #140f09 78%);
+  background-size: 64% 64%, auto;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.hud-taunt.has-ico::before { background-image: var(--ico), radial-gradient(circle, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.65)); }
 .hud-taunt-from {
   font: 700 1em/1.2 var(--mw-font-display);
   letter-spacing: 0.1em;
