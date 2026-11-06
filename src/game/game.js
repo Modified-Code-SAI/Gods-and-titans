@@ -333,6 +333,7 @@ export class Game {
     this.lastFrame = 0;
     this.disposed = false;
     this.paused = false;
+    this.keyPaused = false; // paused with the Pause key against the computer (toggleKeyPause): the camera stays free
     this.netPause = null; // an online game paused for everyone (session.pause), or null
     this.sessionOffs = []; // listeners on the current session (a new host replaces it, DESIGN 7)
     this.handoffLobby = null; // the room this browser opened after taking the game over from its host
@@ -809,7 +810,7 @@ export class Game {
     try {
       // Paused (single player, F10 menu): the world is frozen, so the last
       // picture stays on the canvas; redraw only after a resize or option change.
-      if (!this.paused || this.needsRender) {
+      if (!this.paused || this.keyPaused || this.needsRender) {
         this.needsRender = false;
         this.viewState.update(now);
         this.selection.prune();
@@ -934,6 +935,8 @@ export class Game {
       return !!on;
     }
     if (!isSolo(s) && !(this.paused && !on)) return false; // (a pause taken alone always ends, even if someone joined since)
+    // The game menu takes over a Pause-key pause: closing the menu then goes on, as it does from a menu pause.
+    if (on && this.keyPaused) this.endKeyPause();
     if (on && !this.paused) {
       s.ticker.stop();
       this.paused = true;
@@ -1993,13 +1996,40 @@ export class Game {
   /** Pause the online game for everyone, or resume it (the Pause key, the game menu, the pause bar). */
   togglePause() {
     const s = this.session;
-    if (!this.online || this.ended || this.disposed) return false;
+    if (!this.online) return this.toggleKeyPause();
+    if (this.ended || this.disposed) return false;
     const vs = this.viewState;
     if (vs && vs.gameOver && !s.pause) return false;
     // A fallen player watches: the host takes neither a pause nor a resume from them (HostSession.setPause).
     if (vs && vs.me && vs.me.defeated) return false;
     s.sendPause(!s.pause);
     return true;
+  }
+
+  /**
+   * The Pause key against the computer (DESIGN 9, "Pause"): the match stops, the pause bar says so, and
+   * the camera stays free to look around (orders given now are carried out when it goes on). The key
+   * again, or the bar's Resume, goes on. Not in a replay (its own Space), at the end, or under an overlay.
+   */
+  toggleKeyPause() {
+    if (this.replay || this.ended || this.disposed || !this.viewState) return false;
+    if (this.keyPaused) {
+      this.endKeyPause();
+      this.setPaused(false);
+      sfx.play('select', { volume: 0.6 });
+      return true;
+    }
+    if (this.viewState.gameOver || this.paused || (this.hud && this.hud.overlays && this.hud.overlays.open)) return false;
+    if (!this.setPaused(true)) return false;
+    this.keyPaused = true;
+    if (this.hud && typeof this.hud.setPause === 'function') this.hud.setPause({ solo: true });
+    sfx.play('click', { volume: 0.6 });
+    return true;
+  }
+
+  endKeyPause() {
+    this.keyPaused = false;
+    if (this.hud && typeof this.hud.setPause === 'function') this.hud.setPause(null);
   }
 
   onNetPause(p) {
