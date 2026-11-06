@@ -5,6 +5,8 @@
 // FIGHT_MS), and lights up while the group is what is selected. Clicking a chip selects the group,
 // as its digit does; a second click soon after brings the camera there, as a double tap does.
 // Dead members drop out of a group (Selection.groupIds), and an emptied group's chip goes away.
+// On a phone or tablet, which has no Ctrl+digit, a "+" chip after them saves the selection as the
+// next free group (`saveSlot`), shown while own units are selected that are not already a group.
 import { subgroups, iconOf, typeName } from './hud-data.js';
 import { el, setText, setClass, setHidden } from './hud-dom.js';
 
@@ -54,6 +56,21 @@ export function groupChips(sel, vs, seen, now) {
   return out;
 }
 
+/**
+ * The group a touch player's "+" chip would save the selection into: the lowest free digit, or 0 when
+ * no own unit is selected, the selection already is a group, or all nine are taken.
+ */
+export function saveSlot(sel, vs, chips) {
+  const own = sel.ids.filter((id) => {
+    const e = vs.entities.get(id);
+    return e && e.o === vs.myIndex;
+  });
+  if (!own.length || chips.some((c) => c.active)) return 0;
+  const taken = new Set(chips.map((c) => c.n));
+  for (let n = 1; n <= 9; n++) if (!taken.has(n)) return n;
+  return 0;
+}
+
 /** The tooltip of a chip. */
 export function chipTitle(c) {
   const what = c.count === 1 ? c.name : `${c.count} units, led by ${c.name}`;
@@ -66,11 +83,17 @@ export class GroupBar {
    * @param {object} o.selection
    * @param {object} o.viewState
    * @param {(n: number) => void} o.onPick a chip was clicked
+   * @param {(n: number) => void} [o.onSave] the "+" chip was tapped: save the selection as group n
+   * @param {boolean} [o.touch] a touch-only device: show the "+" chip
    */
-  constructor({ selection, viewState, onPick }) {
+  constructor({ selection, viewState, onPick, onSave = null, touch = false }) {
     this.sel = selection;
     this.vs = viewState;
     this.onPick = onPick;
+    this.onSave = onSave;
+    this.touch = touch;
+    this.saveN = 0;
+    this.saveChip = null;
     this.seen = new Map();
     this.chips = new Map(); // n → { b, icon, count }
     this.last = -Infinity;
@@ -82,7 +105,8 @@ export class GroupBar {
     if (!force && now - this.last < GROUPS_REFRESH_MS) return;
     this.last = now;
     const chips = groupChips(this.sel, this.vs, this.seen, now);
-    setHidden(this.root, !chips.length);
+    this.saveN = this.touch && this.onSave ? saveSlot(this.sel, this.vs, chips) : 0;
+    setHidden(this.root, !chips.length && !this.saveN);
     const keep = new Set(chips.map((c) => c.n));
     for (const [n, c] of this.chips) {
       if (keep.has(n)) continue;
@@ -106,6 +130,28 @@ export class GroupBar {
     }
     // A new group's chip takes its place in digit order (chips come in that order).
     if (added) for (const c of chips) this.root.appendChild(this.chips.get(c.n).b);
+    if (this.saveN && !this.saveChip) this.saveChip = this.newChip();
+    if (this.saveChip) {
+      setHidden(this.saveChip, !this.saveN);
+      const title = `Save the selection as group ${this.saveN}`;
+      if (this.saveN && this.saveChip.title !== title) this.saveChip.title = title;
+      const kids = this.root.children;
+      if (kids[kids.length - 1] !== this.saveChip) this.root.appendChild(this.saveChip); // always after the groups
+    }
+  }
+
+  /** The touch player's "+" chip. */
+  newChip() {
+    const b = el('button', 'hud-group is-new', el('span', 'hud-group-plus', '+'), el('span', 'hud-group-icon', '👥'));
+    b.type = 'button';
+    b.tabIndex = -1;
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+    b.addEventListener('click', () => {
+      if (this.saveN && this.onSave) this.onSave(this.saveN);
+      this.update(performance.now(), true);
+    });
+    this.root.appendChild(b);
+    return b;
   }
 
   chip(n) {

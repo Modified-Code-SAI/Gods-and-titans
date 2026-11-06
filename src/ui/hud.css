@@ -2320,6 +2320,9 @@
   animation: hud-pulse 0.9s ease-in-out infinite;
   pointer-events: none;
 }
+.hud-group.is-new { border-style: dashed; color: var(--mw-gold); }
+.hud-group.is-new[hidden] { display: none; }
+.hud-group-plus { font: 800 1.05em/1 var(--mw-font-ui); color: var(--mw-gold-hi); }
 .hud.is-replay .hud-groups { display: none; }
 
 /* The ending (hud-ending.js, DESIGN 9 "The ending"): letterbox bars, the HUD stepping aside, the result carved

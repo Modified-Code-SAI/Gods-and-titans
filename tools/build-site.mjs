@@ -24,7 +24,7 @@ const bundle = !args.includes('--no-bundle');
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
-for (const p of ['index.html', 'style.css', 'src', 'vendor', 'assets']) cpSync(join(root, p), join(out, p), { recursive: true });
+for (const p of ['index.html', 'manifest.webmanifest', 'style.css', 'src', 'vendor', 'assets']) cpSync(join(root, p), join(out, p), { recursive: true });
 writeFileSync(join(out, '.nojekyll'), '');
 
 const hashOf = (file) => createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 10);

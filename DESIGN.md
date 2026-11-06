@@ -22,6 +22,9 @@ the authoritative simulation.
 ## 2. Technology
 
 - Plain ES modules, **no build step**. Served as static files (GitHub Pages).
+- Installable on a phone or tablet: `manifest.webmanifest` (full screen, landscape, the gold-bolt icon in
+  `assets/icons/`, drawn from `icon.svg`) and the theme-color and apple-mobile-web-app meta tags in `index.html`;
+  `tools/build-site.mjs` copies the manifest. No service worker: the game is not offline.
 - Three.js **0.186.1** vendored at `vendor/three/three.module.js` (+ `three.core.js`).
   Import as `import * as THREE from 'three'`; addons as
   `import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'`
@@ -2129,8 +2132,8 @@ per-frame budget, so a revealed army appears over a few frames.
   above it, never over it), join screen (name + code), a notice pinned to the title and join screens
   (`menu.setNotice`, set by `boot` in main.js: no WebGL 2, and on a phone or tablet, `isTouchOnly` in menu-model.js:
   `(pointer: coarse)` matches and `(any-pointer: fine)` does not, `TOUCH_NOTICE` "Touch controls: tap to select, tap
-  the ground to send, drag to look around, pinch to zoom, hold then drag to select a group. A mouse and keyboard play
-  best."; both join into one line), how-to-play (five tabs, as Settings, the last one
+  the ground to send, drag to look around, pinch to zoom, hold then drag to select a group, tap with two fingers to
+  deselect or cancel, tap + over the selection to save a group. A mouse and keyboard play best."; both join into one line), how-to-play (five tabs, as Settings, the last one
   kept for the visit, `howToPages` in menu-howto.js: The Basics (gathering, prayer, the tiers, summoning, god
   levels, your pantheon), War (fighting, ranks, god powers, walls, relics, sacred sites), Game Modes (Decade of
   Peace, Trial of the Titans, Sacred Victory), Controls (the mouse and hotkey tables in two columns) and Beyond the
@@ -2400,7 +2403,10 @@ per-frame budget, so a revealed army appears over a few frames.
   the digit, the icon of the group's leading type (the first subgroup: gods first) and how many are left. A
   chip is red while the group fights (a member attacks or casts, or lost health in the last 3 s) and gold while
   the group is the selection. Clicking a chip is pressing its digit (`input.recallGroup`): a second click within
-  the double-tap time also brings the camera there. An emptied group's chip goes; hidden in replays.
+  the double-tap time also brings the camera there. An emptied group's chip goes; hidden in replays. On a
+  touch-only device (`isTouchOnly`), which has no Ctrl+digit, a dashed "+" chip after the groups saves the
+  selection as the lowest free group (`saveSlot`); it shows while own units are selected that are not already a
+  group and a digit is free.
 - God power bar (`src/ui/hud-powers.js`, `PowerBar`): three round buttons on the left of the minimap, one per power
   of my pantheon (4.11), Village at the top. Locked (grey) until my settlement reaches the tier, ready (a slow
   golden glow) once it has, dark once spent; the tooltip names the power, its tier, what it does, its area and why
@@ -2702,7 +2708,16 @@ left click, or, with own units selected and the tap not on another own unit, the
 One finger dragged at once pans (the middle-button drag); a finger that rests `HOLD_MS` (420 ms, timed by the
 events' timestamps, with a 12 ms buzz where the phone has one) and then moves draws a selection box. Two fingers
 pinch the zoom and pan by their midpoint. A finger lifting clears the pointer, so no edge scroll or hover tag stays
-behind. HUD buttons are DOM and take taps as clicks. Not done: hover tooltips, the god-power ring before a tap.
+behind. HUD buttons are DOM and take taps as clicks. A finger held on a command button (`CARD_HOLD_MS`, 450 ms) or
+on any titled element (`TIP_HOLD` in hover-tip.js) shows its tooltip while it stays down, and that hold is not a
+press: its click is swallowed, a long press never toggles autocast, and the hover a tap emulates opens no tip.
+Whether a press was a hold is judged on the events' timestamps at release. On the minimap a finger is the left button
+(a tap jumps the camera, a drag sweeps it). A god power aimed at the ground takes two taps, as it is used once: the
+first puts its ring where the finger was (with a line saying so), the second within `AIM_SLOP` (48 px) of it casts,
+and a tap elsewhere moves the ring; a power that needs no spot, and every other order, is one tap. Two fingers
+tapped together (down under `TWO_TAP_MS`, 320 ms from the first finger, and barely moving) are Esc for the map: a
+placement or targeted order is called off, otherwise the selection is cleared, since a tap on the ground with units
+selected is always an order. A pinch, a third finger or a drag the second finger joined is never that tap.
 
 **Hover tag.** On the map, once the pointer has rested on a unit, building or gold mine for 350 ms (the hover ring
 shows at once), a small tag beside the cursor names it (`src/ui/hover-tag.js`, driven by `InputController.updateHoverTag`).

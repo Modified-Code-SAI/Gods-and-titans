@@ -17,7 +17,7 @@ import { hourAt } from '../render/day-clock.js';
 import { setIconVar } from './icons.js';
 import { playEnding } from './hud-ending.js';
 import { UNITS, PANTHEONS } from '../data/index.js';
-import { PANTHEON_EMBLEMS } from './menu-model.js';
+import { PANTHEON_EMBLEMS, isTouchOnly } from './menu-model.js';
 import { getCommandCard, withCardKeys } from './command-card.js';
 import { cardKeysOf } from './key-bindings.js';
 import { sanitizeName, sanitizeChat } from '../net/protocol.js';
@@ -305,6 +305,11 @@ export class Hud {
       selection: game.selection,
       viewState: this.vs,
       onPick: (n) => game.input && !game.replay && game.input.recallGroup(n),
+      // a phone has no Ctrl+digit: a "+" chip saves the selection as the next free group
+      onSave: (n) => {
+        if (!game.replay && game.selection.saveGroup(n)) this.message(`Group ${n} assigned.`, 'info', { icon: '👥' });
+      },
+      touch: isTouchOnly(),
     });
     this.bottom.appendChild(this.groupBar.root);
     this.bottomInfo = this.infoRoot.parentNode;
