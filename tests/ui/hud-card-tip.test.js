@@ -3,7 +3,7 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { installFakeDom } from './fake-dom.js';
-import { CardView } from '../../src/ui/hud-card.js';
+import { CardView, shortCosts } from '../../src/ui/hud-card.js';
 
 before(installFakeDom);
 
@@ -22,4 +22,22 @@ test('the tooltip shows a unit\'s stats lines before its description; other butt
   view.hoverSlot = 1;
   view.renderTip();
   assert.equal(tip.find('ht-stats'), null);
+});
+
+test('the tooltip marks in red the parts of a cost the player cannot pay', () => {
+  const me = { gold: 200, wood: 10, faith: 0, pop: 12, popCap: 12 };
+  assert.deepEqual(shortCosts({ gold: 120, wood: 30, pop: 1 }, me), ['wood', 'pop']);
+  assert.deepEqual(shortCosts({ gold: 120 }, me), []);
+  assert.deepEqual(shortCosts({ gold: 999 }, null), [], 'no player, nothing marked');
+  const tip = document.createElement('div');
+  const view = new CardView(document.createElement('div'), tip, {});
+  view.card = [{ id: 'train:archer', icon: '🏹', keyLabel: 'A', state: 'unaffordable', title: 'Train Archer', cost: { gold: 120, wood: 30 } }];
+  view.me = me;
+  view.hoverSlot = 0;
+  view.renderTip();
+  const parts = tip.find('ht-cost').children.map((c) => c.className);
+  assert.deepEqual(parts, ['ht-res is-gold', 'ht-res is-wood is-short']);
+  me.wood = 50;
+  view.renderTip();
+  assert.deepEqual(tip.find('ht-cost').children.map((c) => c.className), ['ht-res is-gold', 'ht-res is-wood'], 'redrawn once the wood is there');
 });
