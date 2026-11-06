@@ -106,3 +106,29 @@ test('Play Again leads the game-over buttons only when the game offers it', () =
   assert.equal(root2.button('Play Again'), null, 'an online game has no Play Again');
   assert.ok(root2.button('Return to Menu'));
 });
+
+test('number columns draw each player against the leader, and the leader is marked', () => {
+  const vs = view();
+  const node = chronicleView(vs, 1, chronicleOf(vs));
+  node.button('Economy').click();
+  const best = node.findAll('is-best').map((td) => td.textContent);
+  assert.ok(best.includes('3,000'), `the most gold is marked: ${best.join()}`);
+  assert.ok(best.includes('300'), 'the most faith, the other player\'s, is marked');
+  const bars = node.findAll('has-bar');
+  assert.ok(bars.length > 0);
+  assert.ok(bars.every((td) => { const v = Number(td.style.getPropertyValue('--share')); return v >= 0 && v <= 1; }));
+  node.button('Military').click();
+  const aiRow = node.findAll('is-defeated')[0];
+  const lost = aiRow.children[5]; // Player, Kills, Losses, Razed, Destroyed, Lost
+  assert.equal(lost.textContent, '2,500');
+  assert.equal(lost.className, 'has-bar', 'the most lost is drawn but never marked as a lead');
+});
+
+test('a column where everyone ties marks no leader', () => {
+  const vs = view();
+  vs.players.forEach((p) => { p.up = ['a']; });
+  const node = chronicleView(vs, 1, chronicleOf(vs));
+  node.button('Economy').click();
+  const rows = node.findAll('is-defeated');
+  assert.equal(rows[0].children[6].className, 'has-bar', 'Research: both have one, so nobody leads');
+});

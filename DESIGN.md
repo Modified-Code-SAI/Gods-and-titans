@@ -2182,7 +2182,9 @@ per-frame budget, so a revealed army appears over a few frames.
   Treasurer (most gathered), Prophet (most faith), Architect (most buildings), each to the best player or players on a
   tie, only when above zero and not shared by everyone, none in a match of one; the local player's awards are lit.
   Economy: gold, wood, faith, trained, buildings, research count, tier. Military: kills, losses, razed, worth destroyed,
-  worth lost, largest army. Timeline: an SVG line chart, a line per player in their (sanitized) colour and the local
+  worth lost, largest army. In the number columns a thin bar under each value shows its share of the column's largest, and
+  the leader is lit in gold (not in losses or worth lost, and nobody when everyone ties); the panel keeps the tallest height
+  it has shown, so the buttons under it stay put from tab to tab. Timeline: an SVG line chart, a line per player in their (sanitized) colour and the local
   player's thicker, of Score, Army, Resources (gathered + faith) or Kills. The `Chronicle` listens to the ViewState's
   snapshots and writes a sample at the first one, every `SAMPLE_EVERY` (30) s of game time and once at the game's end,
   and keeps each player's largest army; all of it is read from the players' snapshot records, so nothing is sent for
