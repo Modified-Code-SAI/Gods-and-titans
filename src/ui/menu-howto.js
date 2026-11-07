@@ -98,6 +98,7 @@ export const HOTKEYS = [
     [kbd('Alt'), 'Show every health bar'],
     [kbd('Enter'), 'Chat (type a number 1 to 9 alone for a quick line: Yes, No, Attack, Help, Gold, Wood, Wait, Ready, GG; the chat box has them as buttons too)'],
     [kbd('F10'), 'Game menu (pauses a game against the AI)'],
+    [kbd('?'), 'This list of controls, in a match (Shift + / on most keyboards)'],
     [kbd('Pause'), 'Against the computer: pause and look around (orders wait until it goes on). Online: pause the game for everyone (three times a game each; any player can resume, and it goes on by itself after two minutes). Also in the game menu'],
     [bound('cam_up', 'cam_down', 'cam_left', 'cam_right'), 'Move the camera (also the screen edge, a middle-drag or the minimap)'],
     [kbd('Mouse wheel'), 'Zoom in and out (smoothly on a trackpad)'],
