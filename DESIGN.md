@@ -2441,6 +2441,8 @@ per-frame budget, so a revealed army appears over a few frames.
   one at a time, while the purse and the population allow, quietly (no error lines while it waits). Gods and
   Titans cannot repeat. Command `repeatTrain` {building, unit} (no unit: off), building field `repeat`,
   snapshot `rt`; the sim tries every `REPEAT_EVERY` (5) ticks (production.js). The feed says it in a line.
+  A single selected repeating building has a line under its queue (hud-info.js `repeatNote`): "🔁 Repeating
+  Worshipper.", or while its queue stands empty, what it waits for ("…, waiting: Not enough gold.").
 - Worshipper tasks: a bar bottom-left, next to the idle button, counts own Worshippers per task
   (snapshot `tk`: gold, wood, pray, build, repair, idle, other); clicking a count selects them
   (Shift adds). A multi-selection with Worshippers shows the same counts for the selection.
