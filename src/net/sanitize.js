@@ -63,6 +63,7 @@ const COMMANDS = {
   returnCargo: { units: U, queue: Q },
   build: { units: U, building: ['buildingType', true], tx: ['tx', true], ty: ['ty', true], tx2: ['tx', false], ty2: ['ty', false], queue: Q },
   train: { building: ['id', true], unit: ['unitType', true] },
+  repeatTrain: { building: ['id', true], unit: ['unitType', false] },
   cancelTrain: { building: ['id', true], index: ['index', false], count: ['count', false] },
   upgradeTier: { building: ['id', true] },
   cancelBuild: { building: ['id', true] },

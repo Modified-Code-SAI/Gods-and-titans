@@ -5,6 +5,16 @@ import { el, setText, setStyle, setHidden, fmt } from './hud-dom.js';
 
 const STATE_CLASSES = ['is-ready', 'is-cooldown', 'is-unaffordable', 'is-locked', 'is-disabled', 'is-passive', 'is-active'];
 
+/** The line under a right-click toggle's tooltip: autocast for an ability, repeat for a unit to train. */
+export function toggleNote(b) {
+  if (b.toggle.kind === 'repeat') {
+    return b.autocast
+      ? 'Repeating: another is queued whenever the queue runs empty. Right-click to stop.'
+      : 'Right-click to repeat: another is queued whenever the queue runs empty, while you can pay for it.';
+  }
+  return b.autocast ? 'Casts automatically. Right-click to cast it yourself.' : 'Manual: cast it yourself. Right-click to cast automatically.';
+}
+
 /** Signature of the parts of a button that need a DOM rebuild. */
 function shape(b) {
   if (!b) return '';
@@ -197,7 +207,7 @@ export class CardView {
     }
     if (b.stats && b.stats.length) tip.appendChild(el('div', 'ht-stats', ...b.stats.map((line) => el('div', null, line))));
     if (b.description) tip.appendChild(el('div', 'ht-desc', b.description));
-    if (b.toggle) tip.appendChild(el('div', 'ht-note', b.autocast ? 'Casts automatically. Right-click to cast it yourself.' : 'Manual: cast it yourself. Right-click to cast automatically.'));
+    if (b.toggle) tip.appendChild(el('div', 'ht-note', toggleNote(b)));
     else if (b.autocast) tip.appendChild(el('div', 'ht-note', 'Casts automatically.'));
     if (b.passive) tip.appendChild(el('div', 'ht-note', 'Passive.'));
     if (b.reason && b.state !== 'cooldown') tip.appendChild(el('div', 'ht-reason', b.reason));

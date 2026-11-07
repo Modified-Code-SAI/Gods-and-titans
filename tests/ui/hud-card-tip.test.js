@@ -72,3 +72,10 @@ test('touch: a finger held on a button shows its tooltip and does not press it; 
   btn.fire('mouseenter');
   assert.equal(view.hoverSlot, 0);
 });
+
+test('a repeat toggle says how right-click repeats a unit, an ability toggle keeps the autocast line', async () => {
+  const { toggleNote } = await import('../../src/ui/hud-card.js');
+  assert.match(toggleNote({ toggle: { kind: 'repeat' }, autocast: false }), /Right-click to repeat/);
+  assert.match(toggleNote({ toggle: { kind: 'repeat' }, autocast: true }), /Right-click to stop/);
+  assert.match(toggleNote({ toggle: { kind: 'autocast' }, autocast: true }), /Casts automatically/);
+});

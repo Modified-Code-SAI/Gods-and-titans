@@ -47,35 +47,43 @@ function scaledCost(cost, mult) {
   };
 }
 
-/** train command (also summons gods/titans and revives fallen gods). */
-export function issueTrain(world, player, b, unitId) {
-  if (!b || b.dead || b.kind !== 'building' || b.owner !== player || !b.constructed) return;
+/**
+ * train command (also summons gods/titans and revives fallen gods). `quiet` (the repeat below): a
+ * unit that cannot be queued now is simply not queued, with no error line, and the call returns
+ * whether it queued one.
+ */
+export function issueTrain(world, player, b, unitId, quiet = false) {
+  if (!b || b.dead || b.kind !== 'building' || b.owner !== player || !b.constructed) return false;
   const p = world.players[player];
   const def = getUnitType(unitId);
-  if (!def) return;
-  if (!producibleAt(b.type, p.pantheon).includes(unitId)) return;
-  if (b.queue.some((q) => q.u === 'tier_up')) return world.error(player, 'Your settlement is already growing.');
-  if (b.queue.length >= MAX_QUEUE) return world.error(player, 'Production queue is full.');
+  if (!def) return false;
+  if (!producibleAt(b.type, p.pantheon).includes(unitId)) return false;
+  const fail = (msg) => {
+    if (!quiet) world.error(player, msg);
+    return false;
+  };
+  if (b.queue.some((q) => q.u === 'tier_up')) return fail('Your settlement is already growing.');
+  if (b.queue.length >= MAX_QUEUE) return fail('Production queue is full.');
   const fallen = def.class === 'god' ? p.fallen[unitId] : null;
   if (def.class === 'god') {
-    if (hasGod(world, player, unitId)) return world.error(player, 'You already have that god.');
+    if (hasGod(world, player, unitId)) return fail('You already have that god.');
     const n = countClass(world, player, 'god');
-    if (n >= MAX_GODS) return world.error(player, `You can only have ${MAX_GODS} gods.`);
+    if (n >= MAX_GODS) return fail(`You can only have ${MAX_GODS} gods.`);
     const need = GOD_SLOT_TIER[n] || 3;
-    if (p.tier < need) return world.error(player, `Your next god requires ${tierName(need)}.`);
+    if (p.tier < need) return fail(`Your next god requires ${tierName(need)}.`);
   } else if (def.class === 'titan') {
-    if (countClass(world, player, 'titan') >= MAX_TITANS) return world.error(player, 'You already have a Titan.');
-    if (def.tier > p.tier) return world.error(player, tierMessage(def.tier));
+    if (countClass(world, player, 'titan') >= MAX_TITANS) return fail('You already have a Titan.');
+    if (def.tier > p.tier) return fail(tierMessage(def.tier));
   } else if (def.tier > p.tier) {
-    return world.error(player, tierMessage(def.tier));
+    return fail(tierMessage(def.tier));
   }
   const revive = reviveMult(p.mods);
   const cost = fallen ? scaledCost(def.cost, revive) : { gold: def.cost.gold || 0, wood: def.cost.wood || 0, faith: def.cost.faith || 0 };
   const msg = world.affordError(player, cost);
-  if (msg) return world.error(player, msg);
+  if (msg) return fail(msg);
   if (p.popUsed + def.pop > p.popCap) {
     // At POP_MAX more Houses cannot help.
-    return world.error(player, p.popCap >= POP_MAX ? `Population limit reached (${POP_MAX}).` : 'Not enough population. Build more Houses.');
+    return fail(p.popCap >= POP_MAX ? `Population limit reached (${POP_MAX}).` : 'Not enough population. Build more Houses.');
   }
   world.pay(player, cost);
   const time = def.buildTime * (fallen ? revive : 1);
@@ -83,6 +91,30 @@ export function issueTrain(world, player, b, unitId) {
   if (fallen) delete p.fallen[unitId];
   p.popUsed += def.pop;
   if (def.class === 'titan') world.emit({ type: 'titanSummoning', player, t: unitId });
+  return true;
+}
+
+/** Ticks between a repeating building's tries to queue its unit again (DT each: a quarter second). */
+export const REPEAT_EVERY = 5;
+
+/** Units a building can be told to train again and again: not gods or Titans, which are one of a kind. */
+export function repeatable(def) {
+  return !!def && def.class !== 'god' && def.class !== 'titan';
+}
+
+/**
+ * repeatTrain: the building trains `unitId` again whenever its queue runs empty, for as long as
+ * the purse and the population allow (no error lines while it waits); no unit turns it off.
+ */
+export function setRepeat(world, player, b, unitId) {
+  if (!b || b.dead || b.kind !== 'building' || b.owner !== player) return;
+  if (!unitId) {
+    b.repeat = null;
+    return;
+  }
+  const p = world.players[player];
+  if (!repeatable(getUnitType(unitId)) || !producibleAt(b.type, p.pantheon).includes(unitId)) return;
+  b.repeat = unitId;
 }
 
 /**
@@ -242,7 +274,14 @@ function followRally(world, b, u) {
 
 /** Advance the first queue item; spawn or tier up on completion. */
 export function updateProduction(world, b) {
-  if (!b.constructed || b.queue.length === 0) return;
+  if (!b.constructed) return;
+  if (b.queue.length === 0) {
+    if (b.repeat && (world.tickCount + b.id) % REPEAT_EVERY === 0) {
+      const p = world.players[b.owner];
+      if (p && !p.defeated) issueTrain(world, b.owner, b, b.repeat, true);
+    }
+    return;
+  }
   const item = b.queue[0];
   if (item.group) return advanceMerge(world, b, item); // four Houses becoming a Manor
   const p = world.players[b.owner];
