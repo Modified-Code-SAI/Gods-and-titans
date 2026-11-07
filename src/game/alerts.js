@@ -44,6 +44,9 @@ const IDLE_WORKER_REPEAT = 60;
 const TC_IDLE_AFTER = 15; // seconds the Town Center trains nothing, with a Worshipper it could pay for
 const TC_IDLE_REPEAT = 75;
 const TC_IDLE_UNTIL = 600; // only in the first ten minutes, while more hands are the whole game
+const POP_NEAR_LEFT = 2; // room for this many more (or fewer) while something is training: a House is due
+const POP_NEAR_AFTER = 3;
+const POP_NEAR_REPEAT = 120;
 const POP_CAP_AFTER = 10;
 const POP_CAP_REPEAT = 120;
 const GOD_READY_AFTER = 8;
@@ -62,7 +65,7 @@ const THREAT_CLASSES = new Set(['infantry', 'ranged', 'support', 'siege', 'creat
 const LEVEL_RANK = { off: 0, important: 1, all: 2 };
 
 /** Who matters more when two sounds want the same moment. */
-const PRIORITY = { enemies_near: 90, sacred: 85, ally_attacked: 80, peace_mark: 70, site_lost: 60, site_taken: 50, relic_lost: 50, relic_free: 45, relic_housed: 35, god_ready: 40, titan_ready: 40, idle_workers: 30, tc_idle: 28, pop_capped: 25, army_idle: 22, research: 20, milestone: 10 };
+const PRIORITY = { enemies_near: 90, sacred: 85, ally_attacked: 80, peace_mark: 70, site_lost: 60, site_taken: 50, relic_lost: 50, relic_free: 45, relic_housed: 35, god_ready: 40, titan_ready: 40, idle_workers: 30, tc_idle: 28, pop_near: 26, pop_capped: 25, army_idle: 22, research: 20, milestone: 10 };
 
 /** Milestones: the player's counts, the steps worth a cheer and the emblem of the card. */
 const MILESTONES = [
@@ -139,6 +142,7 @@ export class AlertEngine {
     this.idleWorkers = new Nag(0, IDLE_WORKER_REPEAT);
     this.idleSince = new Map(); // Worshipper id → game time it was first seen idle
     this.tcIdle = new Nag(TC_IDLE_AFTER, TC_IDLE_REPEAT);
+    this.popNear = new Nag(POP_NEAR_AFTER, POP_NEAR_REPEAT);
     this.popCap = new Nag(POP_CAP_AFTER, POP_CAP_REPEAT);
     this.godReady = new Nag(GOD_READY_AFTER, GOD_READY_REPEAT);
     this.titanReady = new Nag(GOD_READY_AFTER, TITAN_READY_REPEAT);
@@ -439,7 +443,7 @@ export class AlertEngine {
   survey() {
     const vs = this.vs;
     const me = vs.myIndex;
-    const s = { idle: [], army: 0, armyIdle: 0, buildings: [], hostiles: [], houseSite: false, temples: [], gates: [], towns: [], busy: false };
+    const s = { idle: [], army: 0, armyIdle: 0, buildings: [], hostiles: [], houseSite: false, temples: [], gates: [], towns: [], training: false, busy: false };
     for (const e of vs.entities.values()) {
       if (e.k === 'u') {
         const def = UNITS[e.t];
@@ -459,6 +463,7 @@ export class AlertEngine {
         if (done && e.t === 'temple') s.temples.push(e);
         if (done && e.t === 'titan_gate') s.gates.push(e);
         if (done && e.t === 'town_center') s.towns.push(e);
+        if (!s.training && (e.q || []).some((q) => q.u !== 'tier_up')) s.training = true;
       }
     }
     return s;
@@ -590,8 +595,15 @@ export class AlertEngine {
 
   /** The population cap, with the means to raise it and no House on the way. */
   population(t, me, s) {
-    const capped = me.popCap > 0 && me.pop >= me.popCap && me.popCap < POP_MAX && !s.houseSite;
-    if (!this.popCap.tick(capped, t)) return;
+    const room = me.popCap - me.pop;
+    const growing = me.popCap > 0 && me.popCap < POP_MAX && !s.houseSite;
+    // A step ahead: nearly full while units are being trained, so the next House goes up before the queue stalls.
+    if (this.popNear.tick(growing && room > 0 && room <= POP_NEAR_LEFT && s.training, t)) {
+      this.emit({ id: 'pop_near', level: 'all', kind: 'info', icon: '🏠', text: `Room for only ${room} more. Build a House soon ([[B]], then [[H]]).`, sound: 'nudge' });
+    }
+    const capped = growing && room <= 0;
+    // Not straight after the warning ahead of it: that one already asked for the House.
+    if (!this.popCap.tick(capped, t) || t - this.popNear.last < POP_CAP_AFTER * 3) return;
     this.emit({ id: 'pop_capped', level: 'all', kind: 'info', icon: '🏠', text: 'Your population limit is reached. Build Houses to grow ([[B]], then [[H]]).', sound: 'nudge' });
   }
 

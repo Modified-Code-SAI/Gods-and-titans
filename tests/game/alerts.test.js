@@ -335,6 +335,34 @@ test('an idle Town Center: spoken after 15 s with a Worshipper affordable, at mo
   assert.equal(rebound.take().find((x) => x.id === 'tc_idle').text, 'Your Town Center is not training Worshippers.  [[J]]');
 });
 
+test('nearly full while training: a word ahead of the cap after 3 s, not when idle, with a House going up, or with room to spare', () => {
+  const near = (left) => (snap) => { snap.players[0].pop = 12 - left; snap.players[0].popCap = 12; };
+  const s = scene();
+  for (const time of [0, 1, 3]) s.at(time, { edit: near(2) });
+  assert.deepEqual(ids(s.take()).filter((id) => id === 'pop_near'), []);
+  s.at(5, { edit: near(2) });
+  const [a] = s.take().filter((x) => x.id === 'pop_near');
+  assert.equal(a.text, 'Room for only 2 more. Build a House soon ([[B]], then [[H]]).');
+  assert.equal(a.icon, '🏠');
+  assert.equal(a.sound, 'nudge');
+  // Then full: the cap's own line keeps quiet so soon after.
+  for (const time of [8, 14, 20]) s.at(time, { edit: near(0) });
+  assert.deepEqual(ids(s.take()).filter((id) => id === 'pop_capped'), [], 'already warned');
+
+  const idle = scene({ townIdle: true });
+  for (const time of [0, 1, 10]) idle.at(time, { edit: near(1) });
+  assert.deepEqual(ids(idle.take()).filter((id) => id === 'pop_near'), [], 'nothing being trained');
+
+  const site = scene();
+  const house = (snap) => { near(1)(snap); snap.entities.push(site.building(950, 'house', 0, 14, 14, { bp: 0.4 })); };
+  for (const time of [0, 1, 10]) site.at(time, { edit: house });
+  assert.deepEqual(ids(site.take()).filter((id) => id === 'pop_near'), [], 'a House is being built');
+
+  const roomy = scene();
+  for (const time of [0, 1, 10]) roomy.at(time, { edit: near(5) });
+  assert.deepEqual(ids(roomy.take()).filter((id) => id === 'pop_near'), [], 'room to spare');
+});
+
 test('the population limit: spoken after 10 s at the cap, not with a House going up or at the ceiling', () => {
   const capped = (snap) => { snap.players[0].pop = 12; snap.players[0].popCap = 12; };
   const s = scene();
