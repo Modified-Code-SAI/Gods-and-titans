@@ -27,7 +27,7 @@ import { Overlays } from '../ui/hud-overlays.js';
 import { el } from '../ui/hud-dom.js';
 import { InputController } from '../ui/input.js';
 import { Selection } from '../ui/hud-selection.js';
-import { tierName, RESOURCE_ICONS } from '../ui/hud-data.js';
+import { tierName, RESOURCE_ICONS, underAttackText } from '../ui/hud-data.js';
 import { loadingHint, hintParts } from '../ui/hint-data.js';
 import { TabAttention } from '../ui/tab-attention.js';
 import { AlertEngine } from './alerts.js';
@@ -1322,9 +1322,7 @@ export class Game {
         break;
       case 'underAttack': {
         if (ev.player !== me) break;
-        const e = vs.entities.get(ev.id);
-        const base = e && e.k === 'b';
-        hud.message(base ? 'Your base is under attack!  [[Space]]' : 'Your forces are under attack!  [[Space]]', 'alert', { icon: '⚔️' });
+        hud.message(`${underAttackText(vs.entities.get(ev.id))}  [[Space]]`, 'alert', { icon: '⚔️' });
         sfx.play('horn');
         hud.minimap.ping(ev.x, ev.y, '#ff3a2a');
         if (this.input) this.input.noteAlert(ev.x, ev.y);

@@ -7,7 +7,7 @@ import { Game } from '../../src/game/game.js';
 import { sfx } from '../../src/audio/sfx.js';
 import { HINTS, hintText } from '../../src/ui/hint-data.js';
 import { RESOURCE_ICONS } from '../../src/ui/hud-data.js';
-import { BUILDINGS, godsFor } from '../../src/data/index.js';
+import { BUILDINGS, UNITS, godsFor } from '../../src/data/index.js';
 import { saveSettings } from '../../src/settings.js';
 import { installFakeDom } from '../ui/fake-dom.js';
 
@@ -163,6 +163,22 @@ test('the game\'s own lines come with an emblem: the unit or building it is abou
   assert.equal(by(/has been defeated/)[2], '🏳️');
   assert.equal(by(/Your House was destroyed/)[2], '💥');
   assert.equal(by(/has fallen/)[2], '💀');
+});
+
+test('the under-attack line names what was struck: the base, a god or Titan, the Worshippers, the forces', () => {
+  const god = godsFor('greek')[0];
+  const soldier = Object.keys(UNITS).find((k) => UNITS[k].class === 'infantry');
+  const said = (e) => {
+    const entities = new Map(e ? [[1, { id: 1, ...e }]] : []);
+    const { cards, send } = eventsGame({ viewState: { myIndex: 0, me: { defeated: false }, entities, mineMemory: new Map(), isAlly: () => false, isExplored: () => true } });
+    send({ type: 'underAttack', player: 0, id: 1, x: 3, y: 4 });
+    return cards[0][0];
+  };
+  assert.equal(said({ k: 'b', t: 'house' }), 'Your base is under attack!  [[Space]]');
+  assert.equal(said({ k: 'u', t: god.id }), `${god.name} is under attack!  [[Space]]`);
+  assert.equal(said({ k: 'u', t: 'worshipper' }), 'Your Worshippers are under attack!  [[Space]]');
+  assert.equal(said({ k: 'u', t: soldier }), 'Your forces are under attack!  [[Space]]');
+  assert.equal(said(null), 'Your forces are under attack!  [[Space]]', 'already gone from the view');
 });
 
 // ---------------------------------------------------------------- the loading screen

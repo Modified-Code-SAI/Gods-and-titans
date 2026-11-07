@@ -23,7 +23,7 @@ import { sanitizeName } from '../net/protocol.js';
 import { getSettings } from '../settings.js';
 import { trainCheck } from '../ui/command-card.js';
 import { bindingsOf, keyLabel } from '../ui/key-bindings.js';
-import { PEACE_WARNINGS, peaceWarning } from '../ui/hud-data.js';
+import { PEACE_WARNINGS, peaceWarning, underAttackText } from '../ui/hud-data.js';
 import { safeColor } from '../ui/hud-dom.js';
 import { SITE_ICON, SACRED_WARNINGS, sacredWhen } from '../ui/hud-sites.js';
 import { peaceClock } from '../sim/peace.js';
@@ -244,8 +244,7 @@ export class AlertEngine {
         if (ev.player === me) {
           // The Game writes the line and blows the horn; this adds the tab and keeps the enemies-near alert quiet.
           this.lastDanger = vs.time;
-          const e = vs.entities.get(ev.id);
-          this.emit({ id: 'under_attack', level: 'important', attention: e && e.k === 'b' ? 'Your base is under attack!' : 'Your forces are under attack!' });
+          this.emit({ id: 'under_attack', level: 'important', attention: underAttackText(vs.entities.get(ev.id)) });
         } else if (vs.isAlly(ev.player)) this.allyAttacked(ev);
         break;
       }

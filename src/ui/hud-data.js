@@ -123,6 +123,18 @@ export function formatClock(sec) {
 
 /** Tier names for the top bar and messages. */
 export const TIER_NAMES = ['Village', 'Town', 'City'];
+/**
+ * What an under-attack warning says about the thing struck (an entity of the view, or null when it is
+ * already gone): the base for a building, a god or Titan by name, the Worshippers, or the forces.
+ */
+export function underAttackText(e) {
+  if (e && e.k === 'b') return 'Your base is under attack!';
+  const def = e && UNITS[e.t];
+  if (def && (def.class === 'god' || def.class === 'titan')) return `${def.name} is under attack!`;
+  if (def && def.class === 'worker') return 'Your Worshippers are under attack!';
+  return 'Your forces are under attack!';
+}
+
 export function tierName(t) {
   return TIER_NAMES[Math.max(0, Math.min(2, (t || 1) - 1))];
 }

@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-town',
+    id: '2026-11-07-attack',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'The under-attack warning now says what was struck: your base, your Worshippers, or a god or Titan by name.',
       'You hear when another player grows into a Town or a City, a warning for a rival and good news for an ally.',
       'In the first ten minutes, a nudge when your Town Center stands idle while you could pay for a Worshipper.',
       'You hear of it when an enemy god or Titan you can see falls, and when an ally loses one.',
