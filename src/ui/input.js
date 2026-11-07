@@ -1511,6 +1511,14 @@ export class InputController {
       if (!rep) overlays.openMenu();
       return;
     }
+    // ? (Shift+/ on most layouts): straight to the Controls list, over the game menu (Back returns to the menu).
+    if (key === '?') {
+      e.preventDefault();
+      if (rep) return;
+      overlays.openMenu();
+      if (overlays.open && overlays.name === 'menu') overlays.openControls();
+      return;
+    }
     // An online game pauses for everyone (a few times per player, DESIGN 7); against the computer, F10 pauses.
     if (key === 'Pause' || e.code === 'Pause') {
       e.preventDefault();

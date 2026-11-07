@@ -2304,7 +2304,8 @@ per-frame budget, so a revealed army appears over a few frames.
   reaching the Classic card (the panel says so). Tips and How to Play name the default keys. The F10 menu's
   *Controls* (beside Change keys…) shows How to Play's mouse and hotkey tables read only (`renderControls` in
   `menu-howto.js`, whose tables are data shared by both), with the player's own camera keys in the rebindable rows,
-  and in the Grid layout a line naming the card's twelve keys. *Text*: no text is
+  and in the Grid layout a line naming the card's twelve keys; ? (Shift + /, not bindable) opens it straight from
+  the match, over the game menu. *Text*: no text is
   drawn under 10 px (`--mw-min-text`; at 1280 × 720 the HUD's base is 11 px and its small print was 6.6 to 9.9 px), and
   the muted ink (`--mw-ink-mute`) is #a39983, 4.5:1 or better on the panels. `tools/shot-access.mjs` measures every
   visible text's size and contrast on each screen at a window size and stills a battle in both palettes.
