@@ -1466,6 +1466,13 @@ export class Game {
           else if (ev.k === 'b' && t) hud.message(`Your ${t.name} was destroyed.`, 'alert', { icon: '💥' });
           else if (t && t.class === 'god') hud.message(`${t.name} has fallen! Revive them at a Temple.`, 'alert', { icon: '💀' });
           else if (t && t.class === 'titan') hud.message(`${t.name} has fallen!`, 'alert', { icon: '💀' });
+        } else if (ev.k === 'u' && ev.o >= 0 && ev.o !== me && vs.isVisibleAt(ev.x, ev.y)) {
+          // Another player's god or Titan falls where my team can see it: good news for a foe's, a warning for an ally's.
+          const t = UNITS[ev.t];
+          if (t && (t.class === 'god' || t.class === 'titan')) {
+            if (vs.isEnemy(ev.o)) hud.message(`${this.playerName(ev.o)}'s ${t.name} has fallen!`, 'good', { icon: '⚔️' });
+            else if (vs.isAlly(ev.o)) hud.message(`Your ally ${this.playerName(ev.o)} has lost ${t.name}.`, 'alert', { icon: '💀' });
+          }
         }
         const [dName, dVol] = deathSound(ev, ev.k === 'b' ? BUILDINGS[ev.t] : UNITS[ev.t]);
         this.worldSound(dName, ev.x, ev.y, dVol);
