@@ -362,6 +362,9 @@
 .hud-msg.is-alert { --msg-accent: #ff7b3d; --msg-ink: #ffd9bb; font-weight: 700; animation: hud-card-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.15), hud-card-glow 0.9s ease-out 3; }
 .hud-msg.is-system { --msg-accent: #a4a8c4; --msg-ink: #dcd9e8; font-style: italic; font-weight: 500; font-family: var(--mw-font-body); }
 .hud-msg.is-chat { --msg-accent: #f1e8d4; }
+/* A card about a place on the map: a click or tap looks there (Hud.linkCard). */
+.hud-msg.is-jump { pointer-events: auto; cursor: pointer; }
+.hud-msg.is-jump:hover { filter: brightness(1.15); }
 .hud-msg.is-fading { opacity: 0; transform: translateX(-0.7em); }
 .hud-chat-from { font-weight: 700; }
 /* Team chat (DESIGN 7): "[Allies]" in the allies colour (relationColor, set as --hud-ally by hud.js) before the name, and the chat box takes it while it talks to them. */

@@ -845,7 +845,8 @@ export class Hud {
    * stack another: the card takes a count (×2), slides in again at the bottom and stays a full dwell more.
    * @param {string} text
    * @param {string} [kind]
-   * @param {{ icon?: string }} [opts]
+   * `opts.at` ({x, y} in tiles): the card is a link, and a click or tap on it centres the camera there.
+   * @param {{ icon?: string, at?: {x: number, y: number} }} [opts]
    * @returns {HTMLElement|null}
    */
   /** Flash the chip of the count an error says is short (a red pulse), restarting it on a second click. */
@@ -877,14 +878,32 @@ export class Hud {
     for (const again of this.msgs.children) {
       if (again._same !== same || again.classList.contains('is-fading')) continue;
       again.dataset.count = String((Number(again.dataset.count) || 1) + 1);
+      this.linkCard(again, opts && opts.at); // the latest spot
       this.msgs.appendChild(again); // moved to the bottom: the card slides in again
       this.arm(again, ms);
       return again;
     }
     const line = this.feedCard(kind, opts && opts.icon, hintParts(text).map((part) => (typeof part === 'string' ? part : el('kbd', null, part.key))));
     line._same = same;
+    this.linkCard(line, opts && opts.at);
     this.pushLine(line, ms);
     return line;
+  }
+
+  /** Make a feed card a link to a spot on the map (a click or tap centres the camera on it). */
+  linkCard(line, at) {
+    if (!at || !Number.isFinite(at.x) || !Number.isFinite(at.y)) return;
+    line._at = { x: at.x, y: at.y };
+    if (line._linked) return;
+    line._linked = true;
+    line.classList.add('is-jump');
+    line.title = 'Click to look';
+    // pointerdown, not click: the feed restacks a card that comes again, which can split a click.
+    line.addEventListener('pointerdown', (e) => {
+      if (e && e.button > 0) return;
+      const cam = this.game && this.game.renderer && this.game.renderer.camera;
+      if (cam && line._at) cam.centerOn(line._at.x, line._at.y);
+    });
   }
 
   /** One card of the feed: the words (text nodes only) and, from its data-icon, the emblem the stylesheet draws. */

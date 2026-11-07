@@ -39,6 +39,7 @@ const MOUSE = [
   [kbd('Double-click'), 'Select every unit of that type on screen'],
   [kbd('Ctrl', 'Click'), 'The same, with a single click'],
   [kbd('Shift', 'Right-click'), 'Queue orders'],
+  [kbd('Click'), 'A warning in the messages at the bottom left: look at where it happened'],
 ];
 
 /** The hotkey tables: [group title, [[keys, what they do]…]]. */

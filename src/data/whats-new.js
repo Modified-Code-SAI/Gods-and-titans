@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-repeat-note',
+    id: '2026-11-07-feed-links',
     date: '7 November 2026',
     title: 'Play your way',
     items: [
+      'Click a warning in the messages, such as an attack or an enemy god power, to look at where it happened.',
       'Right-click a train button to repeat it: the building queues another whenever its queue runs empty.',
       'A repeating building says so under its queue, and when it is waiting, what for: gold, wood or a House.',
       'Type /help in the chat box to see what the chat can do.',
