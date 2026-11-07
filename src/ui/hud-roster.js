@@ -95,9 +95,11 @@ export class RosterView {
    * @param {boolean} [o.open] start unfolded
    * @param {(open: boolean) => void} [o.onToggle] the header was clicked (save the choice)
    */
-  constructor({ viewState, open = true, onToggle = null }) {
+  constructor({ viewState, open = true, onToggle = null, muted = new Set(), onMute = null }) {
     this.vs = viewState;
     this.onToggle = onToggle;
+    this.muted = muted; // players whose chat I have muted (shared with the Hud, which drops their lines)
+    this.onMute = onMute;
     this.sig = '';
     this.last = -Infinity;
     this.count = el('span', 'hud-roster-count');
@@ -141,7 +143,7 @@ export class RosterView {
     const inGame = groups.reduce((n, g) => n + g.rows.filter((r) => r.standing === 'in').length, 0);
     setText(this.count, inGame === total ? String(total) : `${inGame}/${total}`);
     this.count.title = inGame === total ? `${total} players` : `${inGame} of ${total} players still in the match`;
-    const sig = JSON.stringify(groups.map((g) => [g.label, g.rows.map((r) => [r.i, r.name, r.color, r.pantheon, r.tier, r.score, r.standing, r.away, r.me])]));
+    const sig = JSON.stringify(groups.map((g) => [g.label, g.rows.map((r) => [r.i, r.name, r.color, r.pantheon, r.tier, r.score, r.standing, r.away, r.me, this.muted.has(r.i)])]));
     if (sig === this.sig) return;
     this.sig = sig;
     this.render(groups);
@@ -162,14 +164,39 @@ export class RosterView {
           el('span', 'hud-roster-who', name, r.me ? el('small', 'hud-roster-you', 'you') : null),
           // a player who is out (or away) says so where the tier would be
           st ? el('span', 'hud-roster-tier hud-roster-state', r.standing === 'in' ? 'Away' : st) : el('span', 'hud-roster-tier', r.tierName),
-          el('b', 'hud-roster-score', fmt(r.score)));
+          el('b', 'hud-roster-score', fmt(r.score)),
+          r.me ? el('span', 'hud-roster-mute-gap') : this.muteButton(r));
         setClass(row, 'is-me', r.me);
         setClass(row, 'is-out', r.standing !== 'in');
         setClass(row, 'is-away', r.away);
+        setClass(row, 'is-muted', this.muted.has(r.i));
         row.title = rowTitle(r);
         row.dataset.player = String(r.i);
         this.list.appendChild(row);
       }
     }
+  }
+
+  /** The small speaker at the end of another player's row: mutes their chat (and taunts) for this match, or unmutes it. */
+  muteButton(r) {
+    const on = this.muted.has(r.i);
+    const b = el('button', 'hud-roster-mute', '🔊'); // struck through by the stylesheet while muted
+    b.type = 'button';
+    b.tabIndex = -1;
+    b.title = on ? `Unmute ${r.name}: show their chat again` : `Mute ${r.name}: hide their chat for this match`;
+    b.setAttribute('aria-pressed', String(on));
+    b.setAttribute('aria-label', b.title);
+    // On the press, not the click: the rows are drawn again whenever a score moves, and a click whose press
+    // and release land on two different drawings of the button never fires.
+    b.addEventListener('pointerdown', (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (this.muted.has(r.i)) this.muted.delete(r.i);
+      else this.muted.add(r.i);
+      if (this.onMute) this.onMute(r.i, this.muted.has(r.i), r.name);
+      this.update(undefined, true);
+    });
+    return b;
   }
 }

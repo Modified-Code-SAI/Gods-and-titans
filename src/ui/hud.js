@@ -266,6 +266,7 @@ export class Hud {
       });
       this.chatQuick.append(b);
     });
+    this.muted = new Set(); // players muted from the player list: their chat lines and taunts are dropped
     this.chatSent = new ChatHistory(); // the lines I sent, for Up and Down in the box
     this.chatBox = el('div', 'hud-chat hud-panel', this.chatTo, this.chatInput, this.chatQuick);
     this.chatBox.hidden = true;
@@ -372,6 +373,8 @@ export class Hud {
       viewState: this.vs,
       open: getSettings().rosterOpen,
       onToggle: (open) => saveSettings({ rosterOpen: open }),
+      muted: this.muted,
+      onMute: (i, on, name) => this.message(on ? `${name} is muted: their chat is hidden for this match.` : `${name} is unmuted.`, 'system', { icon: '💬' }),
     });
 
     this.market = new MarketView({ viewState: this.vs, onSend: (cmd) => game.command(cmd) });
@@ -928,6 +931,7 @@ export class Hud {
       return;
     }
     const from = Number.isInteger(line.from) && line.from >= 0 ? line.from : -1;
+    if (this.isMuted(from)) return;
     const p = from >= 0 ? this.vs.players[from] || (this.vs.setup && this.vs.setup.players[from]) : null;
     const name = sanitizeName(line.name || (p && p.name), 'Player');
     this.remember({ kind: 'chat', name, color: p ? displayColor(safeColor(p.color, '#f1e8d4')) : null, team: !!line.team, text, time });
@@ -1151,6 +1155,11 @@ export class Hud {
     this.chatSent.add(this.chatInput.value);
     if (team) game.sendChat(text, { team: true });
     else game.sendChat(text);
+  }
+
+  /** Is player `i` muted from the player list? */
+  isMuted(i) {
+    return Number.isInteger(i) && this.muted.has(i);
   }
 
   closeChat() {

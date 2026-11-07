@@ -107,7 +107,7 @@ test('the game sends AI lines to the taunt with its sound, players\' chat to the
   const played = [];
   const fake = {
     myIndex: 0,
-    hud: { showTaunt: (l) => (shown.push(['taunt', l.text]), true), chat: (l) => shown.push(['chat', l.text]) },
+    hud: { isMuted: () => false, showTaunt: (l) => (shown.push(['taunt', l.text]), true), chat: (l) => shown.push(['chat', l.text]) },
   };
   const play = mock.method(sfx, 'play', (name) => played.push(name));
   try {
@@ -120,7 +120,7 @@ test('the game sends AI lines to the taunt with its sound, players\' chat to the
     play.mock.restore();
   }
   assert.deepEqual(shown, [['taunt', 'Kneel!'], ['chat', 'gg']]);
-  assert.deepEqual(played, ['taunt', 'select']);
+  assert.deepEqual(played, ['taunt'], "a player's line plucks in Hud.chat, not here");
 });
 
 test('the stylesheet places it at the top centre, larger than the feed, still for reduced motion', async () => {
