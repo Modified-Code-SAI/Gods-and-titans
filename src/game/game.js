@@ -1395,6 +1395,12 @@ export class Game {
         if (ev.player === me) {
           if (!hud.showAge(ev.tier)) hud.showBanner(`Your ${tierName(ev.tier - 1)} has grown into a ${tierName(ev.tier)}!`, 'good');
           sfx.play('tier_up');
+        } else if (ev.player >= 0) {
+          // Another side's settlement grows: the news every player of the old RTS games heard, a rival's age a warning.
+          const who = this.playerName(ev.player);
+          const age = tierName(ev.tier);
+          if (vs.isAlly(ev.player)) hud.message(`Your ally ${who} has grown into a ${age}.`, 'good', { icon: '🏛️' });
+          else hud.message(`${who} has grown into a ${age}.`, vs.isEnemy(ev.player) ? 'alert' : 'system', { icon: '🏛️' });
         }
         break;
       case 'trade': {

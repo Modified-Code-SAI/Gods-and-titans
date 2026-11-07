@@ -10,6 +10,7 @@ export const NEWS = [
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'You hear when another player grows into a Town or a City, a warning for a rival and good news for an ally.',
       'In the first ten minutes, a nudge when your Town Center stands idle while you could pay for a Worshipper.',
       'You hear of it when an enemy god or Titan you can see falls, and when an ally loses one.',
       'Restore defaults at the foot of Settings puts every setting back as it came, keeping your name and keys.',
