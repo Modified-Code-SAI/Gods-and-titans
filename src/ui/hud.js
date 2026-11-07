@@ -43,6 +43,7 @@ import { GroupBar } from './hud-groups.js';
 import { TeamMarks } from '../game/team-marks.js';
 import { getSettings, saveSettings, onSettingsChange } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
+import { ChatHistory } from './chat-history.js';
 import { QUICK_LINES, QUICK_LABELS, expandQuick } from '../data/quick-chat.js';
 import { POP_MAX, PEACE_NAME, SURVIVAL_NAME, SURVIVAL_BOSS_EVERY } from '../config.js';
 import { displayColor, relationColor, onTeamPaletteChange } from '../team-colors.js';
@@ -265,6 +266,7 @@ export class Hud {
       });
       this.chatQuick.append(b);
     });
+    this.chatSent = new ChatHistory(); // the lines I sent, for Up and Down in the box
     this.chatBox = el('div', 'hud-chat hud-panel', this.chatTo, this.chatInput, this.chatQuick);
     this.chatBox.hidden = true;
     // The chat history (DESIGN 9, "The message feed"): the last lines, newest at the bottom, above the box
@@ -285,6 +287,14 @@ export class Hud {
       } else if (e.key === 'Tab') {
         e.preventDefault();
         this.setChatAllies(!this.chatAllies);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        // Up brings back the lines already sent, Down walks forward to an empty box again.
+        const line = this.chatSent.step(e.key === 'ArrowUp' ? -1 : 1);
+        if (line === null) return;
+        e.preventDefault();
+        this.chatInput.value = line;
+        this.chatInput.setSelectionRange?.(line.length, line.length);
+        this.showChatTarget();
       }
     });
     this.chatInput.addEventListener('input', () => this.showChatTarget());
@@ -1105,6 +1115,7 @@ export class Hud {
     this.renderChatLog();
     this.msgs.classList.add('is-chatting');
     this.chatInput.value = '';
+    this.chatSent.reset();
     this.setChatAllies(allies);
     this.chatInput.focus({ preventScroll: true });
     // On a narrow screen the quick chat buttons wrap to more lines: keep the history just above the box.
@@ -1137,6 +1148,7 @@ export class Hud {
     if (refused) return this.message('You have no allies in this game: the line was not sent.', 'system');
     const text = expandQuick(typed);
     if (!text) return;
+    this.chatSent.add(this.chatInput.value);
     if (team) game.sendChat(text, { team: true });
     else game.sendChat(text);
   }

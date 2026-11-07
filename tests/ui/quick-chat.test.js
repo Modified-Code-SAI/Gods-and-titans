@@ -68,3 +68,17 @@ test('a quick button sends its line to whoever the switch points at, and closes 
   buttons[7].fire('click', {});
   assert.deepEqual(sent.pop(), [QUICK_LINES[7], { team: true }]);
 });
+
+test('Up in the chat box brings back the line sent last, as typed; Down clears the box again', () => {
+  const { hud, sent } = setup([1, 1, 2]);
+  hud.openChat();
+  hud.chatInput.value = '/t hold the ford';
+  hud.chatInput.fire('keydown', { key: 'Enter' });
+  assert.deepEqual(sent.pop(), ['hold the ford', { team: true }]);
+  hud.openChat();
+  assert.equal(hud.chatInput.value, '');
+  hud.chatInput.fire('keydown', { key: 'ArrowUp' });
+  assert.equal(hud.chatInput.value, '/t hold the ford');
+  hud.chatInput.fire('keydown', { key: 'ArrowDown' });
+  assert.equal(hud.chatInput.value, '');
+});
