@@ -22,7 +22,7 @@ export const KEY_ACTIONS = [
   { id: 'cam_zoom_in', group: 'camera', label: 'Zoom in', def: '=' },
   { id: 'cam_zoom_out', group: 'camera', label: 'Zoom out', def: '-' },
   { id: 'cam_jump', group: 'camera', label: 'Center on selection or the last alert', def: 'Space' },
-  { id: 'cam_home', group: 'camera', label: 'Jump to your Town Center', def: 'Home' },
+  { id: 'cam_home', group: 'camera', label: 'Select your Town Center (again: the next one)', def: 'Home' },
   ...GRID_DEFAULTS.map((def, i) => ({ id: `card_${i}`, group: 'card', label: `Card ${ROW_NAMES[Math.floor(i / 4)]} row, button ${(i % 4) + 1}`, def })),
 ];
 const ACTION = Object.fromEntries(KEY_ACTIONS.map((a) => [a.id, a]));

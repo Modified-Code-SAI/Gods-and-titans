@@ -96,7 +96,7 @@ export const HOTKEYS = [
     [kbd(','), 'Next idle soldier, god or creature (Shift or Ctrl: select all of them)'],
     [kbd('Ctrl', 'A'), 'Select your whole army: every unit but the Worshippers, gods first (tap twice to jump to it)'],
     [kbd('Ctrl', 'Alt', 'A'), 'Select the army on screen'],
-    [bound('cam_home'), 'Jump to your Town Center (on a Mac laptop: fn + the left arrow)'],
+    [bound('cam_home'), 'Select your Town Center and look at it; again for the next one (on a Mac laptop: fn + the left arrow)'],
     [kbd('Alt'), 'Show every health bar'],
     [kbd('Enter'), 'Chat (type a number 1 to 9 alone for a quick line: Yes, No, Attack, Help, Gold, Wood, Wait, Ready, GG; the chat box has them as buttons too)'],
     [kbd('F10'), 'Game menu (pauses a game against the AI)'],
