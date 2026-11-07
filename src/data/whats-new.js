@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-attack',
+    id: '2026-11-07-recall',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'In the chat box, the Up arrow brings back a line you sent, to send it again or change it.',
       'The under-attack warning now says what was struck: your base, your Worshippers, or a god or Titan by name.',
       'You hear when another player grows into a Town or a City, a warning for a rival and good news for an ally.',
       'In the first ten minutes, a nudge when your Town Center stands idle while you could pay for a Worshipper.',
