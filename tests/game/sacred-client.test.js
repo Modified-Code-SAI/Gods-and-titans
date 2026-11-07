@@ -28,6 +28,7 @@ function scene(opts = {}) {
     snap.tick = 1000 + ++seq;
     snap.events = events;
     for (const e of snap.entities) if (e.k === 'u' && e.o === 0) e.st = 'gather';
+    for (const e of snap.entities) if (e.k === 'b' && e.o === 0 && e.t === 'town_center') e.q = [{ u: 'worshipper', p: 0.5 }]; // busy, so no idle-Town-Center nudge
     if (sites) snap.sites = sites;
     snap.sacred = sacred;
     vs.pushSnapshot(snap, 50);

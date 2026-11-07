@@ -12,9 +12,10 @@ import { makeWorld } from '../sim/helpers.js';
 
 /**
  * A match seen by player 0; at(time, { edit, events }) shows the next snapshot, edited first.
- * The Worshippers are at work unless `idle` (a fresh world has five standing about, which would speak up).
+ * The Worshippers are at work unless `idle` (a fresh world has five standing about, which would speak up),
+ * and the Town Center trains one unless `townIdle`.
  */
-function scene({ settings = {}, world: worldOpts = {}, idle = false } = {}) {
+function scene({ settings = {}, world: worldOpts = {}, idle = false, townIdle = false } = {}) {
   const world = makeWorld(worldOpts);
   const base = JSON.parse(JSON.stringify(world.getSnapshot()));
   const vs = new ViewState({ setup: world.setup, mapData: world.mapData, myIndex: 0 });
@@ -30,6 +31,7 @@ function scene({ settings = {}, world: worldOpts = {}, idle = false } = {}) {
     snap.tick = 1000 + ++seq;
     snap.events = events;
     if (!idle) for (const e of snap.entities) if (e.k === 'u' && e.o === 0) e.st = 'gather';
+    if (!townIdle) for (const e of snap.entities) if (e.k === 'b' && e.o === 0 && e.t === 'town_center') e.q = [{ u: 'worshipper', p: 0.5 }];
     if (edit) edit(snap);
     vs.pushSnapshot(snap, 50);
   };
@@ -301,6 +303,36 @@ test('idle Worshippers: spoken once they have stood idle for 20 s, then at most 
   const away = (snap) => snap.entities.filter((e) => e.k === 'u' && e.o === 0).forEach((e) => { e.st = 'gather'; });
   for (let time = 1; time < 100; time += 3) t.at(time, { edit: away });
   assert.deepEqual(t.take(), [], 'nobody idle, nothing said');
+});
+
+test('an idle Town Center: spoken after 15 s with a Worshipper affordable, at most every 75 s, only in the first ten minutes', () => {
+  const s = scene({ townIdle: true });
+  s.at(0);
+  s.at(1);
+  s.at(10);
+  assert.deepEqual(ids(s.take()).filter((id) => id === 'tc_idle'), []);
+  s.at(17);
+  const [a] = s.take().filter((x) => x.id === 'tc_idle');
+  assert.equal(a.text, 'Your Town Center is not training Worshippers.  [[Home]]');
+  assert.equal(a.icon, '🏛️');
+  assert.equal(a.sound, 'nudge');
+  s.at(60);
+  assert.deepEqual(ids(s.take()).filter((id) => id === 'tc_idle'), [], 'not again within 75 s');
+  s.at(92);
+  assert.equal(s.take().filter((x) => x.id === 'tc_idle').length, 1);
+
+  const poor = scene({ townIdle: true });
+  const broke = (snap) => { snap.players[0].gold = 10; };
+  for (const time of [0, 1, 20, 40]) poor.at(time, { edit: broke });
+  assert.deepEqual(ids(poor.take()).filter((id) => id === 'tc_idle'), [], 'nothing to pay with');
+
+  const late = scene({ townIdle: true });
+  for (const time of [600, 601, 640]) late.at(time);
+  assert.deepEqual(ids(late.take()).filter((id) => id === 'tc_idle'), [], 'after ten minutes');
+
+  const rebound = scene({ townIdle: true, settings: { keyBindings: { cam_home: 'J' } } });
+  for (const time of [0, 1, 20]) rebound.at(time);
+  assert.equal(rebound.take().find((x) => x.id === 'tc_idle').text, 'Your Town Center is not training Worshippers.  [[J]]');
 });
 
 test('the population limit: spoken after 10 s at the cap, not with a House going up or at the ceiling', () => {

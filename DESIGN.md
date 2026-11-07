@@ -2321,7 +2321,9 @@ per-frame budget, so a revealed army appears over a few frames.
   "Your ally" first (`whoName`, also its sacred sites and relics); softer drums, a ping in the ally's colour, once per 20 s
   per ally; Space only if my own alert is older than 15 s), and the **Decade of Peace marks** (a gong, louder
   at each of 5:00 / 1:00 / 0:10; the HUD writes the line). Reminders (`'all'` only): **idle Worshippers**
-  (standing idle for 20 s, then every 60 s), **population cap** (at the cap below `POP_MAX` for 10 s
+  (standing idle for 20 s, then every 60 s), **an idle Town Center** (in the first 10:00, every Town Center
+  training nothing for 15 s while a Worshipper is affordable and has room; every 75 s; names the Home key as
+  bound), **population cap** (at the cap below `POP_MAX` for 10 s
   with no House going up, every 120 s), **a god or Titan you can afford** (an idle Temple or Titan Gate and
   the means for 8 s; every 180 s / 240 s), **an idle army** (from 6:00, 6 or more soldiers, gods and
   creatures, 80% of them idle for 2 min, no peace and no enemy near; every 5 min), **research finished**,
