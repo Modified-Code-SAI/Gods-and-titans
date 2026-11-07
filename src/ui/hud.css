@@ -2327,7 +2327,7 @@
 .hud-roster-team.is-mine { color: var(--hud-ally, #c4f23a); }
 .hud-roster-row {
   display: grid;
-  grid-template-columns: 0.7em 1.3em minmax(0, 1fr) auto 2.8em;
+  grid-template-columns: 0.7em 1.3em minmax(0, 1fr) auto 2.8em 1.2em;
   align-items: center;
   gap: 0.35em;
   padding: 0.12em 0.15em;
@@ -2337,6 +2337,20 @@
   color: var(--mw-ink);
 }
 .hud-roster-row.is-me { background: rgba(255, 220, 140, 0.08); }
+/* The mute speaker: faint until the row is hovered, plain while the player is muted. */
+.hud-roster-mute {
+  all: unset; cursor: pointer; font-family: var(--mw-emoji); font-size: 0.9em; line-height: 1; text-align: center;
+  opacity: 0.25; transition: opacity 120ms;
+}
+.hud-roster-row:hover .hud-roster-mute, .hud-roster-mute:focus-visible { opacity: 0.85; }
+.hud-roster-mute { position: relative; }
+.hud-roster-row.is-muted .hud-roster-mute { opacity: 1; }
+.hud-roster-row.is-muted .hud-roster-mute::after {
+  content: ''; position: absolute; left: 5%; right: 5%; top: 50%; height: 2px; border-radius: 1px;
+  background: #ff6a55; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7); transform: rotate(-40deg);
+}
+.hud-roster-row.is-muted .hud-roster-name { color: var(--mw-ink-mute); }
+@media (hover: none) { .hud-roster-mute { opacity: 0.6; } }
 .hud-roster-swatch { width: 0.7em; height: 0.7em; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.25); }
 .hud-roster-emblem { font-family: var(--mw-emoji); text-align: center; }
 .hud-roster-who { display: flex; align-items: baseline; gap: 0.35em; min-width: 0; }

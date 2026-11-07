@@ -1307,6 +1307,11 @@ game leaves one base free as a rich guarded expansion. No river center feature.
 - **Chat recall**: Up in the chat box brings back the lines I sent (the last 20, as typed, "/t " and all; a repeat
   kept once), Down walks forward to an empty box again (`ChatHistory` in `src/ui/chat-history.js`, `Hud.chatSent`).
   For this page only; nothing is stored or sent.
+- **Mute a player**: a faint speaker at the end of every other player's row in the player list (`RosterView.muteButton`)
+  mutes their chat lines and their taunts for this match (`Hud.muted`, checked in `Game.onChat` and `Hud.chat`); a
+  click again unmutes, and a system line says which. The game's own lines (a player leaving) still come through. Not
+  kept between matches and nothing is sent, so the muted player never knows. One pluck per line from another
+  player (the `chat` sound in `Hud.chat`; the older `select` click in `Game.onChat` doubled it and is gone).
 - **Team chat** (allies only, as in AoE II / IV and SC2): Enter opens the chat box on everyone; its "To all:" label
   is a switch (`Hud.chatTo`: a click or Tab flips it to "To allies:", the box taking the allies colour) and Shift+Enter in the game
   opens it on the allies; in the box Shift+Enter sends to the allies whatever the switch says. A line that starts

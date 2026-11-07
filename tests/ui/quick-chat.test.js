@@ -82,3 +82,18 @@ test('Up in the chat box brings back the line sent last, as typed; Down clears t
   hud.chatInput.fire('keydown', { key: 'ArrowDown' });
   assert.equal(hud.chatInput.value, '');
 });
+
+test('a muted player\'s lines are dropped, nobody else\'s; system lines always come through', () => {
+  const { hud } = setup([1, 2, 2]);
+  const lines = () => hud.msgs.textContent;
+  hud.muted.add(1);
+  hud.chat({ from: 1, text: 'you are doomed' });
+  hud.chat({ from: 2, text: 'hello there' });
+  hud.chat({ system: true, text: 'P1 has left the game.' });
+  assert.doesNotMatch(lines(), /doomed/);
+  assert.match(lines(), /hello there/);
+  assert.match(lines(), /has left the game/);
+  assert.equal(hud.isMuted(1), true);
+  assert.equal(hud.isMuted(2), false);
+  assert.equal(hud.isMuted(undefined), false);
+});

@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-recall',
+    id: '2026-11-07-mute',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'Mute a player: the small speaker at the end of their row in the player list hides their chat and taunts for the match.',
       'In the chat box, the Up arrow brings back a line you sent, to send it again or change it.',
       'The under-attack warning now says what was struck: your base, your Worshippers, or a god or Titan by name.',
       'You hear when another player grows into a Town or a City, a warning for a rival and good news for an ally.',

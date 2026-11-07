@@ -1047,6 +1047,8 @@ export class Game {
 
   onChat(line) {
     if (!this.hud || !showChatLine(line)) return;
+    // A player muted from the player list says nothing more to me, in chat or as a taunt.
+    if (!line.system && this.hud.isMuted(line.from)) return;
     // A computer player's line (DESIGN 10.1) is a taunt at the top centre with a snarl of drums and brass.
     if (line.voice && !line.system) {
       if (this.hud.showTaunt(line)) {
@@ -1057,8 +1059,7 @@ export class Game {
       }
       return;
     }
-    this.hud.chat(line);
-    if (!line.system && line.from !== this.myIndex) sfx.play('select', { volume: 0.6 });
+    this.hud.chat(line); // which plays another player's pluck itself
   }
 
   /**

@@ -71,3 +71,25 @@ test('the view lists every player, folds, and hides when alone', () => {
   solo.update(0);
   assert.equal(solo.root.hidden, true);
 });
+
+test('the speaker on another player\'s row mutes their chat for the match and unmutes it again; my own row has none', () => {
+  const vs = VS([P(0, 1), P(1, 2), P(2, 2)]);
+  const calls = [];
+  const muted = new Set();
+  const view = new RosterView({ viewState: vs, muted, onMute: (i, on, name) => calls.push([i, on, name]) });
+  view.update(0);
+  const rows = () => view.root.findAll('hud-roster-row');
+  const button = (row) => row.findAll('hud-roster-mute')[0];
+  assert.equal(button(rows()[0]), undefined, 'not on my own row');
+  assert.equal(rows().filter((r) => button(r)).length, 2);
+  const target = rows().find((r) => r.dataset.player === '1');
+  button(target).fire('pointerdown', { button: 0 });
+  assert.deepEqual([...muted], [1]);
+  assert.deepEqual(calls, [[1, true, 'P1']]);
+  const again = rows().find((r) => r.dataset.player === '1');
+  assert.equal(again.classList.contains('is-muted'), true);
+  assert.equal(button(again).getAttribute('aria-pressed'), 'true');
+  button(again).fire('pointerdown', { button: 0 });
+  assert.deepEqual([...muted], []);
+  assert.deepEqual(calls[1], [1, false, 'P1']);
+});
