@@ -2401,6 +2401,9 @@ per-frame budget, so a revealed army appears over a few frames.
   slides in again instead of stacking another card. At most 6 cards stand; a full feed drops its oldest card that is
   not a player's chat line (alerts, news, system lines go first; `evictIndex`), and only a feed of nothing but chat
   drops its oldest chat card, so a burst of alerts in a fight never pushes a friend's words out within seconds.
+  A card about a place (`opts.at`: under attack, a wave's way in, an enemy's god power, an AlertEngine alert with
+  a `jump`) is a link: it takes the pointer although the feed does not, and a press on it (pointerdown, main
+  button, so a restacking card cannot split a click) centres the camera there; a repeat moves it to the latest spot.
   **Chat history**: the HUD also keeps the last 50 chat and system lines (`Hud.chatHistory`, a ring through
   `pushHistory`, `CHAT_HISTORY_MAX`): sender, their colour, the "[Allies]" tag of a team line and the game time
   (`vs.time`). Alerts are not kept. While the chat box is open (Enter) the history stands in a scrolling stone panel

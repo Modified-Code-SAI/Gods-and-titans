@@ -115,9 +115,11 @@ test('an alert\'s emblem goes to its card: the line, its kind and the emblem tog
   onAlert(game, { text: '3 Worshippers are idle.  [[.]]', kind: 'info', icon: '🙏', sound: 'nudge' });
   onAlert(game, { text: 'You can summon Thor at your Temple.', kind: 'good', icon: null });
   onAlert(game, { kind: 'info', icon: '🙏', sound: 'nudge' });
+  onAlert(game, { text: 'Your ally is under attack!', kind: 'alert', icon: '⚔️', jump: { x: 7, y: 9 } });
   assert.deepEqual(lines, [
     ['3 Worshippers are idle.  [[.]]', 'info', { icon: '🙏' }],
     ['You can summon Thor at your Temple.', 'good', { icon: null }],
+    ['Your ally is under attack!', 'alert', { icon: '⚔️', at: { x: 7, y: 9 } }],
   ]);
 });
 

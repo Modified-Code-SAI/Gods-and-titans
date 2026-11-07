@@ -314,3 +314,29 @@ test('reduced motion stops every card, the warning card that sets its own animat
   const stopped = [...override.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{\s*animation:\s*none;?\s*\}/g)].flatMap((m) => m[1].split(',').map((sel) => sel.trim()));
   for (const sel of ['.hud-msg', '.hud-msg::before', ...own]) assert.ok(stopped.includes(sel), `${sel} is switched off for reduced motion`);
 });
+
+test('a card about a place is a link: a click or tap centres the camera there, a repeat moves it to the latest spot', () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const { hud, cards } = setup();
+  const looked = [];
+  hud.game.renderer = { camera: { centerOn: (x, y) => looked.push([x, y]) } };
+  hud.message('Your base is under attack!', 'alert', { at: { x: 12, y: 30 } });
+  hud.message('Research complete.', 'good');
+  const [link, plain] = cards();
+  assert.ok(link.classList.contains('is-jump'));
+  assert.equal(link.title, 'Click to look');
+  assert.ok(!plain.classList.contains('is-jump'), 'a card with no place stays plain');
+  link.fire('pointerdown', { button: 0 });
+  assert.deepEqual(looked, [[12, 30]]);
+  link.fire('pointerdown', { button: 2 });
+  assert.equal(looked.length, 1, 'only the main button');
+  hud.message('Your base is under attack!', 'alert', { at: { x: 40, y: 8 } });
+  assert.equal(cards().length, 2, 'the same line counts, it does not stack');
+  link.fire('pointerdown', { button: 0 });
+  assert.deepEqual(looked.at(-1), [40, 8]);
+});
+
+test('the stylesheet lets a linked card take the pointer although the feed does not', async () => {
+  const css = await readFile(new URL('../../src/ui/hud.css', import.meta.url), 'utf8');
+  assert.match(css, /\.hud-msg\.is-jump \{[^}]*pointer-events: auto/);
+});

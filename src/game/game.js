@@ -1323,7 +1323,7 @@ export class Game {
         break;
       case 'underAttack': {
         if (ev.player !== me) break;
-        hud.message(`${underAttackText(vs.entities.get(ev.id))}  [[Space]]`, 'alert', { icon: '⚔️' });
+        hud.message(`${underAttackText(vs.entities.get(ev.id))}  [[Space]]`, 'alert', { icon: '⚔️', at: ev });
         sfx.play('horn');
         hud.minimap.ping(ev.x, ev.y, '#ff3a2a');
         if (this.input) this.input.noteAlert(ev.x, ev.y);
@@ -1436,8 +1436,8 @@ export class Game {
           hud.showBanner(`Wave ${ev.n}: ${ev.count} monsters!`, 'danger');
           sfx.play('horn', { volume: 0.7 });
         }
-        if (mine && mine.count < ev.count) hud.message(`${mine.count} of them come at you from the ${from}.`, 'alert', { icon: '🐉' });
-        else hud.message(`They come from the ${from}.`, 'alert', { icon: '🐉' });
+        if (mine && mine.count < ev.count) hud.message(`${mine.count} of them come at you from the ${from}.`, 'alert', { icon: '🐉', at });
+        else hud.message(`They come from the ${from}.`, 'alert', { icon: '🐉', at });
         hud.minimap.ping(at.x, at.y, boss ? '#ffc840' : '#ff3a2a');
         if (this.input) this.input.noteAlert(at.x, at.y);
         break;
@@ -1526,7 +1526,7 @@ export class Game {
         } else if (harm) {
           // An enemy's strike or cataclysm: everyone hears of it, and sees where it fell.
           if (pw.tier >= 3) hud.showBanner(`${this.playerName(ev.player)} unleashes ${pw.name}!`, 'danger');
-          else hud.message(`${this.playerName(ev.player)} unleashes ${pw.name}!`, 'alert', { icon: pw.icon });
+          else hud.message(`${this.playerName(ev.player)} unleashes ${pw.name}!`, 'alert', { icon: pw.icon, at: ev });
           hud.minimap.ping(ev.x, ev.y, '#ff3a2a');
           if (this.input) this.input.noteAlert(ev.x, ev.y);
         } else hud.message(`${this.playerName(ev.player)} calls on ${pw.name}.`, 'info', { icon: pw.icon });
@@ -1602,7 +1602,7 @@ export class Game {
   onAlert(a) {
     const hud = this.hud;
     if (this.disposed || !hud) return;
-    if (a.text) hud.message(a.text, a.kind, { icon: a.icon });
+    if (a.text) hud.message(a.text, a.kind, a.jump ? { icon: a.icon, at: a.jump } : { icon: a.icon }); // a spot: the card links to it
     if (a.sound) sfx.play(a.sound, { volume: a.volume });
     if (a.ping) hud.minimap.ping(a.ping.x, a.ping.y, a.ping.color);
     if (a.jump && this.input) this.input.noteAlert(a.jump.x, a.jump.y);
