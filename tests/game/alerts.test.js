@@ -122,7 +122,7 @@ test('my things under attack: only the tab flash (the Game writes the line and b
   assert.equal(a.text, null);
   assert.equal(a.sound, null);
   s.at(6, { events: [{ type: 'underAttack', player: 0, x: 11, y: 8, id: s.worker.id }] });
-  assert.equal(s.take()[0].attention, 'Your forces are under attack!');
+  assert.equal(s.take()[0].attention, 'Your Worshippers are under attack!');
   // The raiders the horn already announced are not announced again as "sighted".
   const raider = s.unit(900, 'warrior', 1, 14.5, 12.5, { hp: 420, mhp: 420 });
   s.at(7, { edit: (snap) => snap.entities.push(raider) });

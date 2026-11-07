@@ -2371,6 +2371,8 @@ per-frame budget, so a revealed army appears over a few frames.
   **Fallen gods** (`Game.onEvent`, 'death'): my own god or Titan falling is an alert ("Revive them at a Temple" for
   a god). Another player's falling where my team can see it is a line too: good news for a foe's ("Foe's Zeus has
   fallen!"), a warning for an ally's. Under the fog it says nothing, so no one learns what they could not see.
+  **Under attack** (`Game.onEvent`, 'underAttack', `underAttackText`): the line and the tab name what was struck,
+  "Your base", a god or Titan by name ("Zeus is under attack!"), "Your Worshippers", or else "Your forces".
   **Another side grows** (`Game.onEvent`, 'tierUp'): every player hears when another side's settlement grows into
   a Town or a City (a player's tier is no secret, the roster shows it): a warning for a rival ("Foe has grown into
   a Town."), good news for an ally. My own growth keeps its banner.
