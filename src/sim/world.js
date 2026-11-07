@@ -206,7 +206,7 @@ export class World {
       hp: constructed ? maxHp : maxHp * 0.1, maxHp, armor: def.armor + m.armor,
       constructed: !!constructed, buildProgress: constructed ? 1 : 0, builders: 0,
       repairers: 0, repairBlocked: false, rangeBonus: m.range,
-      queue: [], rally: null, tier: typeId === 'town_center' ? 1 : 0,
+      queue: [], rally: null, repeat: null, tier: typeId === 'town_center' ? 1 : 0,
       prayers: def.prayerSlots > 0 ? new Array(def.prayerSlots).fill(0) : [], praySpots: null, prayingCount: 0,
       attackCd: 0, target: 0, state: 'idle', order: null, facing: Math.PI / 2, dead: false,
       baseDamage: def.attack ? def.attack.damage : 0, dmgMult: 1 + m.damage, atkSpeedMult: 1,

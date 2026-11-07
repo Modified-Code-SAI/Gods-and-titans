@@ -2436,6 +2436,11 @@ per-frame budget, so a revealed army appears over a few frames.
   whole queue; on "+N" a click takes back the last item and Shift-click everything it folds. A Shift-click is
   one `cancelTrain` with `count` (5.4), so a whole queue refunds in one command. Esc still takes back the
   last queued unit, and Shift + a train hotkey or button still queues 5 at a time (a held hotkey repeats).
+  **Repeat** (a right-click on a train button, the same toggle as an ability's autocast, with its mark on the
+  button): the selected finished buildings of that kind train the unit again whenever their queue runs empty,
+  one at a time, while the purse and the population allow, quietly (no error lines while it waits). Gods and
+  Titans cannot repeat. Command `repeatTrain` {building, unit} (no unit: off), building field `repeat`,
+  snapshot `rt`; the sim tries every `REPEAT_EVERY` (5) ticks (production.js). The feed says it in a line.
 - Worshipper tasks: a bar bottom-left, next to the idle button, counts own Worshippers per task
   (snapshot `tk`: gold, wood, pray, build, repair, idle, other); clicking a count selects them
   (Shift adds). A multi-selection with Worshippers shows the same counts for the selection.

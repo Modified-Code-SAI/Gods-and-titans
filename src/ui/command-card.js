@@ -560,7 +560,15 @@ function trainButton(slot, key, vs, unitId, buildings, verb) {
     queued,
     stats: unitStats(def),
     action: { kind: 'train', unit: unitId },
+    ...repeatToggle(def, unitId, buildings),
   });
+}
+
+/** Right-click on a train button: the selected buildings train that unit again and again (not gods or Titans). */
+function repeatToggle(def, unitId, buildings) {
+  if (def.class === 'god' || def.class === 'titan') return {};
+  const on = buildings.some((b) => b.rt === unitId);
+  return { autocast: on, toggle: { kind: 'repeat', unit: unitId, on: !on } };
 }
 
 /** An upgrade's text, plus a note when it also reaches the player's elite soldier (it counts as a Warrior or an Archer). */

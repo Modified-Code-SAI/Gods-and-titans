@@ -69,6 +69,7 @@ export const HOTKEYS = [
   ['Buildings', [
     [kbd('W'), 'Town Center: Worshipper · Barracks: Warrior'],
     [kbd('Shift', 'W'), 'Shift with any train hotkey or button queues up to 5 at once'],
+    [kbd('Right-click'), 'A train button: repeat it, so the building queues another whenever its queue runs empty (not gods or Titans). Right-click again to stop'],
     [kbd('Shift', 'Click'), `A queued unit under a building's name: take back its whole run (the big button: the whole queue). A building queues up to ${MAX_QUEUE}`],
     [kbd('U'), 'Town Center: grow to Town, then City'],
     [keys('U', 'D'), 'Wall segments: upgrade to stone (U) or dismantle (D), the whole selection at once'],

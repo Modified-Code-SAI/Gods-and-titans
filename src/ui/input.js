@@ -1376,6 +1376,7 @@ export class InputController {
   /** Right-click on an ability button: autocast on / manual for the selected units of that type. */
   toggleAutocast(b) {
     const t = b && b.toggle;
+    if (t && t.kind === 'repeat' && !this.disposed) return this.toggleRepeat(t);
     if (!t || t.kind !== 'autocast' || this.disposed) return;
     const units = this.ownUnits().filter((id) => {
       const e = this.vs.entities.get(id);
@@ -1384,6 +1385,17 @@ export class InputController {
     if (!units.length) return;
     sfx.play('click');
     this.command({ type: 'autocast', units, ability: t.ability, on: !!t.on });
+  }
+
+  /** Right-click on a train button: the selected finished buildings of that kind repeat the unit, or stop. */
+  toggleRepeat(t) {
+    const group = this.sel.activeGroup();
+    const blds = this.sel.ownBuildings().filter((e) => group && e.t === group.type && isComplete(e));
+    if (!blds.length) return;
+    sfx.play('click');
+    for (const e of blds) this.command(t.on ? { type: 'repeatTrain', building: e.id, unit: t.unit } : { type: 'repeatTrain', building: e.id });
+    const name = UNITS[t.unit] ? UNITS[t.unit].name : 'unit';
+    this.hud.message(t.on ? `Repeating ${name}: another is queued whenever the queue runs empty.` : `No longer repeating ${name}.`, 'info', { icon: '🔁' });
   }
 
   /** ` key: every ability of the selected units to manual, or back to autocast when all are manual. */

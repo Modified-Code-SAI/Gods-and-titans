@@ -600,3 +600,21 @@ test('Auto-Repair button shows when it is on', () => {
   assert.equal(b.title, 'Auto-Repair: On');
   assert.deepEqual(b.action, { kind: 'autoRepair', on: false });
 });
+
+test('a train button offers repeat on right-click and shows it while on; a god\'s button does not', () => {
+  const world = makeWorld();
+  rich(world);
+  const tc = tcOf(world);
+  let btn = byId(getCommandCard([tc.id], viewOf(world)), 'train:worshipper');
+  assert.deepEqual(btn.toggle, { kind: 'repeat', unit: 'worshipper', on: true });
+  assert.equal(btn.autocast, false);
+  tc.repeat = 'worshipper';
+  btn = byId(getCommandCard([tc.id], viewOf(world)), 'train:worshipper');
+  assert.deepEqual(btn.toggle, { kind: 'repeat', unit: 'worshipper', on: false });
+  assert.equal(btn.autocast, true, 'the repeat mark shows');
+  const temple = place(world, 0, 'temple', 26, 20);
+  const card = getCommandCard([temple.id], viewOf(world));
+  const god = card.find((b) => b && b.id.startsWith('train:'));
+  assert.ok(god);
+  assert.equal(god.toggle, null, 'gods are one of a kind');
+});

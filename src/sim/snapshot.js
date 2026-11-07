@@ -153,6 +153,7 @@ function buildingView(b) {
     q: b.queue.map((q, i) => ({ u: q.u, p: i === 0 ? Math.min(0.99, r2(q.elapsed / q.time)) : 0 })),
     rp: b.rally ? [r2(b.rally.x), r2(b.rally.y)] : null,
   };
+  if (b.repeat) v.rt = b.repeat;
   if (b.type === 'town_center') v.tr = b.tier;
   if (b.def.prayerSlots > 0) v.pr = b.prayingCount || 0;
   return v;
