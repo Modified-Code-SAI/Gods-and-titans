@@ -11,7 +11,7 @@
 import { GAME_TITLE, GAME_SUBTITLE, GAME_VERSION, PLAYER_COLORS, MAP_SIZES, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SURVIVAL_FIRST_WAVE, SURVIVAL_INTERVAL, SURVIVAL_BOSS_EVERY, SACRED_NAME } from '../config.js';
 import { PANTHEON_LIST } from '../data/index.js';
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
-import { getSettings, saveSettings, onSettingsChange } from '../settings.js';
+import { getSettings, saveSettings, onSettingsChange, restoreDefaults } from '../settings.js';
 import { TIME_OF_DAY_OPTIONS, timeOfDayNote } from './time-of-day-options.js';
 import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, SCROLL_SPEED_OPTIONS, FRAME_CAP_OPTIONS, optionNote } from './speed-options.js';
 import { buildKeyPanel } from './key-panel.js';
@@ -1740,7 +1740,13 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         h('header.mw-panel-head', backBtn, h('h2.mw-h2', 'Settings'), h('span.mw-head-spacer')),
         pages.tabs,
         ...pages.pages,
-        h('p.mw-hint.mw-saved-note', '✓ Settings are saved automatically in this browser.'),
+        h('p.mw-hint.mw-saved-note', '✓ Settings are saved automatically in this browser. ',
+          h('button.mw-link.mw-restore-defaults', { type: 'button', title: 'Every setting back to how the game first came, except your name and your keys', onclick: () => {
+            if (typeof confirm === 'function' && !confirm('Put every setting back to its default? Your name and your keys stay as they are.')) return;
+            restoreDefaults();
+            go('settings');
+            toast('Settings are back to their defaults.', 'info', 2600);
+          } }, 'Restore defaults')),
       ),
     );
     return { el, focus: backBtn, onEscape: () => go('title'), cleanup: () => keyPanel.dispose() };

@@ -81,6 +81,16 @@ export function defaultSettings() {
   return { name: randomName(), volume: 0.7, voiceVolume: 1, quality: 'medium', timeOfDay: 'cycle', weather: true, liveMenu: true, edgeScroll: true, showAllBars: false, tipsDismissed: false, rosterOpen: true, alerts: 'all', hints: true, tabAlerts: 'title', narration: true, aiChat: true, aiVoices: true, musicVolume: 0.5, musicMuted: false, gameSpeed: 'normal', uiScale: 'normal', teamColors: 'standard', screenShake: reducedMotion() ? 'reduced' : 'full', scrollSpeed: 'normal', frameCap: 'off', showFps: false, cardKeys: 'classic', keyBindings: Object.freeze({}) };
 }
 
+/** What Restore defaults leaves alone: who you are, what you have seen, and the keys (the Keys tab has its own reset). */
+export const KEPT_ON_RESTORE = Object.freeze(['name', 'tipsDismissed', 'rosterOpen', 'keyBindings', 'cardKeys']);
+
+/** Settings' Restore defaults: every other setting back to its default, saved (and heard by onSettingsChange). */
+export function restoreDefaults() {
+  const patch = { ...defaultSettings() };
+  for (const k of KEPT_ON_RESTORE) delete patch[k];
+  return saveSettings(patch);
+}
+
 /** Merge a raw object onto base, keeping only valid values. */
 function sanitize(raw, base) {
   const out = { ...base };
