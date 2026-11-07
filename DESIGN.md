@@ -2563,7 +2563,9 @@ per-frame budget, so a revealed army appears over a few frames.
   taken off the selection meanwhile do not matter, one added does. Esc (which then does nothing else), waiting or
   leaving the window takes the question back. Key auto-repeat, Ctrl / Alt / Cmd + either key, typing in chat and an
   open menu do nothing. Destroying units also ends a pending placement or targeting. The jump to your Town Center
-  that Backspace used to be is **Home** now (fn + the left arrow on a Mac laptop). Rules and texts in
+  that Backspace used to be is **Home** now (fn + the left arrow on a Mac laptop); it also selects the Town Center,
+  so a train key follows at once, and with several each press goes on to the next (finished first, then by id;
+  `InputController.jumpHome`). Rules and texts in
   `src/ui/delete-key.js`. A phone has no Delete key, so the selection panel carries a small 💀 **Destroy** button
   in its bottom-right corner while own units are selected (not in a replay or once the game is over). It does what
   the key does, and its question asks for another tap of itself (`Tap 💀 again to destroy 12 units.`; with a mouse

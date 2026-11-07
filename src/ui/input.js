@@ -1462,10 +1462,20 @@ export class InputController {
     return this.bindingsCache;
   }
 
-  /** Home (rebindable): the camera to your Town Center. */
+  /**
+   * Home (rebindable): select your Town Center and centre the camera on it, so a train key follows at
+   * once. With more than one, each press goes on to the next (finished ones first, then by id).
+   */
   jumpHome() {
-    const tc = [...this.vs.entities.values()].find((x) => x.k === 'b' && x.o === this.vs.myIndex && x.t === 'town_center');
-    if (tc && this.renderer) this.renderer.camera.centerOn(tc.x, tc.y);
+    const tcs = [...this.vs.entities.values()]
+      .filter((x) => x.k === 'b' && x.o === this.vs.myIndex && x.t === 'town_center')
+      .sort((a, b) => (isComplete(b) ? 1 : 0) - (isComplete(a) ? 1 : 0) || a.id - b.id);
+    if (!tcs.length) return;
+    const ids = this.sel.ids;
+    const at = ids.length === 1 ? tcs.findIndex((t) => t.id === ids[0]) : -1;
+    const tc = tcs[(at + 1) % tcs.length];
+    this.sel.set([tc.id]);
+    if (this.renderer) this.renderer.camera.centerOn(tc.x, tc.y);
   }
 
   /** F6..F9: back to a kept camera spot; with Ctrl (or Shift) keep the view there. True when the key was one of theirs. */

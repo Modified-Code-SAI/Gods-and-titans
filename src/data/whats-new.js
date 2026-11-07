@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-feed-links',
+    id: '2026-11-07-home-select',
     date: '7 November 2026',
     title: 'Play your way',
     items: [
+      'Home now selects your Town Center as well as showing it, so W trains a Worshipper at once. Press it again for the next one.',
       'Click a warning in the messages, such as an attack or an enemy god power, to look at where it happened.',
       'Right-click a train button to repeat it: the building queues another whenever its queue runs empty.',
       'A repeating building says so under its queue, and when it is waiting, what for: gold, wood or a House.',

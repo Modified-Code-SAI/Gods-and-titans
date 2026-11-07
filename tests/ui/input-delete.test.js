@@ -10,7 +10,7 @@ import { Selection } from '../../src/ui/hud-selection.js';
 import { InputController } from '../../src/ui/input.js';
 import { deletePlan, DELETE_CONFIRM_ABOVE, DELETE_CONFIRM_MS } from '../../src/ui/delete-key.js';
 import { HINTS, hintParts, hintText } from '../../src/ui/hint-data.js';
-import { makeWorld, spawn, clearUnits } from '../sim/helpers.js';
+import { makeWorld, spawn, clearUnits, place } from '../sim/helpers.js';
 import { installFakeDom } from './fake-dom.js';
 
 before(installFakeDom);
@@ -269,8 +269,24 @@ test('Home jumps to the Town Center, where Backspace used to, and kills nothing'
   assert.deepEqual(sent, []);
   const tc = vs.entities.get(world.buildingsOf(0).find((b) => b.type === 'town_center').id);
   assert.deepEqual(centered, [[tc.x, tc.y]]);
+  assert.deepEqual(input.sel.ids, [tc.id], 'and selects it, ready to train');
   key('Home', { repeat: true });
   assert.equal(centered.length, 1, 'holding the key is not another jump');
+  input.dispose();
+});
+
+test('Home again goes on to the next Town Center, finished ones first, and back to the first', () => {
+  const { world, vs, key, centered, input } = setup();
+  const first = world.buildingsOf(0).find((b) => b.type === 'town_center');
+  const second = place(world, 0, 'town_center', 30, 30);
+  const building = place(world, 0, 'town_center', 40, 12, false);
+  vs.pushSnapshot(world.getSnapshot(), 10000);
+  key('Home');
+  key('Home');
+  key('Home');
+  key('Home');
+  assert.deepEqual(centered.map(([x]) => x), [first.x, second.x, building.x, first.x]);
+  assert.deepEqual(input.sel.ids, [first.id]);
   input.dispose();
 });
 
