@@ -2503,6 +2503,9 @@ per-frame budget, so a revealed army appears over a few frames.
   `Game.frame` skip an animation frame that comes before the limit's beat (`FrameCap.due`, on a beat rather than a gap,
   so a 144 Hz screen held to 60 averages 60); Show frame rate (`showFps`) puts "60 fps · 16.7 ms" under the top bar's
   right end, counted over half a second (`FpsMeter`). Both are in Settings → Graphics and the F10 menu.
+  **Restore defaults** (a link beside "Settings are saved automatically" at the foot of Settings, after a confirm):
+  `restoreDefaults()` in `src/settings.js` puts every setting back to `defaultSettings()` except `KEPT_ON_RESTORE`
+  (the name, the tips already seen, the player list's fold, and the keys, which Keys → Reset keys handles).
   **Army keys**: Ctrl+A (Cmd+A) selects the whole army, every own unit but the Worshippers, gods and Titans
   first (`armyIds` in hud-data.js); a second tap within 350 ms centers on it. A whole-army selection (Ctrl+A,
   Ctrl+Alt+A, Shift+,: `Selection.set(ids, { army: true })`, `sel.army`) is not held to the 24 of `MAX_SELECTION`

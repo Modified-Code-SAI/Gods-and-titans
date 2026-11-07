@@ -6,10 +6,11 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-06-comfort-pause',
+    id: '2026-11-07-restore',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'Restore defaults at the foot of Settings puts every setting back as it came, keeping your name and keys.',
       'Against the computer, the Pause key now stops the game and leaves the camera free to look around.',
       'Quick chat: type a number 1 to 9 alone, or press a button in the chat box, to send a set line such as Attack now or I need gold.',
       'Photo mode: Alt+H hides the interface so only the world shows, and P saves a picture of it.',
