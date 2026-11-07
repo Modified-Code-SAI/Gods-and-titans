@@ -6,10 +6,12 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-restore',
+    id: '2026-11-07-town',
     date: '6 November 2026',
     title: 'Play your way',
     items: [
+      'In the first ten minutes, a nudge when your Town Center stands idle while you could pay for a Worshipper.',
+      'You hear of it when an enemy god or Titan you can see falls, and when an ally loses one.',
       'Restore defaults at the foot of Settings puts every setting back as it came, keeping your name and keys.',
       'Against the computer, the Pause key now stops the game and leaves the camera free to look around.',
       'Quick chat: type a number 1 to 9 alone, or press a button in the chat box, to send a set line such as Attack now or I need gold.',

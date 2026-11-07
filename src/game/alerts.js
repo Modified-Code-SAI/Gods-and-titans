@@ -22,6 +22,7 @@ import { getRelic } from '../data/relics.js';
 import { sanitizeName } from '../net/protocol.js';
 import { getSettings } from '../settings.js';
 import { trainCheck } from '../ui/command-card.js';
+import { bindingsOf, keyLabel } from '../ui/key-bindings.js';
 import { PEACE_WARNINGS, peaceWarning } from '../ui/hud-data.js';
 import { safeColor } from '../ui/hud-dom.js';
 import { SITE_ICON, SACRED_WARNINGS, sacredWhen } from '../ui/hud-sites.js';
@@ -40,6 +41,9 @@ const ALLY_REPEAT = 20; // seconds between two "ally under attack" alerts about 
 
 const IDLE_WORKER_AFTER = 20; // seconds a Worshipper stands idle before it is worth a word
 const IDLE_WORKER_REPEAT = 60;
+const TC_IDLE_AFTER = 15; // seconds the Town Center trains nothing, with a Worshipper it could pay for
+const TC_IDLE_REPEAT = 75;
+const TC_IDLE_UNTIL = 600; // only in the first ten minutes, while more hands are the whole game
 const POP_CAP_AFTER = 10;
 const POP_CAP_REPEAT = 120;
 const GOD_READY_AFTER = 8;
@@ -58,7 +62,7 @@ const THREAT_CLASSES = new Set(['infantry', 'ranged', 'support', 'siege', 'creat
 const LEVEL_RANK = { off: 0, important: 1, all: 2 };
 
 /** Who matters more when two sounds want the same moment. */
-const PRIORITY = { enemies_near: 90, sacred: 85, ally_attacked: 80, peace_mark: 70, site_lost: 60, site_taken: 50, relic_lost: 50, relic_free: 45, relic_housed: 35, god_ready: 40, titan_ready: 40, idle_workers: 30, pop_capped: 25, army_idle: 22, research: 20, milestone: 10 };
+const PRIORITY = { enemies_near: 90, sacred: 85, ally_attacked: 80, peace_mark: 70, site_lost: 60, site_taken: 50, relic_lost: 50, relic_free: 45, relic_housed: 35, god_ready: 40, titan_ready: 40, idle_workers: 30, tc_idle: 28, pop_capped: 25, army_idle: 22, research: 20, milestone: 10 };
 
 /** Milestones: the player's counts, the steps worth a cheer and the emblem of the card. */
 const MILESTONES = [
@@ -134,6 +138,7 @@ export class AlertEngine {
     this.lastSound = { t: -Infinity, priority: 0 };
     this.idleWorkers = new Nag(0, IDLE_WORKER_REPEAT);
     this.idleSince = new Map(); // Worshipper id → game time it was first seen idle
+    this.tcIdle = new Nag(TC_IDLE_AFTER, TC_IDLE_REPEAT);
     this.popCap = new Nag(POP_CAP_AFTER, POP_CAP_REPEAT);
     this.godReady = new Nag(GOD_READY_AFTER, GOD_READY_REPEAT);
     this.titanReady = new Nag(GOD_READY_AFTER, TITAN_READY_REPEAT);
@@ -435,7 +440,7 @@ export class AlertEngine {
   survey() {
     const vs = this.vs;
     const me = vs.myIndex;
-    const s = { idle: [], army: 0, armyIdle: 0, buildings: [], hostiles: [], houseSite: false, temples: [], gates: [], busy: false };
+    const s = { idle: [], army: 0, armyIdle: 0, buildings: [], hostiles: [], houseSite: false, temples: [], gates: [], towns: [], busy: false };
     for (const e of vs.entities.values()) {
       if (e.k === 'u') {
         const def = UNITS[e.t];
@@ -454,6 +459,7 @@ export class AlertEngine {
         if (e.t === 'house' && !done) s.houseSite = true;
         if (done && e.t === 'temple') s.temples.push(e);
         if (done && e.t === 'titan_gate') s.gates.push(e);
+        if (done && e.t === 'town_center') s.towns.push(e);
       }
     }
     return s;
@@ -476,6 +482,7 @@ export class AlertEngine {
     this.peace(t);
     this.sacredClock();
     this.idle(t, s);
+    this.townIdle(t, s);
     this.population(t, me, s);
     this.summonable(t, s);
     this.army(t, s);
@@ -564,6 +571,20 @@ export class AlertEngine {
       kind: 'info',
       icon: '🙏',
       text: `${long} Worshipper${long === 1 ? ' is' : 's are'} idle.  [[.]]`,
+      sound: 'nudge',
+    });
+  }
+
+  /** Early on, every Town Center idle while a Worshipper is affordable and there is room for one. */
+  townIdle(t, s) {
+    const idle = t < TC_IDLE_UNTIL && s.towns.length > 0 && s.towns.every((b) => !(b.q || []).length) && trainCheck(this.vs, 'worshipper', s.towns).state === 'ready';
+    if (!this.tcIdle.tick(idle, t)) return;
+    this.emit({
+      id: 'tc_idle',
+      level: 'all',
+      kind: 'info',
+      icon: '🏛️',
+      text: `Your Town Center is not training Worshippers.  [[${keyLabel(bindingsOf(this.settings().keyBindings).cam_home)}]]`,
       sound: 'nudge',
     });
   }
