@@ -18,6 +18,7 @@ import {
   workText, mineTripText, relicIcon, relicLine, relicCarryText, templeRelicsText,
 } from './hud-data.js';
 import { MAX_SELECTION } from './hud-selection.js';
+import { trainCheck } from './command-card.js';
 import { RealmPanel } from './hud-realm.js';
 import { displayColor, teamPalette } from '../team-colors.js';
 
@@ -152,7 +153,19 @@ export function queueRuns(q, from = 1) {
 function shapeOf(e, vs) {
   if (!e) return '-';
   const q = e.q ? e.q.map((it) => it.u).join(',') : '';
-  return `${e.id}|${e.t}|${e.o}|${e.k === 'b' ? (isComplete(e) ? 1 : 0) : ''}|${q}|${e.lv || ''}|${e.tr || ''}|${vs.relation(e.o)}|${teamPalette()}`;
+  return `${e.id}|${e.t}|${e.o}|${e.k === 'b' ? (isComplete(e) ? 1 : 0) : ''}|${q}|${e.lv || ''}|${e.tr || ''}|${e.rt || ''}|${vs.relation(e.o)}|${teamPalette()}`;
+}
+
+/**
+ * The line under a building that repeats a unit (snapshot `rt`, a right-click on its train button):
+ * what it repeats, and while its queue stands empty, what it waits for (the train button's own reason).
+ */
+export function repeatNote(vs, e) {
+  if (!e || !e.rt || !UNITS[e.rt]) return '';
+  const name = UNITS[e.rt].name;
+  if (e.q && e.q.length) return `🔁 Repeating ${name}.`;
+  const chk = trainCheck(vs, e.rt, [e]);
+  return chk.state === 'ready' || !chk.reason ? `🔁 Repeating ${name}: the next one starts in a moment.` : `🔁 Repeating ${name}, waiting: ${chk.reason}`;
 }
 
 /** "wooden_wall×20,stone_wall×10": how many of each type are selected. It changes when walls are upgraded in place. */
@@ -327,6 +340,10 @@ export class InfoView {
       return;
     }
     const queueing = e.o === vs.myIndex && e.q && e.q.length;
+    if (e.o === vs.myIndex && e.rt) {
+      s.parts.repeat = el('div', 'hi-note is-repeat');
+      extra.appendChild(s.parts.repeat);
+    }
     if (queueing) {
       const q = e.q;
       const first = q[0];
@@ -488,6 +505,7 @@ export class InfoView {
         const n = workersAt(vs, e.id);
         setText(p.workers, buildingWorkersText({ build: n.build, repair: n.repair }) || (isComplete(e) ? '' : 'No Worshippers are building it.'));
       }
+      if (p.repeat) setText(p.repeat, repeatNote(vs, e));
       if (p.researched) {
         const t = researchedText(upgradesOf(vs, e.o), e.t);
         setText(p.researched, t ? `Upgrades: ${t}` : '');

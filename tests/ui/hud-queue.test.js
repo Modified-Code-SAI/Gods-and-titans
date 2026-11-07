@@ -177,3 +177,23 @@ test('the "+N" button takes back the last item, Shift-click everything it folds'
   apply();
   assert.deepEqual(barracks.queue.map((it) => it.u), alternating.slice(0, QUEUE_CHIPS), 'the first runs stay, in order');
 });
+
+test('a repeating building says what it repeats, and while its queue is empty what it waits for', () => {
+  const { world, tc, show } = scene();
+  let info = show(tc);
+  assert.equal(info.find('is-repeat'), null, 'no line while repeat is off');
+  world.issueCommand(0, { type: 'repeatTrain', building: tc.id, unit: 'worshipper' });
+  world.players[0].gold = 0;
+  world.tick();
+  info = show(tc);
+  assert.equal(info.find('is-repeat').textContent, '🔁 Repeating Worshipper, waiting: Not enough gold.');
+  world.players[0].gold = 9999;
+  for (let i = 0; i < 6; i++) world.tick();
+  info = show(tc);
+  assert.equal(tc.queue.length, 1);
+  assert.equal(info.find('is-repeat').textContent, '🔁 Repeating Worshipper.');
+  world.issueCommand(0, { type: 'repeatTrain', building: tc.id });
+  world.tick();
+  info = show(tc);
+  assert.equal(info.find('is-repeat'), null, 'gone once it is turned off');
+});

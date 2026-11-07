@@ -6,11 +6,12 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
-    id: '2026-11-07-repeat',
+    id: '2026-11-07-repeat-note',
     date: '7 November 2026',
     title: 'Play your way',
     items: [
       'Right-click a train button to repeat it: the building queues another whenever its queue runs empty.',
+      'A repeating building says so under its queue, and when it is waiting, what for: gold, wood or a House.',
       'Type /help in the chat box to see what the chat can do.',
       'A word ahead of your population limit: when only a couple of places are left while you train, it asks for a House.',
       'Press ? in a match to see every control at once.',
