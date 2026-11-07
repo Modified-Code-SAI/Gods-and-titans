@@ -1307,6 +1307,8 @@ game leaves one base free as a rich guarded expansion. No river center feature.
 - **Chat recall**: Up in the chat box brings back the lines I sent (the last 20, as typed, "/t " and all; a repeat
   kept once), Down walks forward to an empty box again (`ChatHistory` in `src/ui/chat-history.js`, `Hud.chatSent`).
   For this page only; nothing is stored or sent.
+- **Chat help**: "/help" (or "/?", "/h") in the chat box shows the chat's commands to me alone as system lines
+  (`CHAT_HELP`, `chatCommand` in `hud-data.js`) and sends nothing; any other line starting with "/" still goes out.
 - **Mute a player**: a faint speaker at the end of every other player's row in the player list (`RosterView.muteButton`)
   mutes their chat lines and their taunts for this match (`Hud.muted`, checked in `Game.onChat` and `Hud.chat`); a
   click again unmutes, and a system line says which. The game's own lines (a player leaving) still come through. Not
