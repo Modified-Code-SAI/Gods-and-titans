@@ -22,7 +22,7 @@ import { getCommandCard, withCardKeys } from './command-card.js';
 import { cardKeysOf } from './key-bindings.js';
 import { sanitizeName, sanitizeChat } from '../net/protocol.js';
 import { el, setText, setStyle, setClass, setHidden, fmt, pct, hpColor, safeColor } from './hud-dom.js';
-import { formatClock, tierName, nameOf, leadText, stallText, pauseText, workerTasks, WORKER_TASKS, PEACE_WARNINGS, peaceStartText, peaceWarning, messageIcon, messageDwell, tauntDwell, relicChip, chatTarget, hasAllies, pushHistory, evictIndex } from './hud-data.js';
+import { formatClock, tierName, nameOf, leadText, stallText, pauseText, workerTasks, WORKER_TASKS, PEACE_WARNINGS, peaceStartText, peaceWarning, messageIcon, messageDwell, tauntDwell, relicChip, chatTarget, chatCommand, CHAT_HELP, hasAllies, pushHistory, evictIndex } from './hud-data.js';
 import { peaceClock } from '../sim/peace.js';
 import { SITE_ICON, siteChip, siteChipTitle, sacredStartText } from './hud-sites.js';
 import { CardView } from './hud-card.js';
@@ -1148,6 +1148,11 @@ export class Hud {
 
   /** Send what the box holds, to the allies or everyone (chatTarget: a "/t " or "/all " prefix wins). */
   sendChatLine(game, { allies = this.chatAllies } = {}) {
+    if (chatCommand(this.chatInput.value) === 'help') {
+      this.chatSent.add(this.chatInput.value);
+      for (const text of CHAT_HELP) this.chat({ system: true, text });
+      return;
+    }
     const { text: typed, team, refused } = chatTarget(this.chatInput.value, { allies, canAllies: this.canChatAllies() });
     if (refused) return this.message('You have no allies in this game: the line was not sent.', 'system');
     const text = expandQuick(typed);

@@ -439,6 +439,19 @@ export function chatTarget(raw, { allies = false, canAllies = false } = {}) {
   return { text, team: team && !!canAllies };
 }
 
+/** What "/help" (or "/?") in the chat box shows, only to the one who typed it. */
+export const CHAT_HELP = [
+  'Chat help: Enter sends, and the "To all" label (or Tab) switches to your allies.',
+  'Start a line with /t to tell only your allies, or /a to tell everyone.',
+  'A number 1 to 9 alone sends a quick line (Yes, No, Attack, Help, Gold, Wood, Wait, Ready, GG).',
+  'Up brings back what you sent; the speaker beside a name in the player list mutes that player.',
+];
+
+/** A line that is a chat command for this screen only, not words to send: 'help', or null. */
+export function chatCommand(raw) {
+  return /^\/(help|\?|h)$/i.test(typeof raw === 'string' ? raw.trim() : '') ? 'help' : null;
+}
+
 /** How many chat and system lines the chat history keeps (DESIGN 9, "The message feed"). */
 export const CHAT_HISTORY_MAX = 50;
 

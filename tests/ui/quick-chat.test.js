@@ -97,3 +97,21 @@ test('a muted player\'s lines are dropped, nobody else\'s; system lines always c
   assert.equal(hud.isMuted(2), false);
   assert.equal(hud.isMuted(undefined), false);
 });
+
+test('"/help" (or "/?") shows the chat help to me alone and sends nothing; other slash words still go out', () => {
+  const { hud, sent } = setup([1, 1, 2]);
+  hud.openChat();
+  hud.chatInput.value = '/help';
+  hud.chatInput.fire('keydown', { key: 'Enter' });
+  assert.deepEqual(sent, [], 'nothing sent');
+  assert.match(hud.msgs.textContent, /Chat help/);
+  assert.match(hud.msgs.textContent, /\/t to tell only your allies/);
+  hud.openChat();
+  hud.chatInput.value = ' /? ';
+  hud.chatInput.fire('keydown', { key: 'Enter' });
+  assert.deepEqual(sent, []);
+  hud.openChat();
+  hud.chatInput.value = '/helpme';
+  hud.chatInput.fire('keydown', { key: 'Enter' });
+  assert.deepEqual(sent.pop(), ['/helpme']);
+});
