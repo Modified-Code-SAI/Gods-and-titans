@@ -878,7 +878,8 @@ A GameSetup with `campaign: '<mission id>'` (built by `campaignSetup(id, { name,
 chapter screen of 9.6, solo, no lobby) plays one mission of the campaign: Chapter I, "The Long Winter" (five
 missions for the Greeks against Norse raiders), then Chapter II, "The Wolf Age" (five for the Norse against Loki),
 then Chapter III, "The Sea of Chaos" (five for the Egyptians against Akkad and Tiamat), then Chapter IV, "The Eye of
-Balor" (five for the Celts against Balor's Fomorians), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+Balor" (five for the Celts against Balor's Fomorians), then Chapter V, "The Eight-Headed Serpent" (five for the
+Japanese of Izumo against the serpent cult and Yamata no Orochi), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -938,6 +939,15 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   Egyptian ally "Pharaoh's Legion"; Balor walks at 13:00 with four woad raiders on their own tag, `waitFor:
   ['balor']`). AI-only runs of Chapter IV: a Normal hero wins all five (the last at 21:00), an idle one loses all
   five, an Easy one wins the first four.
+  Chapter V: Banished to Izumo (a Temple, a god, and a raid with an oni at 4:30 that makes for the tagged house of
+  the old couple), The Fox Shrines (hold two sacred sites for 1:30 within 18:00 against an Easy AI, tengu at 6:00),
+  The Night of Eight Valleys (hold the tagged Temple where Kushinada hides ten minutes against six waves with oni,
+  kitsune and tengu, kitsune for the hero at 4:45, samurai at 10:00; `waitFor: ['hold']`), The River Gates (muster
+  fourteen soldiers, which reveals "tear down the two tagged gates"; two oni stand guard as a bonus kill; the keepers
+  come out at 9:00), The Eight-Headed Serpent (conquer a Normal and an Easy Japanese AI with the Chinese ally "Jade
+  Emperor's Guard"; Yamata no Orochi wakes at 13:00 with two oni and two kitsune on their own tag, `waitFor:
+  ['orochi']`). AI-only runs of Chapter V: a Normal hero wins all five (the last at 16:26), an idle one loses all
+  five, an Easy one wins the first three.
 
 ## 6. Simulation API (src/sim/)
 

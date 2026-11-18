@@ -10,10 +10,10 @@ import { MAP_SIZES } from '../../src/config.js';
 
 const KINDS = new Set(['build', 'gods', 'army', 'kill', 'destroy', 'protect', 'survive', 'hold', 'conquer']);
 
-test('four chapters of five linked missions, each chapter for one pantheon', () => {
-  assert.deepEqual(CHAPTERS.map((c) => [c.chapter, c.pantheon, c.missions.length]), [['Chapter I', 'greek', 5], ['Chapter II', 'norse', 5], ['Chapter III', 'egyptian', 5], ['Chapter IV', 'celtic', 5]]);
-  assert.equal(MISSIONS.length, 20);
-  assert.equal(new Set(MISSIONS.map((m) => m.id)).size, 20);
+test('five chapters of five linked missions, each chapter for one pantheon', () => {
+  assert.deepEqual(CHAPTERS.map((c) => [c.chapter, c.pantheon, c.missions.length]), [['Chapter I', 'greek', 5], ['Chapter II', 'norse', 5], ['Chapter III', 'egyptian', 5], ['Chapter IV', 'celtic', 5], ['Chapter V', 'japanese', 5]]);
+  assert.equal(MISSIONS.length, 25);
+  assert.equal(new Set(MISSIONS.map((m) => m.id)).size, 25);
   assert.deepEqual(MISSIONS, CHAPTERS.flatMap((c) => c.missions), 'the missions in the order they open');
   for (const c of CHAPTERS) {
     assert.equal(CHAPTER_BY_ID[c.id], c);
@@ -31,7 +31,8 @@ test('four chapters of five linked missions, each chapter for one pantheon', () 
   assert.equal(nextMission('twilight').id, 'hordaland', 'the end of Chapter I leads into Chapter II');
   assert.equal(nextMission('vigrid').id, 'delta', 'the end of Chapter II leads into Chapter III');
   assert.equal(nextMission('eridu').id, 'eriu', 'the end of Chapter III leads into Chapter IV');
-  assert.equal(nextMission('mag_tuired'), null);
+  assert.equal(nextMission('mag_tuired').id, 'izumo', 'the end of Chapter IV leads into Chapter V');
+  assert.equal(nextMission('orochi'), null);
   assert.equal(chapterOf('nope'), null);
 });
 

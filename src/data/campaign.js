@@ -1,8 +1,9 @@
-// The campaign (DESIGN 5.16): four chapters of five linked missions each. Chapter I, "The Long Winter", for
+// The campaign (DESIGN 5.16): five chapters of five linked missions each. Chapter I, "The Long Winter", for
 // the Greeks against raiders out of the frozen north; Chapter II, "The Wolf Age", for the Norse against Loki,
 // opened by winning the last mission of Chapter I; Chapter III, "The Sea of Chaos", for the Egyptians against
 // Akkad and Tiamat, opened by winning the last of Chapter II; Chapter IV, "The Eye of Balor", for the Celts against
-// Balor and the Fomorians, opened by winning the last of Chapter III. Plain data, read by the sim (src/sim/campaign.js runs the
+// Balor and the Fomorians, opened by winning the last of Chapter III; Chapter V, "The Eight-Headed Serpent",
+// for the Japanese of Izumo against Yamata no Orochi, opened by winning the last of Chapter IV. Plain data, read by the sim (src/sim/campaign.js runs the
 // objectives and the scripted events), the HUD (the objective panel) and the menu (the chapter
 // screen and the briefings). The briefings and the lines said during a mission are recorded
 // (assets/narration/campaign, tools/narration/render.py --campaign); a line's clip is named by
@@ -680,6 +681,170 @@ const BALOR_EYE = [
   },
 ];
 
+const SERPENT = [
+  {
+    id: 'izumo',
+    title: 'Banished to Izumo',
+    place: 'The river Hi, in Izumo',
+    seed: 9101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'japanese', team: 1 },
+      { name: 'Serpent Cult', pantheon: 'japanese', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'house', tag: 'elders', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Izumo, a land of rivers and pine on the shore of the western sea. Since Balor fell, the gods have been quiet. But in the hills above the river Hi a cult has woken something old: an eight-headed serpent that eats a maiden every year. An old couple by the river have lost seven daughters to it, and their last, Kushinada, is the eighth. Raise a Temple, call the kami, and keep the old couple\'s house standing.',
+    victory: 'The cult\'s raiders are thrown back across the river. The old couple weep for joy, and Kushinada is safe, for now. But the priests of the serpent are gathering at the fox shrines in the hills.',
+    defeat: 'The cult burned the house by the river. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '⛩️', text: 'Summon a god of the kami' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off the cult\'s raiders', hidden: true },
+      { id: 'elders', kind: 'protect', tag: 'elders', icon: '🏠', text: 'Keep the old couple\'s house standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the cult\'s camp' },
+    ],
+    events: [
+      { at: 4, say: 'Smoke in the hills above the river. The cult will come for the old couple\'s house. Make ready.' },
+      { at: 270, say: 'The cult crosses the river, and an oni walks with them! They make for the old couple\'s house.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['archer', 2], ['japanese_oni', 1]), at: 'front', march: true, target: 'elders' } },
+      { after: 'raid', say: 'The raiders are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'fox_shrines',
+    title: 'The Fox Shrines',
+    place: 'The shrine hills of Izumo',
+    seed: 9301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'japanese', team: 1 },
+      { name: 'Serpent Priests', pantheon: 'japanese', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'The priests of the serpent have taken the fox shrines in the hills, and they pray there for its waking. Send your Worshippers and Priests to the holy stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes the serpent wakes, and the priests will have their offering.',
+    victory: 'The fox shrines are ours, and Inari\'s foxes run in the hills again. The priests have fled up the eight valleys, where the serpent sleeps. Tonight, they say, it will come down for Kushinada.',
+    defeat: 'The priests hold the shrines, and the serpent stirs. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'shrines', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'Tengu on the wind! The priests send them to drive you from the shrines.', spawn: { owner: 1, tag: 'tengu', units: U(['japanese_tengu', 2], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'The priests\' drums are louder. Five minutes until the serpent wakes!' },
+    ],
+  },
+  {
+    id: 'eight_valleys',
+    title: 'The Night of Eight Valleys',
+    place: 'The shrine where Kushinada hides',
+    seed: 9403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'japanese', team: 1 },
+      { name: 'Host of the Serpent', pantheon: 'japanese', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'kushinada', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the cult's camp early does not end the night: Kushinada must still be kept until the dawn
+    briefing: 'Kushinada hides in the Temple on the hill, and tonight the serpent\'s host comes down the eight valleys to take her. Keep the Temple standing through ten minutes of darkness. At dawn the samurai of Izumo will come to your aid.',
+    victory: 'The dawn has come, and Kushinada is safe. The samurai of Izumo have come. But the serpent\'s cult still holds the river gates, two great watchtowers where the eight valleys meet, and beyond them the serpent sleeps.',
+    defeat: 'The Temple on the hill has fallen, and Kushinada is taken.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'kushinada', kind: 'protect', tag: 'kushinada', icon: '🌸', text: 'Keep the Temple where Kushinada hides standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'Night is falling over the eight valleys. Put your soldiers between the serpent\'s host and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'kushinada' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['japanese_kitsune', 2], ['archer', 1]), at: 'front', march: true, target: 'kushinada' } },
+      { at: 255, say: 'An oni leads them out of the dark! Hold the line!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['japanese_oni', 1]), at: 'front', march: true, target: 'kushinada' } },
+      { at: 285, say: 'Inari sends her foxes down from the shrines to fight at your side!', spawn: { owner: 0, tag: 'foxes', units: U(['japanese_kitsune', 3]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['japanese_kitsune', 3], ['archer', 2]), at: 'front', march: true, target: 'kushinada' } },
+      { at: 435, say: 'Tengu dive out of the night sky! Archers, look up!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['japanese_tengu', 3]), at: 'front', march: true, target: 'kushinada' } },
+      { at: 525, say: 'An oni leads the last of them. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['japanese_oni', 1], ['warrior', 6], ['archer', 4], ['japanese_kitsune', 2]), at: 'front', march: true, target: 'kushinada' } },
+      { at: 600, spawn: { owner: 0, tag: 'samurai', units: U(['japanese_samurai', 4], ['warrior', 6], ['archer', 2]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'river_gates',
+    title: 'The River Gates',
+    place: 'Where the eight valleys meet',
+    seed: 9504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'japanese', team: 1 },
+      { name: 'Keepers of the Gate', pantheon: 'japanese', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'gates', ring: 9 }, { type: 'tower', tag: 'gates', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'Where the eight valleys meet, the cult has raised two great watchtowers over the river, the gates to the serpent\'s lair. Muster an army, then tear the gates down. Two oni keep watch before them. Bring them down too, if you can.',
+    victory: 'The river gates are broken, and the way to the serpent is open. Susanoo has a plan: eight vats of the strongest sake, set out where the serpent will drink. And from the west, an old friend sends help: the Jade Emperor\'s guard has crossed the sea.',
+    defeat: 'The river gates still stand. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'gates', kind: 'destroy', tag: 'gates', icon: '🗼', text: 'Tear down the two river gates', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'oni', kind: 'kill', tag: 'oni', optional: true, icon: '👹', text: 'Bonus: bring down the two oni of the gate' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'oni', units: U(['japanese_oni', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The gates stand beyond the keepers\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the gates!', reveal: 'gates' },
+      { at: 540, say: 'The keepers come out to meet you, with tengu over their heads!', spawn: { owner: 1, tag: 'keepers', units: U(['japanese_tengu', 2], ['japanese_kitsune', 4], ['archer', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'orochi',
+    title: 'The Eight-Headed Serpent',
+    place: 'The serpent\'s lair, at the head of the river Hi',
+    seed: 9605,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'japanese', team: 1 },
+      { name: 'Host of Orochi', pantheon: 'japanese', team: 2, difficulty: 'normal' },
+      { name: 'Jade Emperor\'s Guard', pantheon: 'chinese', team: 1, difficulty: 'normal' },
+      { name: 'Cult of the Valleys', pantheon: 'japanese', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['orochi'], // breaking the cult before 13:00 does not end it: the serpent still wakes, and must fall
+    briefing: 'The head of the river Hi, where Yamata no Orochi sleeps: eight heads and eight tails, as long as eight valleys and eight hills. The cult and the serpent\'s host stand before its lair, and the Jade Emperor\'s guard stands with us. Break the cult. And when the serpent wakes, drunk on the sake of eight vats, cut it down.',
+    victory: 'Yamata no Orochi has fallen, and the river Hi runs red to the sea. In the serpent\'s tail Susanoo found a sword, Kusanagi, the grass-cutter, and he gave it to his sister Amaterasu in the heavens. Kushinada is safe, and five peoples have now stood together against the dark.',
+    defeat: 'The serpent has woken, and Izumo is lost. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Orochi and the cult of the valleys' },
+      { id: 'orochi', kind: 'kill', tag: 'orochi', icon: '🐍', text: 'Slay Yamata no Orochi', hidden: true, waitText: 'The serpent wakes' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The Jade Emperor\'s guard stands beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The ground shakes at the head of the river. The serpent has drunk the sake, and it is waking.' },
+      { at: 780, say: 'Yamata no Orochi is awake, all eight heads of it! Bring it down!', reveal: 'orochi', spawn: { owner: 1, tag: 'orochi', units: U(['japanese_yamata_no_orochi', 1]), at: 'front', march: true, always: true } },
+      { after: 'orochi', say: 'The serpent has fallen! Now finish the cult.' },
+      // Its guard, on a tag of their own: "Slay Yamata no Orochi" is done when it falls, not when the last of them does.
+      { at: 780, spawn: { owner: 1, tag: 'orochi_guard', units: U(['japanese_oni', 2], ['japanese_kitsune', 2]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -717,6 +882,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the Celts',
     blurb: 'Out of the western sea come the Fomorians, and their king Balor has an eye that burns whatever it looks upon. Five battles for the Tuatha Dé Danann of Ériu.',
     missions: BALOR_EYE,
+  },
+  {
+    id: 'serpent',
+    chapter: 'Chapter V',
+    title: 'The Eight-Headed Serpent',
+    pantheon: 'japanese',
+    people: 'the Japanese',
+    blurb: 'In the hills of Izumo a cult has woken Yamata no Orochi, the serpent of eight heads that eats a maiden every year. Five battles for the people of Izumo.',
+    missions: SERPENT,
   },
 ].map((c, ci) => Object.freeze({
   ...c,

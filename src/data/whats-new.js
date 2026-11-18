@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-serpent',
+    date: '18 November 2026',
+    title: 'Campaign Chapter V: The Eight-Headed Serpent',
+    items: [
+      'A new campaign chapter opens once you finish The Eye of Balor: five missions for the Japanese of Izumo.',
+      'Guard the old couple\'s house, take the fox shrines, keep Kushinada safe through the night and break the river gates.',
+      'Then face Yamata no Orochi, the serpent of eight heads, with the Jade Emperor\'s guard at your side. Every line is spoken.',
+    ],
+  },
+  {
     id: '2026-11-18-ai-styles',
     date: '18 November 2026',
     title: 'Rivals with a temper',
