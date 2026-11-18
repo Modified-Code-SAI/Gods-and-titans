@@ -149,7 +149,8 @@ try {
 
   // ---- 6. Chat and marks across tabs
   await cleo.evaluate(() => window.__game.sendChat('hello from Cleo'));
-  await sleep(1500);
+  // (Up to 10 s: on software GL a busy tab can take a few seconds to read the host's relay.)
+  for (const p of pages) await until(p, () => window.__heard.chat.some((l) => l.text === 'hello from Cleo'), 'Cleo\'s line', 10000).catch(() => null);
   const chatSeen = await Promise.all(pages.map((p) => p.evaluate(() => window.__heard.chat.some((l) => l.text === 'hello from Cleo'))));
   check(chatSeen.every(Boolean), `chat reaches every tab (${chatSeen})`);
   const sentMark = await cleo.evaluate(() => window.__game.sendMark('attack', 30, 30));

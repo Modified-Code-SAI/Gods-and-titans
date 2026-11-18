@@ -1990,8 +1990,10 @@ export class Game {
   /** Leave the match and go back to the title screen. */
   quitToMenu() {
     if (this.disposed || this.leaving) return;
-    this.countLeave();
     const s = this.session;
+    // The heir records on from the replay so far (prepareHandoff): keep it before countLeave finishes it.
+    if (s && s.isHost && s.canHandOff && this.recorder && !this.recorder.done && this.recorder.cmds.length <= MAX_HANDOFF_REPLAY_COMMANDS) this.quitCarry = this.recorder.carry();
+    this.countLeave();
     // A host with other players hands the game over first (DESIGN 7): it goes on in the heir's browser.
     if (s && s.isHost && s.canHandOff && s.clients && s.clients.size) {
       this.leaving = true;
@@ -2122,11 +2124,15 @@ export class Game {
     const room = makeRoomCode();
     // The replay so far rides along (not past MAX_HANDOFF_REPLAY_COMMANDS: the copy goes out every few seconds),
     // so the heir keeps recording and everyone still gets Watch Replay at the end.
-    const extra = () => {
+    // (A host quitting through the menu has finished its own copy first, countLeave: the last copy goes with what
+    // it had then, quitCarry, as the world has not moved since.)
+    const extra = (world) => {
       const r = this.recorder;
-      return r && !r.done && r.cmds.length <= MAX_HANDOFF_REPLAY_COMMANDS ? { replay: r.carry() } : {};
+      if (!r) return {};
+      if (r.done) return this.quitCarry && this.quitCarry.tick === world.tickCount ? { replay: this.quitCarry } : {};
+      return r.cmds.length <= MAX_HANDOFF_REPLAY_COMMANDS ? { replay: r.carry() } : {};
     };
-    session.enableHandoff({ room, here, tokens, pack: (world, ais) => net.encodeState(JSON.stringify(saveGame.packMatch(world, ais, extra()))) });
+    session.enableHandoff({ room, here, tokens, pack: (world, ais) => net.encodeState(JSON.stringify(saveGame.packMatch(world, ais, extra(world)))) });
     if (this.myToken) saveTicket({ roomCode: room, token: this.myToken, myIndex: session.myIndex, name: session.playerName(session.myIndex), transport: this.netTransport(), proof: session.proofs.get(session.myIndex) });
   }
 
