@@ -1,7 +1,7 @@
 // Stand-in for src/net/lobby.js, used when the page URL has ?mockLobby=1
 // (screenshots and UI work without a network). Same surface as DESIGN 7's
 // LobbyHost / LobbyClient, with a scripted friend joining and chatting.
-import { GAME_VERSION, MAX_PLAYERS, PLAYER_COLORS } from '../config.js';
+import { GAME_VERSION, MAX_PLAYERS, PLAYER_COLORS, START_PURSE_CHOICES } from '../config.js';
 import { PANTHEON_LIST } from '../data/index.js';
 import { resolveLandscape } from '../data/landscapes.js';
 
@@ -72,6 +72,7 @@ function buildSetup(state, mySlotIndex) {
     for (const p of players) p.team = 1;
   }
   if (state.sacred) setup.sacredVictory = true;
+  if (START_PURSE_CHOICES.includes(state.purse) && state.purse !== 'standard') setup.startPurse = state.purse;
   return { setup, myIndex };
 }
 
@@ -92,6 +93,7 @@ export class LobbyHost extends Emitter {
       mapSize: 'small',
       peace: 0,
       sacred: false,
+      purse: 'standard',
       slots: [
         slot('host', { name, pantheon: 'greek', team: 1, color: 0 }),
         online ? slot('open', { team: 1, color: 1 }) : slot('ai', { name: aiName('normal'), team: 2, color: 1 }),
@@ -185,6 +187,11 @@ export class LobbyHost extends Emitter {
 
   setSacred(on) {
     this.state.sacred = !!on;
+    this.emitChange();
+  }
+
+  setPurse(id) {
+    this.state.purse = id;
     this.emitChange();
   }
 

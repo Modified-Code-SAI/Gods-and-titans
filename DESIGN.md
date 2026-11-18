@@ -368,7 +368,9 @@ lists them Village, Town, City; `POWERS` has every one by id (30 in all; `valida
 
 ### 5.1 Start
 Each player: Town Center (tier 1, Village) at its start position, 5 Worshippers, 400 gold,
-200 wood, 50 faith. A gold mine (12000) 2–4 tiles from the Town Center, a forest edge 6–10
+200 wood, 50 faith. The lobby's Starting resources may raise that purse for every player (`setup.startPurse`,
+`START_PURSES` in config.js): Plenty 1500 gold, 1000 wood, 200 faith; Rich 5000 gold, 4000 wood, 1000 faith
+(Standard leaves the setup without the key; a daily twist still applies on top, `startOf` in data/twists.js). A gold mine (12000) 2–4 tiles from the Town Center, a forest edge 6–10
 tiles away. Population cap = sum of `popProvided` of completed buildings, max `POP_MAX` (200): a Town
 Center gives 12 and a House 8 (10 with Large Families), so 24 Houses and a Town Center reach it (19 with
 Large Families). Four Houses in a square can be combined into a Manor (5.3) that gives 48 instead of
@@ -954,6 +956,7 @@ const snap = world.getSnapshot();         // ViewSnapshot (6.3); includes and cl
   landscape: 'highlands' | 'rivers' | 'islands' | 'forest', // optional (6.7): absent = the classic Wildlands; never 'random' (the host draws it)
   peaceMinutes: 30 | 45 | 60,  // optional, Decade of Peace (5.10): absent = a normal game
   sacredVictory: true,         // optional, Sacred Victory (5.11): absent = only conquest wins
+  startPurse: 'plenty' | 'rich', // optional, starting resources (5.1): absent = the standard purse
   tutorial: true,              // optional, the guided first match (5.13); local only, never from a lobby
   survival: true,              // optional, Trial of the Titans (5.14): every player on team 1 against monster waves
   campaign: 'shore',           // optional, a campaign mission (5.16); local only, never from a lobby
@@ -1460,7 +1463,10 @@ game leaves one base free as a rich guarded expansion. No river center feature.
     host's browser keeps a ticket into the heir's room, so it can take its seat back after a reload (a host who quit
     through the menu is told on the title screen who hosts now, also when only its last copy failed to go out and the heir carries on from the one before). A player who cannot reach the heir in time ends as
     after a lost link ('host-left': ticket kept, Rejoin offered), even when the host quit through the menu.
-    Not carried over: the replay recording (the heir has none), the chat history, the voices' memory.
+    The replay recording rides in the backup's `extra.replay` (`ReplayRecorder.carry`, up to
+    `MAX_HANDOFF_REPLAY_COMMANDS`, 60,000 commands, over an hour of a busy game; a longer one stays behind): the heir,
+    now hosting, records on from it (`Game.recordOn`, its own seat as the replay's eyes), so every player still gets
+    Watch Replay at the end. Not carried over: the chat history, the voices' memory.
     A tree felled in the few seconds the game goes back stays felled in the view. A modified heir sees
     the whole game and every token: a trade-off for friends' games. Anyone can open a room code, so
     each seat has a proof (`HostSession.proofs`, random, in that seat's own `plan` and in the heir's
@@ -2170,7 +2176,8 @@ per-frame budget, so a revealed army appears over a few frames.
   Random, team, AI difficulty; presets; map size; landscape (Wildlands, Highlands, Rivers, Islands, Great Forest or Random, 6.7, as chips with a one-line note; clients see it as text; under the game mode a map preview, src/ui/map-preview.js: a sample map of that landscape and size for the filled seats, made by the real generator from a fixed seed a moment after a change and kept per landscape, size and seating, 2 px a tile with the minimap's shading, the bases in the seat colours, gold mines and sacred sites, captioned as a sample since every battle draws its own; Random shows a veiled card); game mode (Standard, Decade of Peace with
   30 / 45 / 60 min buttons, or Trial of the Titans with its rules and the player's best wave, 5.14; the host's pick;
   clients see it as text), victory (a Sacred Victory toggle, 5.11, hidden in a trial;
-  clients see it as text); room code with Copy and Copy Invite Link
+  clients see it as text), starting resources (Standard, Plenty or Rich, 5.1, with a line saying what each player
+  gets; clients see it as text; the rematch line and the loading screen name a Plenty or Rich start); room code with Copy and Copy Invite Link
   `?join=CODE`; chat; Start for host, in a footer under the lobby that stays on screen while the lobby scrolls
   above it, never over it), join screen (name + code), a notice pinned to the title and join screens
   (`menu.setNotice`, set by `boot` in main.js: no WebGL 2, and on a phone or tablet, `isTouchOnly` in menu-model.js:

@@ -111,5 +111,6 @@ export function skirmishLabel(state) {
   if (state.landscape && state.landscape !== 'classic') parts.push(landscapeInfo(state.landscape).name);
   if (state.peace) parts.push(`Decade of Peace ${state.peace} min`);
   if (state.sacred) parts.push('Sacred Victory');
+  if (state.purse === 'plenty' || state.purse === 'rich') parts.push(state.purse === 'rich' ? 'Rich start' : 'Plenty start');
   return parts.join(' · ');
 }

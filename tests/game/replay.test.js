@@ -9,12 +9,13 @@ import { createAI } from '../../src/ai/ai.js';
 import { buildSetup } from '../../src/net/lobby.js';
 import { normalizeCommand } from '../../src/sim/commands.js';
 import {
-  ReplayRecorder, worldChecksum, compactCommand, sanitizeReplay, replayMeta, sidesLabel, resultLabel, MIN_REPLAY_TICKS, MAX_CARRIED_COMMANDS,
+  ReplayRecorder, worldChecksum, compactCommand, sanitizeReplay, replayMeta, sidesLabel, resultLabel, MIN_REPLAY_TICKS, MAX_CARRIED_COMMANDS, MAX_HANDOFF_REPLAY_COMMANDS,
 } from '../../src/game/replay.js';
 import { ReplaySession, PlaybackClock } from '../../src/game/replay-session.js';
 import { MatchSaver } from '../../src/game/game-saves.js';
 import { Game } from '../../src/game/game.js';
 import { unpackMatch } from '../../src/game/save-game.js';
+import { decodeState } from '../../src/net/handoff.js';
 import {
   setReplayBackend, memoryBackend, saveReplay, listReplays, loadReplay, deleteReplay, packReplay, unpackReplay, MAX_REPLAYS,
 } from '../../src/game/replay-store.js';
@@ -319,6 +320,63 @@ test('a game saved and carried on keeps one replay of the whole match', async ()
   host.stop();
   host2.stop();
   rec.detach();
+});
+
+test('an heir that takes an online game over records on from the copy the host sent, through its own eyes', async () => {
+  const { setup } = buildSetup(lobby(), 29);
+  const host = new HostSession({ setup, myIndex: 0, createWorld, createAI, autoTick: false, useWorker: false });
+  const rec = new ReplayRecorder({ world: host.world, setup, myIndex: 0, now: () => 1000 }).attach();
+  host.viewState.on('snapshot', () => rec.sample());
+  host.start();
+  const HAND_AT = 1200;
+  const END = 2400;
+  for (let t = 0; t < HAND_AT; t++) {
+    myOrders(host, t);
+    host.step(1);
+  }
+  // The host's Game keeps an heir ready (prepareHandoff): what it packs for the heir carries the recording.
+  let handoff = null;
+  const online = { setup: { players: [{ kind: 'human' }, { kind: 'human' }] }, myIndex: 0, stopped: false, proofs: new Map(), enableHandoff: (o) => (handoff = o) };
+  const hostGame = Object.assign(Object.create(Game.prototype), { session: online, recorder: rec, mission: null, disposed: false, myToken: null });
+  await hostGame.prepareHandoff(online, new Map(), null);
+  assert.ok(handoff, 'an heir is kept ready');
+  const save = JSON.parse(await decodeState(await handoff.pack(host.world, host.ais)));
+  assert.equal(save.extra.replay.tick, HAND_AT);
+  assert.ok(save.extra.replay.cmds.length > 20);
+
+  // The heir (seat 1) builds the game from it (Game.migrate) and, now hosting, records on (adopt → recordOn).
+  const loaded = unpackMatch(save);
+  const host2 = new HostSession({
+    setup: loaded.world.setup, myIndex: 1, resumed: true, autoTick: false, useWorker: false, createWorld: () => loaded.world,
+    createAI: (world, index, difficulty) => loaded.ais.get(index) || createAI(world, index, difficulty),
+  });
+  const heirGame = Object.assign(Object.create(Game.prototype), { session: host2, recorder: null, viewState: host2.viewState, offs: [] });
+  heirGame.recordOn(host2, loaded.extra.replay);
+  assert.ok(heirGame.recorder);
+  host2.start();
+  // (The computer players play on in both; seat 0 has gone quiet, its player having left.)
+  for (let t = HAND_AT; t < END; t++) {
+    host.step(1);
+    host2.step(1);
+  }
+  assert.equal(worldChecksum(host2.world), worldChecksum(host.world), 'the carried-on game is the same game');
+  const record = heirGame.recorder.finish({ result: null });
+  assert.equal(record.pov, 1, 'the heir watches through its own eyes');
+  assert.equal(record.date, 1000, 'dated when the match began');
+  assert.ok(record.cmds.some((c) => c[0] < HAND_AT) && record.cmds.some((c) => c[0] > HAND_AT));
+  const s = playToEnd(play(sanitizeReplay(JSON.parse(JSON.stringify(record)))));
+  assert.equal(s.world.tickCount, END);
+  assert.equal(s.drift, null);
+  assert.equal(worldChecksum(s.world), worldChecksum(host2.world));
+  for (const off of heirGame.offs) off();
+  host.stop();
+  host2.stop();
+  rec.detach();
+
+  // A recording past the cap stays behind: the copy goes every few seconds.
+  rec.cmds.length = MAX_HANDOFF_REPLAY_COMMANDS + 1;
+  const big = JSON.parse(await decodeState(await handoff.pack(host.world, host.ais)));
+  assert.equal(big.extra.replay, undefined);
 });
 
 test('a carried recording that does not fit the loaded game, or is too long, is dropped', () => {

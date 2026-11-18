@@ -51,6 +51,7 @@ export function matchTerms(setup) {
   if (setup.survival) parts.push('Trial of the Titans');
   if (Number.isFinite(setup.peaceMinutes) && setup.peaceMinutes > 0) parts.push(`Decade of Peace · ${setup.peaceMinutes} min`);
   if (setup.sacredVictory) parts.push('Sacred Victory');
+  if (setup.startPurse === 'plenty' || setup.startPurse === 'rich') parts.push(setup.startPurse === 'rich' ? 'Rich start' : 'Plenty start');
   return parts.join(' · ');
 }
 

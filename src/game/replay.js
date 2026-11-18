@@ -25,6 +25,9 @@ export const MAX_REPLAY_COMMANDS = 600000; // far past any real game (a 4-AI gam
 // 4-player game, a few MB of JSON before the save is gzipped); a longer one is saved without it and
 // gets no replay once carried on.
 export const MAX_CARRIED_COMMANDS = 150000;
+// An online host's copy for its heir (DESIGN 7) carries the recording too while it has at most this many commands
+// (over an hour of a busy game): the copy goes out every few seconds, so a longer recording stays behind.
+export const MAX_HANDOFF_REPLAY_COMMANDS = 60000;
 const MAX_CHAT = 2000;
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 

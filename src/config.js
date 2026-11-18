@@ -31,6 +31,12 @@ export const NEUTRAL_COLOR = '#8a8a8a';
 
 // ---- Economy ----
 export const START_RESOURCES = { gold: 400, wood: 200, faith: 50 };
+// Starting resources a lobby may choose (DESIGN 5.1, setup.startPurse): 'standard' is START_RESOURCES.
+export const START_PURSES = {
+  plenty: { gold: 1500, wood: 1000, faith: 200 },
+  rich: { gold: 5000, wood: 4000, faith: 1000 },
+};
+export const START_PURSE_CHOICES = ['standard', 'plenty', 'rich'];
 export const START_WORKERS = 5;
 export const POP_MAX = 200; // ceiling on any player's population; Town Centers (12) and Houses (8) raise the cap up to this
 export const CARRY_AMOUNT = 10; // gold or wood per trip

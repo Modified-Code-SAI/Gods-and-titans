@@ -6,6 +6,15 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-wave-four',
+    date: '18 November 2026',
+    title: 'Rich starts',
+    items: [
+      'New lobby option: Starting resources. Play a Standard game, or start everyone with Plenty or Rich stores for a fast, big battle.',
+      'Online, when the host leaves and another player carries the game on, the match replay now carries on too.',
+    ],
+  },
+  {
     id: '2026-11-18-balor',
     date: '18 November 2026',
     title: 'Campaign Chapter IV: The Eye of Balor',
