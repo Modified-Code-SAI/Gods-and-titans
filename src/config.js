@@ -38,6 +38,9 @@ export const START_PURSES = {
 };
 export const START_PURSE_CHOICES = ['standard', 'plenty', 'rich'];
 export const START_WORKERS = 5;
+// Handicap (DESIGN 5.1, setup.players[i].handicap): a human player's share of what their workers gather and pray,
+// in percent, so friends of different skill can play an even game. 100 (the default) is left out of the setup.
+export const HANDICAPS = [100, 90, 80, 70, 60, 50];
 export const POP_MAX = 200; // ceiling on any player's population; Town Centers (12) and Houses (8) raise the cap up to this
 export const CARRY_AMOUNT = 10; // gold or wood per trip
 export const MINE_TIME = 1.5; // seconds a worker mines per 10-gold trip

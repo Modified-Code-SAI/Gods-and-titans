@@ -6,6 +6,15 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-handicap',
+    date: '18 November 2026',
+    title: 'Handicaps for friendly games',
+    items: [
+      'Playing a friend who is newer to the game? Give yourself a handicap with the percent button beside your name in the lobby.',
+      'At 80% you keep four fifths of the gold, wood and faith your people gather and pray. The host can set anyone\'s, from 100% down to 50%.',
+    ],
+  },
+  {
     id: '2026-11-18-dragon-swamp',
     date: '18 November 2026',
     title: 'Campaign Chapter VII: The Dragon of the Swamp',

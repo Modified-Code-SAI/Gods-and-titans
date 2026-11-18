@@ -8,7 +8,7 @@
 // launch = { role: 'host'|'client', setup, myIndex, conns | conn, lobby }.
 // Lobbies come from src/net/lobby.js (DESIGN 7), or from ./menu-mock.js when
 // the URL has ?mockLobby=1. ?transport=local swaps PeerJS for BroadcastChannel.
-import { GAME_TITLE, GAME_SUBTITLE, GAME_VERSION, PLAYER_COLORS, MAP_SIZES, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SURVIVAL_FIRST_WAVE, SURVIVAL_INTERVAL, SURVIVAL_BOSS_EVERY, SACRED_NAME } from '../config.js';
+import { HANDICAPS, GAME_TITLE, GAME_SUBTITLE, GAME_VERSION, PLAYER_COLORS, MAP_SIZES, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SURVIVAL_FIRST_WAVE, SURVIVAL_INTERVAL, SURVIVAL_BOSS_EVERY, SACRED_NAME } from '../config.js';
 import { PANTHEON_LIST } from '../data/index.js';
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
 import { STYLE_CHOICES, styleChoice, styleChoiceInfo } from '../data/ai-styles.js';
@@ -701,6 +701,25 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
           }, info.icon)
           : h('span.mw-style-chip.is-static', { title: tip, 'aria-label': `Play style: ${info.name}` }, info.icon);
         who = h('div.mw-who-wrap', who, chip);
+      }
+      // a player's handicap (DESIGN 5.1): the host sets anyone's, a player their own; shown to all when below 100%
+      if (s.kind === 'human' || s.kind === 'host') {
+        const hc = HANDICAPS.includes(s.handicap) ? s.handicap : 100;
+        const editable = isHost || i === me;
+        const tip = hc === 100 ? 'No handicap: this player keeps all they gather and pray.' : `Handicap: this player keeps ${hc}% of the gold, wood and faith they gather and pray.`;
+        if (editable || hc !== 100) {
+          const label = `${hc}%`;
+          const chip = editable
+            ? h('button.mw-style-chip.mw-handicap-chip', {
+              type: 'button',
+              title: `${tip} Click to change.`,
+              'aria-label': `Handicap for slot ${i + 1}: ${label}`,
+              class: hc === 100 ? '' : 'is-on',
+              onclick: () => patchSlot(i, { handicap: HANDICAPS[(HANDICAPS.indexOf(hc) + 1) % HANDICAPS.length] }),
+            }, label)
+            : h('span.mw-style-chip.mw-handicap-chip.is-static.is-on', { title: tip, 'aria-label': `Handicap ${label}` }, label);
+          who = h('div.mw-who-wrap', who, chip);
+        }
       }
 
       // pantheon

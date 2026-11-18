@@ -3,7 +3,7 @@
 // types and typed fields before they reach World.issueCommand. Clients check
 // what a (possibly buggy) host sends before it reaches the ViewState: the
 // GameSetup from `start` and every snapshot. Pure: runs in Node too.
-import { MAX_PLAYERS, PLAYER_COLORS, TRADE_RESOURCES, TRADE_MAX, PEACE_LENGTHS, MAX_QUEUE, START_PURSE_CHOICES } from '../config.js';
+import { MAX_PLAYERS, PLAYER_COLORS, TRADE_RESOURCES, TRADE_MAX, PEACE_LENGTHS, MAX_QUEUE, START_PURSE_CHOICES, HANDICAPS } from '../config.js';
 import { UNITS, BUILDINGS, ABILITIES, PANTHEONS, UPGRADES } from '../data/index.js';
 import { MARKS } from '../data/marks.js';
 import { POWERS } from '../data/powers.js';
@@ -159,6 +159,7 @@ export function validateSetup(setup, myIndex) {
       kind,
       difficulty: kind === 'ai' && ['easy', 'normal', 'hard', 'brutal'].includes(p.difficulty) ? p.difficulty : kind === 'ai' ? 'normal' : null,
       ...(kind === 'ai' && STYLE_IDS.includes(p.style) ? { style: p.style } : {}), // play style (DESIGN 10)
+      ...(kind === 'human' && HANDICAPS.includes(p.handicap) && p.handicap !== 100 ? { handicap: p.handicap } : {}), // DESIGN 5.1
     });
   }
   const clean = { version: typeof setup.version === 'string' ? setup.version.slice(0, 32) : '', seed, mapSize, players };
