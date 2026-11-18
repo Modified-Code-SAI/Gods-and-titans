@@ -87,7 +87,7 @@ function complete(world, group) {
   }
   const m = world.createBuilding(group.owner, MANOR, group.tx, group.ty, true, true);
   m.hp = Math.max(1, Math.round(m.maxHp * share));
-  world.emit({ type: 'buildingComplete', id: m.id, t: MANOR, o: group.owner });
+  world.emit({ type: 'buildingComplete', id: m.id, t: MANOR, o: group.owner, from: group.ids.slice() }); // from: the Houses it replaced (the HUD selects the Manor in their place)
 }
 
 /**

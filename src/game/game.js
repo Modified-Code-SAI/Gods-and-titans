@@ -1390,6 +1390,7 @@ export class Game {
         if (ev.o === me) this.worldSoundAt(ev.id, 'build');
         break;
       case 'buildingComplete':
+        if (ev.o === me && Array.isArray(ev.from) && this.selection) this.selection.replaceMerged(ev.from, ev.id); // a Manor stands where selected Houses were
         if (ev.o === me) {
           const b = BUILDINGS[ev.t];
           hud.message(`${b ? b.name : 'Building'} completed.`, 'info', { icon: b && buildingIcon(ev.t, vs.me && vs.me.pantheon) });

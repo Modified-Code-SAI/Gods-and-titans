@@ -378,3 +378,31 @@ test('How to Play tells how to combine Houses, with the numbers from the data', 
   assert.match(text, /Houses: combine four in a square into a Manor \(U\), or cancel it \(C\)/);
   assert.equal(BUILDINGS.house.popProvided, HOUSE.popProvided);
 });
+
+test('the Manor takes the place of its Houses in the selection and in control groups', () => {
+  const world = makeWorld();
+  rich(world);
+  town(world);
+  const houses = square(world, 20, 20);
+  const stray = place(world, 0, 'house', 40, 40);
+  const vs = viewOf(world);
+  const sel = new Selection(vs);
+  sel.set([...ids(houses), stray.id]);
+  sel.groups.set(3, [houses[0].id, stray.id]);
+  sel.groups.set(4, [stray.id]);
+  const events = [];
+  vs.on('buildingComplete', (ev) => {
+    events.push(ev);
+    sel.replaceMerged(ev.from, ev.id);
+  });
+  merge(world, houses);
+  run(world, rule.time + 1);
+  push(world, vs);
+  const [manor] = manors(world);
+  assert.ok(manor);
+  assert.deepEqual([...events[0].from].sort((p, q) => p - q), ids(houses).sort((p, q) => p - q), 'the event names the Houses it replaced');
+  assert.deepEqual([...sel.ids].sort((p, q) => p - q), [stray.id, manor.id].sort((p, q) => p - q));
+  assert.deepEqual(sel.groups.get(3), [stray.id, manor.id]);
+  assert.deepEqual(sel.groups.get(4), [stray.id], 'a group without the Houses is left alone');
+  assert.equal(sel.replaceMerged([12345], manor.id), false);
+});

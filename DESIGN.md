@@ -481,7 +481,8 @@ Pop used = pop of living units + pop of everything queued in production.
     House that falls meanwhile (`releaseBuilding`), while the other three carry on as Houses. Researching at
     a House being combined is refused (`That House is being combined into a Manor.`).
   - When the time is up the four Houses are removed (no death, like a wall taken down) and one Manor stands
-    on their ground, finished, announced by a `buildingComplete` ("Manor completed."), with the average of
+    on their ground, finished, announced by a `buildingComplete` ("Manor completed."; its `from` lists the four
+    House ids, and the HUD puts the Manor in their place in the selection and in control groups), with the average of
     the four health fractions (combining does not heal; repair does). A Manor shelters 48
     population against the 32 of four Houses (+16, so the limit of 200 is reached with a Town Center and four
     Manors), has 2400 health (against 2000) and armor 4, and costs 420 gold and 180 wood to replace: four
@@ -1118,7 +1119,7 @@ EntityView = {
 { type: 'deposit', player, amount, res, x, y }                       // a gatherer's load brought in (res 'g' | 'w'); the owner's renderer floats a small "+N" over it, one per 2×2-tile spot each 0.6 s
 { type: 'spawn',   id, t, o }                                        // unit trained/summoned/revived
 { type: 'construction', id, t, o }                                   // building placed
-{ type: 'buildingComplete', id, t, o }
+{ type: 'buildingComplete', id, t, o, from? }   // from: the Houses a Manor replaced
 { type: 'tierUp',  player, tier }
 { type: 'researched', player, up }                                   // a building upgrade finished
 { type: 'trade',   from, to, res, amt, got }                         // team market transfer (amt sent, got received)
