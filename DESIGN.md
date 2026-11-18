@@ -3159,10 +3159,10 @@ small style button beside the slot (clients see the icon); at the start `resolve
 (`drawStyle(seed, index)`, each of four about as likely) and writes the result into `setup.players[i].style`: Raider (first wave at 0.8
 of the time, waves at 0.8 of the pop and interval, a later second mine, one tower fewer), Builder (four more
 worshippers, earlier mines and tiers, first wave at 1.25 of the time with 1.3 of the pop), Guardian (two more
-towers, first wave at 1.1 of the time, marches at 1.05 of the fight ratio), or none: Balanced, the profile itself.
+towers, first wave at 1.05 of the time, and a wall across the front of its base: see below), or none: Balanced, the profile itself.
 A style changes only when and how hard it fights, never how fast it thinks or what it may do, so it is as fair as
 its difficulty: over 30 to 40 Normal 1v1 games against a balanced AI (same seeds and pantheons), Raider won 5 more,
-Builder 4 more, Guardian 1 fewer than a balanced one did. A stand-in for a dropped player and campaign and daily AIs
+Builder 4 more, Guardian 1 fewer than a balanced one did (2 fewer since it walls its front, below). A stand-in for a dropped player and campaign and daily AIs
 play balanced. The loading screen names it ("Computer · Hard · Raider"). Called every sim tick on the host;
 thinks every `AI_THINK_INTERVAL[difficulty]` ticks. Reads world state, acts **only** through
 `world.issueCommand(playerIndex, cmd)`. Behavior: keep training worshippers up to what its
@@ -3176,7 +3176,20 @@ games); gods cast abilities sensibly (damage on clumps, heals when allies hurt, 
 big fights); retreat badly hurt gods to base. From the Town on it places each new House to fill out a square of four (`houseBlockSpot` in
 src/ai/placement.js: the fullest partial square near home whose free cells are all placeable and whose 4x4 block keeps
 the walkway ring; the opening's layout is unchanged) and, with no threat, a Town and 400 gold / 200 wood in the bank,
-combines one finished square at a time into a Manor (5.3, `planManors` in src/ai/production.js). It builds no walls, and wall segments are invisible to its scans (`worldDigest`,
+combines one finished square at a time into a Manor (5.3, `planManors` in src/ai/production.js). Only a Guardian builds walls (`planWalls` in src/ai/walls.js): from
+8:00, a Town with 500 wood, twelve workers and no threat, it orders once a wooden line across the front 16 tiles out
+from its Town Center (toward the map's middle, snapped to one of the eight wall directions; `wallPlan`), two wings of
+up to 17 tiles with a five-tile gate between them for its own armies and workers, two builders a wing (blocked tiles
+are skipped, as for a player); in the City with 1200 gold and 300 wood it turns every finished segment to stone, once.
+A plan that would shut the base away from the map's middle or a gold mine within 40 tiles (`cutsOff`, a flood
+fill with and without the line) is tried 20 and then 13 tiles out instead, and dropped when all three would.
+Over 40 Normal 1v1 games against a balanced AI (seeds 700 on, the balanced AI in the same seat won 16) the walled
+Guardian won 11 to 13 while it still waited for 1.05 of the fight ratio and 1.1 of the first-wave time, and 14 once
+those went back to 1 and 1.05: the wall and its stone are its caution now. Expansion guard towers (any AI with two
+or more towers allowed) stand 4.5 to 9 tiles from the mine, clear of its miners, and stop at two towers by the mine,
+the AI's own or an ally's (an audit of four Hard Guardians found allies ringing one mine with nine towers and
+their miners boxed in). Its own wall segments,
+like everyone's, are invisible to its scans (`worldDigest`,
 `scanWorld`, team targeting): they are neither buildings it counts nor targets it picks, and an army shut out by a
 player's wall breaks through it like any soldier (5.5). Its Barracks also trains the pantheon elite soldier (4.10)
 once it is a Town, as the melee or ranged soldier its army is short of. Hard is fair (no resource cheats), and so is Brutal. Army size stops at the

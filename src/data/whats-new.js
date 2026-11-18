@@ -6,6 +6,15 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-guardian-walls',
+    date: '18 November 2026',
+    title: 'Guardians build walls',
+    items: [
+      'Computer players with the Guardian style now wall the front of their base once they reach the Town, leaving a gate open in the middle.',
+      'In the City they turn the wall to stone. Bring a ram, or find the gate.',
+    ],
+  },
+  {
     id: '2026-11-18-handicap',
     date: '18 November 2026',
     title: 'Handicaps for friendly games',
