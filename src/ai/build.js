@@ -6,6 +6,7 @@ import { POP_MAX } from '../config.js';
 import { haveOf, doneOf } from './scan.js';
 import { findSpot, houseBlockSpot } from './placement.js';
 import { onLongHaul } from './economy.js';
+import { relicOf } from '../sim/relics.js';
 
 const HAUL_BUILD = 20; // tiles: how much farther a builder may be than a worker on a long haul (pickBuilder)
 
@@ -21,7 +22,8 @@ export function pickBuilder(ai, s, x, y, exclude) {
     if (exclude && exclude.has(u.id)) continue;
     if (ai.militia && ai.militia.has(u.id)) continue;
     const j = s.job.get(u.id);
-    if (j === 'build' || j === 'fight') continue;
+    // A relic carrier is never taken (runRelics sends it back to its Temple, and the two orders swapped every think).
+    if (j === 'build' || j === 'fight' || j === 'relic' || relicOf(ai.world, u)) continue;
     let d = Math.hypot(u.x - x, u.y - y);
     if (j === 'pray') d += 25;
     if (j === 'idle') d -= 4;
