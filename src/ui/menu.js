@@ -26,7 +26,7 @@ import { NEWS, hasUnreadNews, unreadNews, markNewsSeen } from '../data/whats-new
 import { MapPreview } from './map-preview.js';
 import { renderCareerContent } from './menu-career.js';
 import { renderReplays } from './menu-replays.js';
-import { getCareer, markSeen, hasBeatenComputer } from '../game/career.js';
+import { getCareer, markSeen, hasBeatenComputer, recordCampaign } from '../game/career.js';
 import { loadSkirmish, launchFrom, skirmishLabel } from '../game/rematch.js';
 import { AUTO_SLOT, listSaves, deleteSave, saveTitle, saveLine } from '../game/save-store.js';
 import { dailyStatus, dailyLabel, dailyLaunch } from '../game/daily.js';
@@ -34,7 +34,7 @@ import { tutorialSetup } from '../sim/tutorial.js';
 import { campaignSetup } from '../sim/campaign.js';
 import { campaignScreen as buildCampaignScreen } from './menu-campaign.js';
 import { chapterOf } from '../data/campaign.js';
-import { nextToPlay, wonCount } from '../game/campaign-progress.js';
+import { nextToPlay, wonCount, chaptersDone } from '../game/campaign-progress.js';
 import { medalLabel } from '../data/medals.js';
 import { ALERT_OPTIONS, TAB_ALERT_OPTIONS, alertNote, tabAlertNote } from './alert-options.js';
 import { chooseTabAlerts, notificationState } from './tab-attention.js';
@@ -1495,6 +1495,7 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
 
   function careerScreen() {
     const backBtn = h('button.mw-btn.mw-btn--ghost', { type: 'button', onclick: () => go('title') }, '‹ Back');
+    recordCampaign(chaptersDone()); // chapters finished before their achievements existed
     const c = getCareer();
     const unseen = new Set(c.unseen);
     markSeen(); // the "New" badges show this time only

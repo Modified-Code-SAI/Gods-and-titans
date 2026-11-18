@@ -39,7 +39,7 @@ import { TeamMarks } from './team-marks.js';
 import { readTicket, saveTicket, clearTicket, saveTally, saveView, readView, saveNext } from '../net/rejoin-ticket.js';
 import { CareerTracker } from './career-tracker.js';
 import { getCareer } from './career.js';
-import { recordTutorial } from './career.js';
+import { recordTutorial, recordCampaign } from './career.js';
 import { TutorialDirector } from './tutorial.js';
 import { SlowFrameWatch } from './slow-hint.js';
 import { FrameCap, FpsMeter, FRAME_CAP_MS } from './frame-pace.js';
@@ -52,7 +52,7 @@ import { missionOf } from '../sim/campaign.js';
 import { nextMission } from '../data/campaign.js';
 import { CampaignVoice } from './campaign-voice.js';
 import { TauntVoice } from './taunt-voice.js';
-import { recordMission } from './campaign-progress.js';
+import { recordMission, chaptersDone } from './campaign-progress.js';
 import { ReplayRecorder } from './replay.js';
 import { saveReplay } from './replay-store.js';
 import { ReplaySession } from './replay-session.js';
@@ -1117,17 +1117,23 @@ export class Game {
       if (this.saver) this.saver.onGameOver();
       dropTicket(this.launch);
       dropHostTicket(this.launch, this.myToken);
-      let unlocked = this.career ? this.career.finish(result, survival ? { wave } : null) : null;
+      // A daily challenge is counted first: its streak feeds the career's daily achievements.
+      const daily = this.launch && this.launch.daily ? this.countDaily(result === 'victory') : null;
+      const extra = { how: vs.gameOver.how || null };
+      if (survival) extra.wave = wave;
+      if (daily) extra.daily = { streak: daily.streak };
+      let unlocked = this.career ? this.career.finish(result, extra) : null;
       const record = survival && unlocked ? { best: Math.max(previous, wave), previous, isNew: wave > previous } : null;
       // The guided first match: a victory earns a medal by its game time, kept with the career.
       const medal = this.tutorial && result === 'victory' ? medalFor(vs.time) : null;
       if (medal) unlocked = recordTutorial(medal.rank);
-      const daily = this.launch && this.launch.daily ? this.countDaily(result === 'victory') : null;
       if (this.recorder) this.keepReplay(result, wt);
       // A campaign mission: a win is kept (and opens the next one), and the narrator says how the story goes on.
       const mission = this.mission ? { m: this.mission, record: null, next: null } : null;
       if (mission && result === 'victory') {
         mission.record = recordMission(this.mission.id, vs.time);
+        const told = recordCampaign(chaptersDone());
+        if (told.length) unlocked = [...(unlocked || []), ...told];
         mission.next = nextMission(this.mission.id);
         if (this.voice) setTimeout(() => !this.disposed && this.voice.say(this.mission.victory), 1600);
       }

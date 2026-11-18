@@ -5,7 +5,8 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID, EARNED_WIN_SECONDS, earnedWin } from '../../src/data/achievements.js';
 import { PANTHEON_LIST } from '../../src/data/pantheon-list.js';
-import { getCareer, recordMatch, checkLive, resetCareer, sanitizeCareer, careerSummary, markSeen } from '../../src/game/career.js';
+import { getCareer, recordMatch, checkLive, resetCareer, sanitizeCareer, careerSummary, markSeen, recordCampaign } from '../../src/game/career.js';
+import { CHAPTERS } from '../../src/data/campaign.js';
 import { CareerTracker } from '../../src/game/career-tracker.js';
 
 const NEWER_EMOJI = /[\u{1FA70}-\u{1FAFF}\u{1F6D5}-\u{1F6D7}\u{1F6DC}-\u{1F6DF}\u{1F6FA}-\u{1F6FC}\u{1F7E0}-\u{1F7EB}\u{1F7F0}\u{1F90C}-\u{1F90F}\u{1F93F}\u{1F971}\u{1F972}\u{1F977}-\u{1F97B}\u{1F9A3}-\u{1F9AF}\u{1F9BA}-\u{1F9BF}\u{1F9C3}-\u{1F9CF}\u{26A7}\u{200D}]/u;
@@ -24,8 +25,8 @@ function match(over = {}) {
 
 beforeEach(() => resetCareer({}));
 
-test('about thirty achievements with unique ids, a group, a name, a description and an old-enough emoji', () => {
-  assert.ok(ACHIEVEMENTS.length >= 30 && ACHIEVEMENTS.length <= 40, `${ACHIEVEMENTS.length}`);
+test('thirty to fifty achievements with unique ids, a group, a name, a description and an old-enough emoji', () => {
+  assert.ok(ACHIEVEMENTS.length >= 30 && ACHIEVEMENTS.length <= 50, `${ACHIEVEMENTS.length}`);
   assert.equal(Object.keys(ACHIEVEMENT_BY_ID).length, ACHIEVEMENTS.length);
   for (const a of ACHIEVEMENTS) {
     assert.ok(a.group && a.name && a.desc && a.icon && typeof a.test === 'function', a.id);
@@ -257,4 +258,40 @@ test('a spectator has no career to count', () => {
   const t = new CareerTracker({ viewState: vs, setup: SETUP, career: { checkLive: () => [], recordMatch: () => assert.fail('recorded') } }).attach();
   vs.fire('snapshot', {});
   assert.equal(t.finish('victory'), null);
+});
+
+test('later modes: a Sacred Victory, a god power, a relic brought home, the daily challenge and its streak', () => {
+  const ids = (list) => list.map((a) => a.id);
+  assert.ok(!ids(recordMatch(match({ how: 'conquest' }))).includes('hallowed_ground'));
+  assert.ok(ids(recordMatch(match({ how: 'sacred' }))).includes('hallowed_ground'));
+  assert.ok(!ids(recordMatch(match({ result: 'defeat', how: 'sacred' }))).includes('hallowed_ground'));
+  assert.deepEqual(ids(checkLive(match({ result: null, powersCast: 1, relicsHoused: 1 }))).sort(), ['relic_keeper', 'wrath_of_heaven']);
+  const lost = ids(recordMatch(match({ result: 'defeat', daily: { streak: 3 } })));
+  assert.ok(!lost.includes('daily_victor') && !lost.includes('daily_devotion'));
+  assert.equal(getCareer().best.streak, 3, 'the longest daily run is kept for the progress bar');
+  assert.deepEqual(ACHIEVEMENT_BY_ID.daily_devotion.progress(getCareer()), [3, 7]);
+  const won = ids(recordMatch(match({ daily: { streak: 7 } })));
+  assert.ok(won.includes('daily_victor') && won.includes('daily_devotion'));
+});
+
+test('each finished campaign chapter unlocks its achievement, once', () => {
+  assert.equal(ACHIEVEMENTS.filter((a) => a.group === 'campaign').length, CHAPTERS.length);
+  assert.deepEqual(recordCampaign([]), []);
+  const first = recordCampaign([CHAPTERS[0].id]).map((a) => a.id);
+  assert.deepEqual(first, [`chapter_${CHAPTERS[0].id}`]);
+  assert.deepEqual(recordCampaign([CHAPTERS[0].id]), [], 'already unlocked');
+  assert.equal(getCareer().games, 0, 'a chapter is not a game of the career');
+});
+
+test('the tracker counts my god powers and relics housed, not anyone else\'s', () => {
+  const vs = fakeView();
+  const t = new CareerTracker({ viewState: vs, setup: SETUP, career: { checkLive: () => [], recordMatch: () => [] } }).attach();
+  vs.fire('godPower', { type: 'godPower', player: 0, power: 'x' });
+  vs.fire('godPower', { type: 'godPower', player: 1, power: 'x' });
+  vs.fire('relic', { type: 'relic', ev: 'take', player: 0 });
+  vs.fire('relic', { type: 'relic', ev: 'house', player: 0 });
+  vs.fire('relic', { type: 'relic', ev: 'house', player: 1 });
+  assert.equal(t.m.powersCast, 1);
+  assert.equal(t.m.relicsHoused, 1);
+  t.dispose();
 });

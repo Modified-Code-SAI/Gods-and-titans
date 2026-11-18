@@ -7,6 +7,7 @@
 import { PANTHEON_LIST } from './pantheon-list.js';
 import { MAX_GODS, GOD_MAX_LEVEL } from '../config.js';
 import { RANK_MAX, RANK_NAMES } from './ranks.js';
+import { CHAPTERS } from './campaign.js';
 
 export const ACHIEVEMENT_GROUPS = [
   ['career', 'Career'],
@@ -15,6 +16,7 @@ export const ACHIEVEMENT_GROUPS = [
   ['battle', 'Battle'],
   ['city', 'City'],
   ['challenge', 'Challenges'],
+  ['campaign', 'Campaign'],
 ];
 
 /**
@@ -53,6 +55,15 @@ const PANTHEON_TITLES = {
   mesopotamian: ['King of the Four Quarters', '🏺'],
   west_african: ['Words of the Griot', '🥁'],
 };
+
+// One per campaign chapter: win all of its missions. Checked by recordCampaign (src/game/career.js) with
+// m.chapters, the ids of the chapters finished on this device, after a mission is won and when the Career opens.
+const CHAPTER_ICONS = { long_winter: '❄️', wolf_age: '🐺', chaos_sea: '🌊' };
+const chapterAchievements = CHAPTERS.map((ch) => ({
+  id: `chapter_${ch.id}`, group: 'campaign', name: ch.title, icon: CHAPTER_ICONS[ch.id] || '📜', chapter: ch.id,
+  desc: `Finish ${ch.chapter} of the campaign: win all ${ch.missions.length} of its missions.`,
+  test: (m) => Array.isArray(m.chapters) && m.chapters.includes(ch.id),
+}));
 
 const pantheonAchievements = PANTHEON_LIST.map((p) => {
   const [name, icon] = PANTHEON_TITLES[p.id] || [`${p.name} Victory`, '✦'];
@@ -93,6 +104,10 @@ export const ACHIEVEMENTS = [
     test: (m) => m.titanSummoned },
   { id: 'titanfall', group: 'divine', name: 'Titanfall', icon: '💥', desc: 'See an enemy Titan fall.',
     test: (m) => m.enemyTitansFallen >= 1 },
+  { id: 'wrath_of_heaven', group: 'divine', name: 'Wrath of Heaven', icon: '⛈️', desc: 'Call down a god power.',
+    test: (m) => m.powersCast >= 1 },
+  { id: 'relic_keeper', group: 'divine', name: 'Keeper of Relics', icon: '🔮', desc: 'Bring a relic home to your Temple.',
+    test: (m) => m.relicsHoused >= 1 },
   // ---- battle
   { id: 'champion', group: 'battle', name: RANK_NAMES[RANK_MAX], icon: '🥇', desc: `Raise a soldier to the rank of ${RANK_NAMES[RANK_MAX]}.`,
     test: (m) => m.maxRank >= RANK_MAX },
@@ -130,8 +145,16 @@ export const ACHIEVEMENTS = [
     test: (m, c) => c.best.wave >= 10, progress: (c) => count(c.best.wave, 10) },
   { id: 'titans_bane', group: 'challenge', name: "Titans' Bane", icon: '🗿', desc: 'Reach wave 20 in the Trial of the Titans.',
     test: (m, c) => c.best.wave >= 20, progress: (c) => count(c.best.wave, 20) },
+  { id: 'hallowed_ground', group: 'challenge', name: 'Hallowed Ground', icon: '🛐', desc: 'Win a game by holding the sacred sites (Sacred Victory).',
+    test: (m) => won(m) && m.how === 'sacred' },
+  { id: 'daily_victor', group: 'challenge', name: 'Seize the Day', icon: '📅', desc: 'Win a daily challenge.',
+    test: (m) => won(m) && !!m.daily },
+  { id: 'daily_devotion', group: 'challenge', name: 'Daily Devotion', icon: '🕯️', desc: 'Play the daily challenge seven days in a row.',
+    test: (m) => !!m.daily && m.daily.streak >= 7, progress: (c) => count(c.best.streak, 7) },
   { id: 'the_long_war', group: 'challenge', name: 'The Long War', icon: '⏳', desc: 'Play one game for an hour of game time.',
     test: (m) => m.time >= 60 * 60 },
+  // ---- campaign
+  ...chapterAchievements,
 ];
 
 export const ACHIEVEMENT_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, a]));

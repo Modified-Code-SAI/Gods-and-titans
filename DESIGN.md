@@ -2883,12 +2883,17 @@ achievements with the time, and the ones not yet seen.
   unlocked: …" with a chime. The match is counted once, at the game-over screen (victory, defeat or
   draw), or when the player leaves earlier: a loss if already defeated, or for a running match left
   after its first minute (one the host ended, or left in its first minute, is not counted).
-- 40 achievements in six groups: Career (the two lesson medals of 9.2, first win, 10 games, 10 and 25 wins, every pantheon), Pantheons
-  (a win with each), Gods and Titans, Battle (Champion, 100 kills, a win under 15 min, a win without
+- 48 achievements in seven groups: Career (the two lesson medals of 9.2, first win, 10 games, 10 and 25 wins, every pantheon), Pantheons
+  (a win with each), Gods and Titans (also Wrath of Heaven: a god power cast, `godPower` events; Keeper of Relics:
+  a relic housed in an own Temple, `relic` events with `ev: 'house'`), Battle (Champion, 100 kills, a win under 15 min, a win without
   losing a building, outnumbered), City (City Palace, 10,000 gathered, Manor, stone wall), Challenges
-  (Normal, Hard and Brutal AI, a human enemy, an ally, the Decade of Peace, waves 10 and 20 of the Trial of the Titans, an hour-long game).
+  (Normal, Hard and Brutal AI, a human enemy, an ally, the Decade of Peace, waves 10 and 20 of the Trial of the Titans, an hour-long game,
+  Hallowed Ground: a Sacred Victory, `finish` gets `how` from `gameOver.how`; Seize the Day: a daily challenge won; Daily Devotion:
+  a seven-day daily streak, `finish` gets `daily: { streak }` from `recordDaily`, which runs first; the longest run is kept as
+  `best.streak` for its progress bar), Campaign (one per chapter, all its missions won: `recordCampaign(chaptersDone())` after a
+  mission is won and when the Career screen opens, so chapters finished before these existed count too; not a game of the career).
 - Game-over screen: under the statistics, a card per achievement the match unlocked and a line
-  "Career: W wins in G games (P%) · U of 40 achievements". Title screen: a Career button (a red count of
+  "Career: W wins in G games (P%) · U of N achievements". Title screen: a Career button (a red count of
   unseen unlocks) opens the Career screen: profile tiles, wins by pantheon (at most five cards to a row, each
   name on one line), the last games as chips and
   the gallery (locked ones dimmed, progress bars for counted ones, "New" on the unseen, cleared on opening).
@@ -2900,7 +2905,7 @@ achievements with the time, and the ones not yet seen.
   in its tooltip).
 - The guided first match (9.2) is not a game of the career: no tracker runs in it. Its victory keeps the best
   medal (`best.medal`, 1 bronze … 3 gold, `recordTutorial`) and unlocks First Lessons (any medal) and Top of
-  the Class (gold), which with the Trial's two and Brutal's one makes 40 achievements; the career screen lists the medal.
+  the Class (gold); the career screen lists the medal.
 
 ### 9.2 Guided first match (src/game/tutorial.js, src/ui/hud-tutorial.js, src/data/medals.js)
 Learn to Play (title screen, under Play vs AI; a gold "New? Start here" tag while the career has no game and
