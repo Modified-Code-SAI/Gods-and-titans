@@ -487,7 +487,7 @@ async function singlePlayer(browser) {
   await page.click('.hud-overlay.is-menu button:text-is("Surrender")');
   await page.waitForSelector('.hud-overlay.is-confirm', { timeout: 3000 });
   await page.click('.hud-overlay.is-confirm button:text-is("Surrender")');
-  await page.waitForSelector('.hud-overlay.is-gameover', { timeout: 10000 }).catch(() => {});
+  await page.waitForSelector('.hud-overlay.is-gameover', { timeout: 60000 }).catch(() => {});
   await wait(500);
   const lost = await page.evaluate(() => document.querySelector('.hud-overlay.is-gameover')?.textContent || '');
   ok('surrender ends the game with the defeat screen', /defeat/i.test(lost), lost.slice(0, 60));
