@@ -22,6 +22,7 @@ export const NEWS = [
     items: [
       'Computer players now each have a play style: Raiders strike early and often, Builders grow huge and strike late, Guardians hide behind towers.',
       'The loading screen tells you which style each computer player has, so you can plan for it.',
+      'Or choose it yourself: the small button beside each computer player in the lobby cycles Any style, Balanced, Raider, Builder and Guardian.',
     ],
   },
   {

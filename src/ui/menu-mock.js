@@ -4,12 +4,12 @@
 import { GAME_VERSION, MAX_PLAYERS, PLAYER_COLORS, START_PURSE_CHOICES } from '../config.js';
 import { PANTHEON_LIST } from '../data/index.js';
 import { resolveLandscape } from '../data/landscapes.js';
-import { drawStyle } from '../data/ai-styles.js';
+import { resolveStyle } from '../data/ai-styles.js';
 
 const later = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function slot(kind, extra = {}) {
-  return { kind, name: '', pantheon: 'random', team: 1, color: 0, difficulty: 'normal', peerId: null, ...extra };
+  return { kind, name: '', pantheon: 'random', team: 1, color: 0, difficulty: 'normal', style: 'random', peerId: null, ...extra };
 }
 
 class Emitter {
@@ -62,7 +62,7 @@ function buildSetup(state, mySlotIndex) {
       color: PLAYER_COLORS[s.color],
       kind: s.kind === 'ai' ? 'ai' : 'human',
       difficulty: s.kind === 'ai' ? s.difficulty : null,
-      ...(s.kind === 'ai' && drawStyle(seed, players.length) ? { style: drawStyle(seed, players.length) } : {}),
+      ...(s.kind === 'ai' && resolveStyle(s.style, seed, players.length) ? { style: resolveStyle(s.style, seed, players.length) } : {}),
     });
   });
   const setup = { version: GAME_VERSION, seed, mapSize: state.mapSize, players };
@@ -129,7 +129,7 @@ export class LobbyHost extends Emitter {
       s.peerId = null;
       s.name = patch.kind === 'ai' ? aiName(patch.difficulty || s.difficulty) : '';
     }
-    for (const k of ['pantheon', 'team', 'color', 'difficulty', 'name']) if (patch[k] !== undefined) s[k] = patch[k];
+    for (const k of ['pantheon', 'team', 'color', 'difficulty', 'name', 'style']) if (patch[k] !== undefined) s[k] = patch[k];
     if (s.kind === 'ai') s.name = aiName(s.difficulty);
     this.emitChange();
   }

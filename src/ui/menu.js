@@ -11,6 +11,7 @@
 import { GAME_TITLE, GAME_SUBTITLE, GAME_VERSION, PLAYER_COLORS, MAP_SIZES, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SURVIVAL_FIRST_WAVE, SURVIVAL_INTERVAL, SURVIVAL_BOSS_EVERY, SACRED_NAME } from '../config.js';
 import { PANTHEON_LIST } from '../data/index.js';
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
+import { STYLE_CHOICES, styleChoice, styleChoiceInfo } from '../data/ai-styles.js';
 import { getSettings, saveSettings, onSettingsChange, restoreDefaults } from '../settings.js';
 import { TIME_OF_DAY_OPTIONS, timeOfDayNote } from './time-of-day-options.js';
 import { GAME_SPEED_OPTIONS, UI_SCALE_OPTIONS, TEAM_COLOR_OPTIONS, CARD_KEY_OPTIONS, QUALITY_OPTIONS, SCREEN_SHAKE_OPTIONS, SCROLL_SPEED_OPTIONS, FRAME_CAP_OPTIONS, optionNote } from './speed-options.js';
@@ -685,6 +686,21 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
         const label = i === me ? `${s.name || getSettings().name}` : M.slotName(s);
         const tag = s.kind === 'host' && i !== me ? 'Host' : i === me ? 'You' : s.kind === 'ai' ? 'AI' : null;
         who = h('div.mw-who', h('span.mw-who-name', label), tag ? h('span.mw-tag', tag) : null);
+      }
+      // a computer player's play style (DESIGN 10): the host cycles it, everyone sees it
+      if (s.kind === 'ai') {
+        const choice = styleChoice(s.style);
+        const info = styleChoiceInfo(choice);
+        const tip = `${info.name}: ${info.blurb}`;
+        const chip = isHost
+          ? h('button.mw-style-chip', {
+            type: 'button',
+            title: `${tip} Click to change.`,
+            'aria-label': `Play style for slot ${i + 1}: ${info.name}`,
+            onclick: () => patchSlot(i, { style: STYLE_CHOICES[(STYLE_CHOICES.indexOf(choice) + 1) % STYLE_CHOICES.length] }),
+          }, info.icon)
+          : h('span.mw-style-chip.is-static', { title: tip, 'aria-label': `Play style: ${info.name}` }, info.icon);
+        who = h('div.mw-who-wrap', who, chip);
       }
 
       // pantheon

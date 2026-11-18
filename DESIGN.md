@@ -3124,8 +3124,10 @@ you, the shown objectives, Begin Mission, Hear the briefing). Progress lives in 
 
 `createAI(world, playerIndex, difficulty) → { tick() }` (difficulty `'tutorial'` is the sleeping camp of 5.13,
 `src/ai/tutorial-ai.js`; it is never offered in the lobby). Play styles (src/data/ai-styles.js, laid over the
-difficulty profile by `withStyle` in src/ai/profiles.js): a lobby draws one for each computer player from the seed
-(`drawStyle(seed, index)`, each of four about as likely) into `setup.players[i].style`: Raider (first wave at 0.8
+difficulty profile by `withStyle` in src/ai/profiles.js): each computer player's lobby slot holds a choice
+(`slot.style`, one of `STYLE_CHOICES`: 'random' by default, 'balanced' or a style), which the host cycles with the
+small style button beside the slot (clients see the icon); at the start `resolveStyle` turns 'random' into a draw from the seed
+(`drawStyle(seed, index)`, each of four about as likely) and writes the result into `setup.players[i].style`: Raider (first wave at 0.8
 of the time, waves at 0.8 of the pop and interval, a later second mine, one tower fewer), Builder (four more
 worshippers, earlier mines and tiers, first wave at 1.25 of the time with 1.3 of the pop), Guardian (two more
 towers, first wave at 1.1 of the time, marches at 1.05 of the fight ratio), or none: Balanced, the profile itself.
