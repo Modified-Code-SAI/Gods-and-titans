@@ -71,6 +71,7 @@ class SessionBase {
     this.endCbs = new Set();
     this.pauseCbs = new Set();
     this.rematchCbs = new Set();
+    this.replayCbs = new Set();
     this.pause = null; // { by, reason: 'player'|'handoff', endsAt (local ms), left } while an online game is paused
     this.chatLog = [];
     this.ended = false;
@@ -116,6 +117,22 @@ class SessionBase {
   onRematch(cb) {
     this.rematchCbs.add(cb);
     return () => this.rematchCbs.delete(cb);
+  }
+
+  /** cb(record) on a client when the host sends the finished match's replay (unchecked: sanitize it). */
+  onReplayRecord(cb) {
+    this.replayCbs.add(cb);
+    return () => this.replayCbs.delete(cb);
+  }
+
+  emitReplayRecord(record) {
+    for (const cb of [...this.replayCbs]) {
+      try {
+        cb(record);
+      } catch (err) {
+        console.error('[net] replay listener failed', err);
+      }
+    }
   }
 
   emitRematch(info) {
@@ -951,6 +968,22 @@ export class HostSession extends SessionBase {
   }
 
   /**
+   * The game is over: give every player still here the match's replay (DESIGN 9.5), so that guests can watch it
+   * too. Once per game. Returns how many it went to.
+   * @param {object} record ReplayRecorder.finish's record
+   */
+  sendReplay(record) {
+    if (this.stopped || this.replaySent || !record || !(this.lastSnap && this.lastSnap.gameOver)) return 0;
+    this.replaySent = true;
+    let n = 0;
+    for (const c of this.clients.values()) {
+      c.conn.send({ t: MSG.REPLAY, record });
+      n++;
+    }
+    return n;
+  }
+
+  /**
    * The game is over and this host's room is a lobby again (LobbyHost.reopen): tell every player still
    * here, so that their game-over screen can take them there. Sent right before `stop`.
    * @param {string} room the room code to join
@@ -1125,6 +1158,14 @@ export class ClientSession extends SessionBase {
           if (was) this.viewState.resetClock(); // sim time stood still meanwhile
         }
         this.emitPause();
+        break;
+      }
+      case MSG.REPLAY: {
+        // Once, after the game is over: the host's recording of it (checked by the Game before it is kept).
+        const rec = msg.record;
+        if (!(this.snap && this.snap.gameOver) || this.gotReplay || !rec || typeof rec !== 'object' || Array.isArray(rec)) return this.badMessage('replay');
+        this.gotReplay = true;
+        this.emitReplayRecord(rec);
         break;
       }
       case MSG.REMATCH: {

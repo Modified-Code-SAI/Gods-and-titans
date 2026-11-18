@@ -2958,7 +2958,9 @@ and a chip in the top bar's left group (`Hud.showTwist`: the twist's icon and na
 in view for the whole match, a loaded one too.
 It counts once, like the career (9.1): at the game-over screen, or on leaving a match the career counts as a
 loss. The score is the chronicle's (5.11, `scoreOf`) and the game-over screen says it against today's best
-with the streak. Play Again replays the same day's challenge; it is not kept for Quick Match. The record lives in
+with the streak, and a Copy result button puts the result on the clipboard as words to share (`dailyShareText`:
+"Mythic War daily challenge, <day> · <dailyLabel>", "Victory in m:ss · N points · S days in a row" and the game's
+address). Play Again replays the same day's challenge; it is not kept for Quick Match. The record lives in
 localStorage under `mythicwar-daily`: `{ days: { day: { best, plays, won } } }`, the last 60 days. The streak
 is the run of days played up to today, or up to yesterday while today is not played yet.
 
@@ -3007,7 +3009,13 @@ A match against the computer (one human, the rest AI; not the guided first match
 The sim is deterministic (same setup and the same commands on the same ticks give the same game), so a
 replay is not a video: it is the GameSetup, every command the World accepted with its tick, the chat with
 its ticks, and checksums.
-- Recording (host only: a client has no World): `ReplayRecorder` sets `World.onCommand`, which
+- Guests of an online game get the host's recording: when the game is over the host's `keepReplay` sends it to every
+  player still connected (`HostSession.sendReplay`, message `replay` with the record, once per game, only after a
+  snapshot with `gameOver`; it is chunked like any large message). The client takes one (`ClientSession`
+  `onReplayRecord`; earlier or second copies are bad messages) and `Game.onHostReplay` checks it with `sanitizeReplay`,
+  sets `pov` to its own seat and `result` to its own, keeps it with its replays and redraws the game-over buttons
+  (Watch Replay). A game the heir finished after a host migration has no recording (the heir's World was not recorded).
+- Recording (on the host: a client has no World): `ReplayRecorder` sets `World.onCommand`, which
   `issueCommand` calls for each command it queues, from every player (the AIs and an AI that took over
   from a player who left too), as the compact form of `normalizeCommand`'s copy (empty fields dropped;
   normalizing it again gives the same command). On each host snapshot, at most every 10 s of game time,
@@ -3096,7 +3104,10 @@ second Barracks, towers, Titan Gate in City; train a mix of warriors/archers/cre
 when its buildings are attacked; attack in waves when its army is strong enough (later and
 smaller on easy); target the nearest enemy base (prefer the weakest enemy in multi-enemy
 games); gods cast abilities sensibly (damage on clumps, heals when allies hurt, ultimates in
-big fights); retreat badly hurt gods to base. It combines no Houses into Manors (5.3: it keeps building Houses ahead of its cap) and builds no walls, and wall segments are invisible to its scans (`worldDigest`,
+big fights); retreat badly hurt gods to base. From the Town on it places each new House to fill out a square of four (`houseBlockSpot` in
+src/ai/placement.js: the fullest partial square near home whose free cells are all placeable and whose 4x4 block keeps
+the walkway ring; the opening's layout is unchanged) and, with no threat, a Town and 400 gold / 200 wood in the bank,
+combines one finished square at a time into a Manor (5.3, `planManors` in src/ai/production.js). It builds no walls, and wall segments are invisible to its scans (`worldDigest`,
 `scanWorld`, team targeting): they are neither buildings it counts nor targets it picks, and an army shut out by a
 player's wall breaks through it like any soldier (5.5). Its Barracks also trains the pantheon elite soldier (4.10)
 once it is a Town, as the melee or ranged soldier its army is short of. Hard is fair (no resource cheats), and so is Brutal. Army size stops at the

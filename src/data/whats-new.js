@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-wave-two',
+    date: '18 November 2026',
+    title: 'Sharper rivals',
+    items: [
+      'The computer players now build their Houses in squares once they are a Town, and combine them into Manors.',
+      'Online, every player now gets the match replay at the end, not only the host: Watch Replay is on everyone\'s end screen.',
+      'After a daily challenge, Copy result puts your day, score and streak on the clipboard to share with a friend.',
+    ],
+  },
+  {
     id: '2026-11-18-loose-ends',
     date: '18 November 2026',
     title: 'Loose ends',

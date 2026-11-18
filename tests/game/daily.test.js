@@ -7,6 +7,7 @@ import { createWorld } from '../../src/sim/world.js';
 import { START_RESOURCES, START_WORKERS } from '../../src/config.js';
 import { TWISTS, TWIST_BY_ID, twistOf } from '../../src/data/twists.js';
 import {
+  dailyShareText,
   dayKey, shiftDay, dailyChallenge, dailyLobbyState, dailyLaunch, dailyLabel, recordDaily, loadDaily, sanitizeDaily, streakOf, dailyStatus, DAILY_KEY,
 } from '../../src/game/daily.js';
 
@@ -136,4 +137,18 @@ test('a damaged or old record is cleaned and kept short', () => {
   store.setItem(DAILY_KEY, '{broken');
   assert.deepEqual(loadDaily(store), { days: {} });
   assert.deepEqual(loadDaily(null), { days: {} });
+});
+
+test('a daily result can be shared as words: the day, the challenge, the result, the points and the streak', () => {
+  const day = '2026-11-18';
+  const text = dailyShareText({ day, won: true, time: 18 * 60 + 32, score: 4210, streak: 3 }, 'https://example.org/game/');
+  const lines = text.split('\n');
+  assert.equal(lines.length, 3);
+  assert.ok(lines[0].startsWith(`Mythic War daily challenge, ${day} · `));
+  assert.ok(lines[0].includes(dailyLabel(dailyChallenge(day))));
+  assert.equal(lines[1], 'Victory in 18:32 · 4,210 points · 3 days in a row');
+  assert.equal(lines[2], 'https://example.org/game/');
+  assert.equal(dailyShareText({ day, won: false, time: 61, score: 0, streak: 1 }).split('\n')[1], 'Defeat in 1:01 · 0 points');
+  assert.equal(dailyShareText({ day: 'nope' }), '');
+  assert.equal(dailyShareText(null), '');
 });

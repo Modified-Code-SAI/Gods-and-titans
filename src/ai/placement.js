@@ -168,3 +168,52 @@ export function findSpot(world, ai, typeId, x, y, opts = {}) {
   if (!best && walkway) return findSpot(world, ai, typeId, x, y, { ...opts, avoidReserved: false, walkway: false });
   return best;
 }
+
+/**
+ * A House spot that fills out a square of Houses (2x2, the shape four Houses combine into a Manor, DESIGN 5.3):
+ * a free cell of a block that already holds one to three of my Houses (built or rising), the fullest block
+ * first, then the nearest to (x, y). The walkway rule is checked around the whole 4x4 block instead of the one
+ * House (Houses inside a square touch on purpose). Null when no block can grow: the caller places a House the
+ * usual way, which may start the next square.
+ */
+export function houseBlockSpot(world, ai, x, y, maxR = 16) {
+  const hs = BUILDINGS.house ? BUILDINGS.house.size : 2;
+  const map = world.map;
+  const mine = world.buildingList.filter((b) => !b.dead && b.owner === ai.me && b.type === 'house');
+  if (!mine.length) return null;
+  const at = new Set(mine.map((b) => `${b.tx},${b.ty}`));
+  const mask = reservedMask(world, ai);
+  const w = map.width;
+  const seen = new Set();
+  let best = null;
+  let bestScore = Infinity;
+  for (const h of mine) {
+    for (const [i, j] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+      const bx = h.tx - i * hs;
+      const by = h.ty - j * hs;
+      const key = `${bx},${by}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (bx < 1 || by < 1 || bx + 2 * hs > map.width - 1 || by + 2 * hs > map.height - 1) continue;
+      const cells = [[bx, by], [bx + hs, by], [bx, by + hs], [bx + hs, by + hs]];
+      const free = cells.filter(([cx, cy]) => !at.has(`${cx},${cy}`));
+      if (!free.length) continue;
+      const d = Math.hypot(bx + hs - x, by + hs - y);
+      if (d > maxR) continue;
+      const score = free.length * 100 + d;
+      if (score >= bestScore) continue;
+      if (walkwayClear(map, bx, by, 2 * hs) < 0) continue;
+      const spot = free.find(([cx, cy]) => {
+        for (let yy = cy; yy < cy + hs; yy++) for (let xx = cx; xx < cx + hs; xx++) if (mask[yy * w + xx]) return false;
+        return world.canPlaceBuilding(ai.me, 'house', cx, cy);
+      });
+      if (!spot) continue;
+      // Every cell still free must be placeable too, or the square can never close.
+      if (!free.every(([cx, cy]) => world.canPlaceBuilding(ai.me, 'house', cx, cy))) continue;
+      best = { tx: spot[0], ty: spot[1] };
+      bestScore = score;
+    }
+  }
+  return best;
+}
+

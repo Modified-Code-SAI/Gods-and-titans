@@ -80,7 +80,10 @@ test('a normal AI keeps building Houses and fills the population limit', () => {
   const p = world.players[0];
   assert.equal(p.popCap, POP_MAX, `Houses reach the limit (${p.popUsed}/${p.popCap})`);
   assert.ok(p.popUsed >= POP_MAX - 4, `population ${p.popUsed}/${p.popCap}`);
-  assert.ok(built(world, 0, 'house') >= 20, `houses ${built(world, 0, 'house')}`);
+  // A Manor is four Houses combined: the AI builds its Houses in squares from the Town on and combines them.
+  const homes = built(world, 0, 'house') + 4 * built(world, 0, 'manor');
+  assert.ok(homes >= 20, `houses ${built(world, 0, 'house')} + manors ${built(world, 0, 'manor')}`);
+  assert.ok(built(world, 0, 'manor') >= 1, 'a Manor');
   assert.equal(ai.ai.errors, 0);
 });
 

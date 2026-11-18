@@ -9,7 +9,7 @@ import { profileFor } from './profiles.js';
 import { scanWorld } from './scan.js';
 import { refreshEconomy, manageWorkers, minersFor } from './economy.js';
 import { planBuildings, resumeSites } from './build.js';
-import { planProduction, planResearch } from './production.js';
+import { planProduction, planResearch, planManors } from './production.js';
 import { runMilitary, newMilitary, defendingHome } from './military.js';
 import { runMicro } from './micro.js';
 import { pantheonRoster } from './unit-info.js';
@@ -134,6 +134,7 @@ export class AIPlayer {
     planBuildings(this, s, wants);
     planProduction(this, s, wants);
     planResearch(this, s, wants);
+    planManors(this, s, wants);
     const left = this.spend(s, wants);
     if (!this.standIn) runAid(this, left);
     this.updateRallies(s);

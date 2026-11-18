@@ -1,5 +1,6 @@
 // AI production planning: worshippers, tier upgrades, gods (by role, with
 // revives), the Titan, a mixed army from the Barracks and Shrine, and building
+import { MANOR, mergeRule, planMerges } from '../data/houses.js';
 // upgrades from a surplus.
 import { BUILDINGS, UPGRADES, getUnitType } from '../data/index.js';
 import { reviveMult } from '../data/upgrades.js';
@@ -303,6 +304,33 @@ export function planResearch(ai, s, wants) {
     });
     return;
   }
+}
+
+const MANOR_FROM = { gold: 400, wood: 200 };
+
+/**
+ * Combine a square of four finished, idle Houses into a Manor (DESIGN 5.3) once the settlement is a Town and the
+ * bank has a surplus, one square at a time: 16 more population on the same ground.
+ */
+export function planManors(ai, s, wants) {
+  const p = s.p;
+  const rule = mergeRule();
+  if (ai.threat || BUILDINGS[MANOR].tier > p.tier || p.gold < MANOR_FROM.gold || p.wood < MANOR_FROM.wood) return;
+  const houses = s.done.get(rule.building) || [];
+  if (houses.some((b) => b.queue.some((q) => q.u === MANOR))) return;
+  const plan = planMerges(houses.map((b) => ({ id: b.id, tx: b.tx, ty: b.ty, busy: b.queue.length > 0 })));
+  if (!plan.blocks.length) return;
+  const ids = plan.blocks[0].ids;
+  wants.push({
+    prio: 52,
+    cost: rule.cost,
+    reserve: false,
+    label: 'manor',
+    run: () => {
+      ai.issue({ type: 'upgradeHouses', houses: ids });
+      return true;
+    },
+  });
 }
 
 function trainWant(ai, s, prio, b, unit, reserve) {
