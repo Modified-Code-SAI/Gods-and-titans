@@ -8,6 +8,7 @@ import { UNITS, BUILDINGS, ABILITIES, PANTHEONS, UPGRADES } from '../data/index.
 import { MARKS } from '../data/marks.js';
 import { POWERS } from '../data/powers.js';
 import { isLandscape } from '../data/landscapes.js';
+import { STYLE_IDS } from '../data/ai-styles.js';
 import { sanitizeName } from './protocol.js';
 
 const hasOwn = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
@@ -157,6 +158,7 @@ export function validateSetup(setup, myIndex) {
       color: typeof p.color === 'string' && COLOR_RE.test(p.color) ? p.color : PLAYER_COLORS[i % PLAYER_COLORS.length],
       kind,
       difficulty: kind === 'ai' && ['easy', 'normal', 'hard', 'brutal'].includes(p.difficulty) ? p.difficulty : kind === 'ai' ? 'normal' : null,
+      ...(kind === 'ai' && STYLE_IDS.includes(p.style) ? { style: p.style } : {}), // play style (DESIGN 10)
     });
   }
   const clean = { version: typeof setup.version === 'string' ? setup.version.slice(0, 32) : '', seed, mapSize, players };

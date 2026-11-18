@@ -7,6 +7,7 @@
 import { MAX_PLAYERS, PLAYER_COLORS, PEACE_LENGTHS, START_PURSE_CHOICES } from '../config.js';
 import { PANTHEONS, PANTHEON_LIST } from '../data/index.js';
 import { RNG, hashSeed } from '../sim/rng.js';
+import { drawStyle } from '../data/ai-styles.js';
 import * as mapgen from '../sim/mapgen.js';
 import { LANDSCAPE_CHOICES, resolveLandscape } from '../data/landscapes.js';
 import {
@@ -200,6 +201,7 @@ export function buildSetup(state, seed, version = PROTOCOL_VERSION) {
   const players = active.map(({ slot, slotIndex }, index) => {
     slotToPlayer.set(slotIndex, index);
     const ai = slot.kind === 'ai';
+    const style = ai ? drawStyle(seed, index) : null; // a computer player's play style (DESIGN 10), from the seed
     return {
       index,
       name: names[index],
@@ -208,6 +210,7 @@ export function buildSetup(state, seed, version = PROTOCOL_VERSION) {
       color: PLAYER_COLORS[slot.color] || PLAYER_COLORS[index % PLAYER_COLORS.length],
       kind: ai ? 'ai' : 'human',
       difficulty: ai ? slot.difficulty : null,
+      ...(style ? { style } : {}),
     };
   });
   const setup = { version, seed, mapSize: state.mapSize, players };

@@ -1,6 +1,9 @@
 // Difficulty profiles for the computer opponents (DESIGN 10). Every number the
 // AI tunes by difficulty lives here. Times are game seconds.
 import { AI_THINK_INTERVAL, POP_MAX } from '../config.js';
+import { STYLES } from '../data/ai-styles.js';
+
+export { STYLES, STYLE_IDS } from '../data/ai-styles.js';
 
 const BASE = {
   think: AI_THINK_INTERVAL.normal,
@@ -148,7 +151,19 @@ PROFILES.brutal = {
   raids: { from: 270, every: 80, pop: 12, minArmy: 12 },
 };
 
-/** Profile for a difficulty name (unknown → normal). */
-export function profileFor(difficulty) {
-  return PROFILES[difficulty] || PROFILES.normal;
+
+/** A profile with a play style laid over it (unknown or no style: the profile itself). */
+export function withStyle(prof, style) {
+  const st = typeof style === 'string' && Object.hasOwn(STYLES, style) ? STYLES[style] : null;
+  if (!st) return prof;
+  const out = { ...prof };
+  for (const [k, f] of Object.entries(st.scale || {})) if (Number.isFinite(out[k])) out[k] = out[k] * f;
+  for (const [k, d] of Object.entries(st.add || {})) if (Number.isFinite(out[k])) out[k] = Math.max(0, out[k] + d);
+  for (const k of ['attackPop', 'workers', 'towersMax']) out[k] = Math.round(out[k]);
+  return out;
+}
+
+/** Profile for a difficulty name (unknown → normal), with a play style over it when one is given. */
+export function profileFor(difficulty, style = null) {
+  return withStyle(PROFILES[difficulty] || PROFILES.normal, style);
 }

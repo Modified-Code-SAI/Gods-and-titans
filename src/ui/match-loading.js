@@ -11,6 +11,7 @@ import { getProgress, isUnlocked } from '../game/campaign-progress.js';
 import { buildChapterMap } from './campaign-map.js';
 import { TUTORIAL_STEPS } from '../game/tutorial.js';
 import { landscapeInfo } from '../data/landscapes.js';
+import { styleInfo } from '../data/ai-styles.js';
 import { PANTHEON_EMBLEMS } from './menu-model.js';
 import { displayColor } from '../team-colors.js';
 
@@ -30,7 +31,9 @@ export function matchSides(setup, myIndex = -1) {
     if (!sides.has(key)) sides.set(key, { team: key, players: [] });
     const pan = p.pantheon ? getPantheon(p.pantheon) : null;
     const me = p.index === myIndex;
-    const who = me ? 'You' : p.kind === 'ai' ? `Computer · ${LEVELS[p.difficulty] || 'Normal'}` : 'Player';
+    // A computer player's play style (DESIGN 10) follows its level; a balanced one shows the level alone.
+    const style = p.kind === 'ai' && p.style ? ` · ${styleInfo(p.style).name}` : '';
+    const who = me ? 'You' : p.kind === 'ai' ? `Computer · ${LEVELS[p.difficulty] || 'Normal'}${style}` : 'Player';
     sides.get(key).players.push({
       name: String(p.name || `Player ${(p.index ?? 0) + 1}`),
       pantheon: pan && pan.name ? pan.name : 'Unknown',

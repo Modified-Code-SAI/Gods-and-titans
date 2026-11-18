@@ -4,6 +4,7 @@
 import { GAME_VERSION, MAX_PLAYERS, PLAYER_COLORS, START_PURSE_CHOICES } from '../config.js';
 import { PANTHEON_LIST } from '../data/index.js';
 import { resolveLandscape } from '../data/landscapes.js';
+import { drawStyle } from '../data/ai-styles.js';
 
 const later = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -61,6 +62,7 @@ function buildSetup(state, mySlotIndex) {
       color: PLAYER_COLORS[s.color],
       kind: s.kind === 'ai' ? 'ai' : 'human',
       difficulty: s.kind === 'ai' ? s.difficulty : null,
+      ...(s.kind === 'ai' && drawStyle(seed, players.length) ? { style: drawStyle(seed, players.length) } : {}),
     });
   });
   const setup = { version: GAME_VERSION, seed, mapSize: state.mapSize, players };
