@@ -2840,7 +2840,10 @@ It shows the name (a Town Center by its tier), then for an ally's or enemy's thi
 "Enemy" in the owner's colour ("Neutral creature" for a wild one, nothing for your own), then a thin health bar
 (green, gold below 60%, red below 30%) or, for a mine, the gold left. The border is red for enemies and green for
 allies. The tag follows the cursor and refreshes as health changes. It hides while a building is placed, a mouse
-button is held (box select, panning), or the placement or wall tip is up.
+button is held (box select, panning), or the placement or wall tip is up. Ground with no entity can carry a tag
+too: a relic lying in sight (`relicTagInfo`: its name, "Relic · carry it to your Temple", and its bonus) and,
+failing that, the ground of a sacred site within `SITE_RADIUS` on explored ground (`ViewState.siteNear`,
+`siteTagInfo`: "Sacred site", who holds it or "Unclaimed · send a Worshipper or Priest", and its faith a second).
 
 **Drop-down lists.** The lobby's slot and team pickers and the replay bar's vision picker are `<select>`s, and a
 native select opens the operating system's list. `installSelectMenus(document)` (`src/ui/select-menu.js`, main.js at

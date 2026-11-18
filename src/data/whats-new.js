@@ -12,6 +12,7 @@ export const NEWS = [
     items: [
       'New achievements: win by Sacred Victory, cast a god power, bring a relic home, win a daily challenge, keep a seven-day daily streak.',
       'Each campaign chapter you finish now earns an achievement. Chapters already finished count when you open your Career.',
+      'Rest the pointer on a relic or a sacred site to see what it is, who holds it and what it gives.',
       'When four selected Houses become a Manor, the Manor is selected in their place, and in any control group they were in.',
     ],
   },

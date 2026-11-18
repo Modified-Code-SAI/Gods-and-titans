@@ -4,7 +4,7 @@
 // with felled trees removed (and the terrain as I have seen it, where trees
 // felled out of sight still stand), and an event bus fed by each snapshot's
 // events. Runs in Node too.
-import { INTERP_DELAY_MS, TERRAIN } from '../config.js';
+import { INTERP_DELAY_MS, TERRAIN, SITE_RADIUS } from '../config.js';
 import { computeVisibility } from '../sim/visibility.js';
 import { peaceSeconds } from '../sim/peace.js';
 import { survivalOn, wavesBy, nextWaveIn, isBossWave } from '../sim/survival.js';
@@ -340,6 +340,21 @@ export class ViewState {
   /** Relics resting in a Temple. */
   relicsIn(id) {
     return this.relics.filter((r) => r.s === 'h' && r.b === id);
+  }
+
+  /** The sacred site whose ground (SITE_RADIUS) holds a point, on explored ground, or null (the nearest). */
+  siteNear(x, y, range = SITE_RADIUS) {
+    let best = null;
+    let bestD = range;
+    for (const s of this.sites) {
+      if (!this.revealAll && !this.isExplored(Math.floor(s.x), Math.floor(s.y))) continue;
+      const d = Math.hypot(s.x - x, s.y - y);
+      if (d <= bestD) {
+        bestD = d;
+        best = s;
+      }
+    }
+    return best;
   }
 
   /** A relic on the ground, in sight, within `range` tiles of a point (the nearest), or null: what a right click picks up. */

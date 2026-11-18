@@ -9,6 +9,8 @@ import { nameOf } from './hud-data.js';
 import { safeColor, fmt } from './hud-dom.js';
 import { sanitizeName } from '../net/protocol.js';
 import { displayColor } from '../team-colors.js';
+import { RELICS } from '../data/relics.js';
+import { SITE_FAITH } from '../config.js';
 
 /** How long the pointer rests on a thing before its tag shows, in ms. */
 export const HOVER_TAG_DELAY = 350;
@@ -35,6 +37,28 @@ export function hoverTagInfo(e, vs) {
     if (Number.isFinite(left)) note = `💰 ${fmt(left)} gold left`;
   } else if (e.mhp > 0) frac = Math.max(0, Math.min(1, (e.hp || 0) / e.mhp));
   return { name, who, color, rel, frac, note };
+}
+
+/** The tag of a relic lying on the ground: its name, and what it gives once brought to a Temple. */
+export function relicTagInfo(r) {
+  const def = r && RELICS[r.t];
+  if (!def) return null;
+  return { name: def.name, who: 'Relic · carry it to your Temple', color: '', rel: 'neutral', frac: null, note: def.description };
+}
+
+/** The tag of a sacred site: who holds it, and the faith it gives. */
+export function siteTagInfo(site, vs) {
+  if (!site || !vs) return null;
+  const o = Number.isInteger(site.o) ? site.o : -1;
+  const rel = o >= 0 && typeof vs.relation === 'function' ? vs.relation(o) : 'neutral';
+  let who = 'Unclaimed · send a Worshipper or Priest';
+  let color = '';
+  if (o >= 0) {
+    const p = (vs.players && vs.players[o]) || (vs.setup && vs.setup.players && vs.setup.players[o]) || null;
+    who = rel === 'own' ? 'Held by you' : `${sanitizeName(p && p.name, `Player ${o + 1}`)} · ${REL_TEXT[rel] || 'Held'}`;
+    color = displayColor(safeColor(p && p.color, '#888888'));
+  }
+  return { name: 'Sacred site', who, color, rel, frac: null, note: `+${SITE_FAITH} faith a second to its holder` };
 }
 
 export class HoverTag {
