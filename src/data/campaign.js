@@ -1,9 +1,10 @@
-// The campaign (DESIGN 5.16): five chapters of five linked missions each. Chapter I, "The Long Winter", for
+// The campaign (DESIGN 5.16): six chapters of five linked missions each. Chapter I, "The Long Winter", for
 // the Greeks against raiders out of the frozen north; Chapter II, "The Wolf Age", for the Norse against Loki,
 // opened by winning the last mission of Chapter I; Chapter III, "The Sea of Chaos", for the Egyptians against
 // Akkad and Tiamat, opened by winning the last of Chapter II; Chapter IV, "The Eye of Balor", for the Celts against
 // Balor and the Fomorians, opened by winning the last of Chapter III; Chapter V, "The Eight-Headed Serpent",
-// for the Japanese of Izumo against Yamata no Orochi, opened by winning the last of Chapter IV. Plain data, read by the sim (src/sim/campaign.js runs the
+// for the Japanese of Izumo against Yamata no Orochi, opened by winning the last of Chapter IV; Chapter VI, "The New
+// Fire", for the Aztecs against the cult of Cipactli, opened by winning the last of Chapter V. Plain data, read by the sim (src/sim/campaign.js runs the
 // objectives and the scripted events), the HUD (the objective panel) and the menu (the chapter
 // screen and the briefings). The briefings and the lines said during a mission are recorded
 // (assets/narration/campaign, tools/narration/render.py --campaign); a line's clip is named by
@@ -845,6 +846,170 @@ const SERPENT = [
   },
 ];
 
+const NEW_FIRE = [
+  {
+    id: 'tenochtitlan',
+    title: 'The Last Night of the Cycle',
+    place: 'The lake city of Tenochtitlan',
+    seed: 10101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'aztec', team: 1 },
+      { name: 'Cult of the Stars', pantheon: 'aztec', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'house', tag: 'priests', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Tenochtitlan, the city on the lake. Every fifty-two years the great cycle ends, and every fire in the land is put out. At midnight the fire priests must kindle a new flame on the Hill of the Star, or the sun will never rise again and the star demons will come down to eat the world. This cycle a cult has come out of the marshes, sworn to Cipactli, the earth monster, and they want the fire to fail. Raise a Temple, call the gods, and keep the fire priests\' house standing.',
+    victory: 'The cult\'s raiders are driven back into the reeds, and the fire priests are safe. But the cult has gone to the Hill of the Star, where the new fire must be lit.',
+    defeat: 'The cult burned the fire priests\' house. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '☀️', text: 'Summon a god of the Mexica' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off the cult\'s raiders', hidden: true },
+      { id: 'priests', kind: 'protect', tag: 'priests', icon: '🕯️', text: 'Keep the fire priests\' house standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the cult\'s camp' },
+    ],
+    events: [
+      { at: 4, say: 'The fires of the city are going out, one by one. In the dark, the cult will come for the fire priests. Make ready.' },
+      { at: 270, say: 'The cult comes across the causeway, and a jaguar spirit stalks with them! They make for the fire priests.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['archer', 2], ['aztec_jaguar_spirit', 1]), at: 'front', march: true, target: 'priests' } },
+      { after: 'raid', say: 'The raiders are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'star_hill',
+    title: 'The Hill of the Star',
+    place: 'The Hill of the Star, above the lake',
+    seed: 10301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'aztec', team: 1 },
+      { name: 'Priests of Cipactli', pantheon: 'aztec', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'The cult\'s priests have taken the holy stones on the Hill of the Star, where the new fire must be lit. Send your Worshippers and Priests to the stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes it is midnight, and if the hill is still theirs, there will be no new fire.',
+    victory: 'The Hill of the Star is ours, and the fire priests climb it with their fire drill. But the cult is gathering in the dark below. They will try to put the new flame out before it can be carried to the city.',
+    defeat: 'Midnight has come, and the cult still holds the hill. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'stones', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'Jaguar spirits in the dark! The priests send them to drive you from the stones.', spawn: { owner: 1, tag: 'jaguars', units: U(['aztec_jaguar_spirit', 2], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'The stars are turning toward midnight. Five minutes left!' },
+    ],
+  },
+  {
+    id: 'fire_temple',
+    title: 'The New Fire',
+    place: 'The temple of the new fire',
+    seed: 10403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'aztec', team: 1 },
+      { name: 'Host of the Stars', pantheon: 'aztec', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'fire', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the cult's camp early does not end the night: the flame must still be kept until the dawn
+    briefing: 'The new fire burns in the Temple on the hill, a single flame in a dark world. Every hearth in the land must be lit from it before the dawn, and the cult knows it. Their host comes out of the night to put it out. Keep the Temple standing through ten minutes of darkness, and the sun will rise.',
+    victory: 'The sun has risen! Runners carry the new fire to every hearth in the land, and a new cycle has begun. But the cult has fled across the lake to the causeways, and beyond them, deep in the marsh, something huge is stirring.',
+    defeat: 'The new fire has gone out, and the sun will not rise.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'fire', kind: 'protect', tag: 'fire', icon: '🔥', text: 'Keep the Temple of the new fire standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The new fire is lit! Put your soldiers between the cult\'s host and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'fire' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['aztec_jaguar_spirit', 2], ['archer', 1]), at: 'front', march: true, target: 'fire' } },
+      { at: 255, say: 'An ahuizotl crawls out of the lake with them! Hold the line!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['aztec_ahuizotl', 1]), at: 'front', march: true, target: 'fire' } },
+      { at: 285, say: 'The eagle warriors of the city have seen the flame, and they come to fight at your side!', spawn: { owner: 0, tag: 'eagles', units: U(['aztec_eagle_warrior', 3]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['aztec_jaguar_spirit', 3], ['archer', 2]), at: 'front', march: true, target: 'fire' } },
+      { at: 435, say: 'Fire serpents in the dark! Archers, bring them down!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['aztec_xiuhcoatl', 2]), at: 'front', march: true, target: 'fire' } },
+      { at: 525, say: 'An ahuizotl leads the last of them. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['aztec_ahuizotl', 1], ['warrior', 6], ['archer', 4], ['aztec_jaguar_spirit', 2]), at: 'front', march: true, target: 'fire' } },
+      { at: 600, spawn: { owner: 0, tag: 'dawn', units: U(['aztec_eagle_warrior', 4], ['warrior', 6], ['archer', 2]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'causeways',
+    title: 'The Causeways',
+    place: 'The causeways across the lake',
+    seed: 10504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'aztec', team: 1 },
+      { name: 'Keepers of the Marsh', pantheon: 'aztec', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'causeway', ring: 9 }, { type: 'tower', tag: 'causeway', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'The cult holds the causeways across the lake, and two great towers guard the way into the marsh where the earth monster sleeps. Muster an army, then tear the towers down. Two ahuizotl lurk in the water before them. Drag them out too, if you can.',
+    victory: 'The towers have fallen, and the way into the marsh is open. Tezcatlipoca and Quetzalcoatl, old rivals, have sworn to fight the earth monster together. And from across the sea, an old friend has come: the samurai of Izumo, who know how to kill a monster.',
+    defeat: 'The towers on the causeways still stand. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'towers', kind: 'destroy', tag: 'causeway', icon: '🗼', text: 'Tear down the two causeway towers', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'ahuizotl', kind: 'kill', tag: 'ahuizotl', optional: true, icon: '🐊', text: 'Bonus: slay the two ahuizotl of the lake' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'ahuizotl', units: U(['aztec_ahuizotl', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The towers stand beyond the keepers\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the towers!', reveal: 'towers' },
+      { at: 540, say: 'The keepers come out to meet you, with fire serpents at their side!', spawn: { owner: 1, tag: 'keepers', units: U(['aztec_xiuhcoatl', 2], ['aztec_jaguar_spirit', 4], ['archer', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'cipactli',
+    title: 'The Earth Monster',
+    place: 'The black marsh, at the edge of the world',
+    seed: 10605,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'aztec', team: 1 },
+      { name: 'Host of Cipactli', pantheon: 'aztec', team: 2, difficulty: 'normal' },
+      { name: 'Samurai of Izumo', pantheon: 'japanese', team: 1, difficulty: 'normal' },
+      { name: 'Cult of the Marsh', pantheon: 'aztec', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['cipactli'], // breaking the cult before 13:00 does not end it: the earth monster still rises, and must fall
+    briefing: 'The black marsh at the edge of the world, where Cipactli sleeps: the earth monster, half crocodile and half fish, with a hungry mouth at every joint. The cult and its host stand before the marsh, and the samurai of Izumo stand with us. Break the cult. And when the earth monster rises, tear it down.',
+    victory: 'Cipactli has fallen. Tezcatlipoca and Quetzalcoatl pulled the monster apart, and from its body they made the mountains, the rivers and the fields. The new sun shines on a new world, and six peoples have now stood together against the dark.',
+    defeat: 'The earth monster has risen, and swallowed the lake city whole. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Cipactli and the cult of the marsh' },
+      { id: 'cipactli', kind: 'kill', tag: 'cipactli', icon: '🐊', text: 'Slay Cipactli, the earth monster', hidden: true, waitText: 'The earth monster rises' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The samurai of Izumo stand beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The marsh is boiling. Something vast is moving under the mud.' },
+      { at: 780, say: 'Cipactli rises from the marsh, with a mouth at every joint! Bring it down!', reveal: 'cipactli', spawn: { owner: 1, tag: 'cipactli', units: U(['aztec_cipactli', 1]), at: 'front', march: true, always: true } },
+      { after: 'cipactli', say: 'The earth monster has fallen! Now finish the cult.' },
+      // Its guard, on a tag of their own: "Slay Cipactli" is done when it falls, not when the last of them does.
+      { at: 780, spawn: { owner: 1, tag: 'cipactli_guard', units: U(['aztec_xiuhcoatl', 2], ['aztec_jaguar_spirit', 2]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -891,6 +1056,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the Japanese',
     blurb: 'In the hills of Izumo a cult has woken Yamata no Orochi, the serpent of eight heads that eats a maiden every year. Five battles for the people of Izumo.',
     missions: SERPENT,
+  },
+  {
+    id: 'new_fire',
+    chapter: 'Chapter VI',
+    title: 'The New Fire',
+    pantheon: 'aztec',
+    people: 'the Aztecs',
+    blurb: 'The great cycle is ending, and every fire is out. If the new fire fails, the sun will not rise. Five battles for the Mexica of the lake city.',
+    missions: NEW_FIRE,
   },
 ].map((c, ci) => Object.freeze({
   ...c,

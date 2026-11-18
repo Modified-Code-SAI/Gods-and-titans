@@ -879,7 +879,8 @@ chapter screen of 9.6, solo, no lobby) plays one mission of the campaign: Chapte
 missions for the Greeks against Norse raiders), then Chapter II, "The Wolf Age" (five for the Norse against Loki),
 then Chapter III, "The Sea of Chaos" (five for the Egyptians against Akkad and Tiamat), then Chapter IV, "The Eye of
 Balor" (five for the Celts against Balor's Fomorians), then Chapter V, "The Eight-Headed Serpent" (five for the
-Japanese of Izumo against the serpent cult and Yamata no Orochi), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+Japanese of Izumo against the serpent cult and Yamata no Orochi), then Chapter VI, "The New Fire" (five for the Aztecs
+of the lake city against the cult of Cipactli), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -948,6 +949,15 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   Emperor's Guard"; Yamata no Orochi wakes at 13:00 with two oni and two kitsune on their own tag, `waitFor:
   ['orochi']`). AI-only runs of Chapter V: a Normal hero wins all five (the last at 16:26), an idle one loses all
   five, an Easy one wins the first three.
+  Chapter VI: The Last Night of the Cycle (a Temple, a god, and a raid with a jaguar spirit at 4:30 that makes for
+  the tagged house of the fire priests), The Hill of the Star (hold two sacred sites for 1:30 within 18:00 against
+  an Easy AI, jaguar spirits at 6:00), The New Fire (hold the tagged Temple of the new fire ten minutes against six
+  waves with jaguar spirits, ahuizotl and xiuhcoatl, eagle warriors for the hero at 4:45 and at 10:00; `waitFor:
+  ['hold']`), The Causeways (muster fourteen soldiers, which reveals "tear down the two tagged causeway towers"; two
+  ahuizotl stand guard as a bonus kill; the keepers come out at 9:00), The Earth Monster (conquer a Normal and an
+  Easy Aztec AI with the Japanese ally "Samurai of Izumo"; Cipactli rises at 13:00 with two xiuhcoatl and two jaguar
+  spirits on their own tag, `waitFor: ['cipactli']`). AI-only runs of Chapter VI: a Normal hero wins all five (the
+  last at 17:36), an idle one loses all five, an Easy one wins the first three.
 
 ## 6. Simulation API (src/sim/)
 

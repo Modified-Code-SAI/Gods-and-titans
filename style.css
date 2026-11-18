@@ -1510,6 +1510,7 @@ kbd {
 .mw-cmap.is-chaos_sea { --sea: #123a3c; --sea-hi: #1f5a58; --land: #b08c56; --land-hi: #d2b177; --coast: #f0dfb0; --ring: rgba(96, 66, 30, 0.42); }
 .mw-cmap.is-balor_eye { --sea: #10303a; --sea-hi: #1d4a52; --land: #5f7f4a; --land-hi: #8eae6a; --coast: #dfe8c8; --ring: rgba(40, 70, 36, 0.45); }
 .mw-cmap.is-serpent { --sea: #1a2a44; --sea-hi: #2b4166; --land: #6a7d58; --land-hi: #a3b47e; --coast: #ead9c0; --ring: rgba(120, 40, 40, 0.42); }
+.mw-cmap.is-new_fire { --sea: #173a3f; --sea-hi: #23565a; --land: #7a7a4a; --land-hi: #b4a86a; --coast: #f0dcae; --ring: rgba(150, 70, 20, 0.45); }
 .mw-cmap-sea { fill: var(--sea); }
 .mw-cmap-waves path { fill: none; stroke: var(--sea-hi); stroke-width: 1.4; stroke-linecap: round; opacity: 0.8; }
 .mw-cmap-coast path { fill: none; stroke: var(--coast); stroke-width: 5; stroke-linejoin: round; opacity: 0.55; }
