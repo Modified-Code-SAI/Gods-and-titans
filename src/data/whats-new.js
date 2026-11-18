@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-new-fire',
+    date: '18 November 2026',
+    title: 'Campaign Chapter VI: The New Fire',
+    items: [
+      'A new campaign chapter opens once you finish The Eight-Headed Serpent: five missions for the Aztecs of the lake city.',
+      'The great cycle is ending: guard the fire priests, take the Hill of the Star, and keep the new fire burning until the dawn.',
+      'Then break the causeway towers and face Cipactli, the earth monster, with the samurai of Izumo at your side. Every line is spoken.',
+    ],
+  },
+  {
     id: '2026-11-18-serpent',
     date: '18 November 2026',
     title: 'Campaign Chapter V: The Eight-Headed Serpent',

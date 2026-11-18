@@ -25,8 +25,8 @@ function match(over = {}) {
 
 beforeEach(() => resetCareer({}));
 
-test('thirty to fifty achievements with unique ids, a group, a name, a description and an old-enough emoji', () => {
-  assert.ok(ACHIEVEMENTS.length >= 30 && ACHIEVEMENTS.length <= 50, `${ACHIEVEMENTS.length}`);
+test('thirty to sixty achievements with unique ids, a group, a name, a description and an old-enough emoji', () => {
+  assert.ok(ACHIEVEMENTS.length >= 30 && ACHIEVEMENTS.length <= 60, `${ACHIEVEMENTS.length}`);
   assert.equal(Object.keys(ACHIEVEMENT_BY_ID).length, ACHIEVEMENTS.length);
   for (const a of ACHIEVEMENTS) {
     assert.ok(a.group && a.name && a.desc && a.icon && typeof a.test === 'function', a.id);

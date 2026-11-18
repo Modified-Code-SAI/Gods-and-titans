@@ -179,7 +179,7 @@ function step(num, icon, title, ...body) {
 /** A campaign line from the chapters: "three chapters of five linked missions, for the Greeks, the Norse and the Egyptians". */
 function campaignLine() {
   const n = CHAPTERS.length;
-  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
+  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
   const peoples = CHAPTERS.map((c) => c.people);
   const list = peoples.length > 1 ? `${peoples.slice(0, -1).join(', ')} and ${peoples.at(-1)}` : peoples.join('');
   const per = CHAPTERS[0] ? CHAPTERS[0].missions.length : 0;
