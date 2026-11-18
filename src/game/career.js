@@ -20,7 +20,7 @@ export function emptyCareer() {
     seconds: 0, // game time played, in seconds
     kills: 0, gathered: 0,
     pantheons: {}, // id -> { games, wins }
-    best: { kills: 0, gathered: 0, longest: 0, wave: 0, medal: 0 }, // medal: the guided first match's best (1 bronze … 3 gold)
+    best: { kills: 0, gathered: 0, longest: 0, wave: 0, medal: 0, streak: 0 }, // medal: the guided first match's best (1 bronze … 3 gold); streak: the daily challenge's longest run of days
     unlocked: {}, // achievement id -> unix ms when unlocked
     unseen: [], // unlocked since the career screen was last opened
     history: [], // newest first: { r: result, p: pantheon, t: seconds, at: unix ms }
@@ -165,6 +165,7 @@ export function recordMatch(m, now = Date.now()) {
   c.best.gathered = Math.max(c.best.gathered, num(m.gathered));
   c.best.longest = Math.max(c.best.longest, t);
   if (m.wave) c.best.wave = Math.max(c.best.wave, num(m.wave));
+  if (m.daily) c.best.streak = Math.max(c.best.streak, num(m.daily.streak));
   c.history.unshift({ r: m.result, p: m.pantheon || null, t, at: now });
   c.history.length = Math.min(c.history.length, HISTORY);
   const got = checkAchievements(m, c, now);
@@ -183,6 +184,19 @@ export function recordTutorial(rank, now = Date.now()) {
   c.best.medal = Math.max(c.best.medal, r);
   const got = checkAchievements({ tutorial: true, medal: r, result: null }, c, now);
   persist();
+  return got;
+}
+
+/**
+ * The campaign's finished chapters (ids, from src/game/campaign-progress.js): unlock the achievement of each. Not a
+ * game of the career (a mission counts in the campaign instead). Called after a mission is won and when the Career
+ * opens, so chapters finished before these achievements existed are honoured too. Returns what it unlocked.
+ */
+export function recordCampaign(chapters, now = Date.now()) {
+  if (!Array.isArray(chapters) || !chapters.length) return [];
+  const c = getCareer();
+  const got = checkAchievements({ campaign: true, chapters, result: null }, c, now);
+  if (got.length) persist();
   return got;
 }
 

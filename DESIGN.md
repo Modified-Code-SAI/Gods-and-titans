@@ -481,7 +481,8 @@ Pop used = pop of living units + pop of everything queued in production.
     House that falls meanwhile (`releaseBuilding`), while the other three carry on as Houses. Researching at
     a House being combined is refused (`That House is being combined into a Manor.`).
   - When the time is up the four Houses are removed (no death, like a wall taken down) and one Manor stands
-    on their ground, finished, announced by a `buildingComplete` ("Manor completed."), with the average of
+    on their ground, finished, announced by a `buildingComplete` ("Manor completed."; its `from` lists the four
+    House ids, and the HUD puts the Manor in their place in the selection and in control groups), with the average of
     the four health fractions (combining does not heal; repair does). A Manor shelters 48
     population against the 32 of four Houses (+16, so the limit of 200 is reached with a Town Center and four
     Manors), has 2400 health (against 2000) and armor 4, and costs 420 gold and 180 wood to replace: four
@@ -1118,7 +1119,7 @@ EntityView = {
 { type: 'deposit', player, amount, res, x, y }                       // a gatherer's load brought in (res 'g' | 'w'); the owner's renderer floats a small "+N" over it, one per 2×2-tile spot each 0.6 s
 { type: 'spawn',   id, t, o }                                        // unit trained/summoned/revived
 { type: 'construction', id, t, o }                                   // building placed
-{ type: 'buildingComplete', id, t, o }
+{ type: 'buildingComplete', id, t, o, from? }   // from: the Houses a Manor replaced
 { type: 'tierUp',  player, tier }
 { type: 'researched', player, up }                                   // a building upgrade finished
 { type: 'trade',   from, to, res, amt, got }                         // team market transfer (amt sent, got received)
@@ -2839,7 +2840,10 @@ It shows the name (a Town Center by its tier), then for an ally's or enemy's thi
 "Enemy" in the owner's colour ("Neutral creature" for a wild one, nothing for your own), then a thin health bar
 (green, gold below 60%, red below 30%) or, for a mine, the gold left. The border is red for enemies and green for
 allies. The tag follows the cursor and refreshes as health changes. It hides while a building is placed, a mouse
-button is held (box select, panning), or the placement or wall tip is up.
+button is held (box select, panning), or the placement or wall tip is up. Ground with no entity can carry a tag
+too: a relic lying in sight (`relicTagInfo`: its name, "Relic · carry it to your Temple", and its bonus) and,
+failing that, the ground of a sacred site within `SITE_RADIUS` on explored ground (`ViewState.siteNear`,
+`siteTagInfo`: "Sacred site", who holds it or "Unclaimed · send a Worshipper or Priest", and its faith a second).
 
 **Drop-down lists.** The lobby's slot and team pickers and the replay bar's vision picker are `<select>`s, and a
 native select opens the operating system's list. `installSelectMenus(document)` (`src/ui/select-menu.js`, main.js at
@@ -2883,12 +2887,17 @@ achievements with the time, and the ones not yet seen.
   unlocked: …" with a chime. The match is counted once, at the game-over screen (victory, defeat or
   draw), or when the player leaves earlier: a loss if already defeated, or for a running match left
   after its first minute (one the host ended, or left in its first minute, is not counted).
-- 40 achievements in six groups: Career (the two lesson medals of 9.2, first win, 10 games, 10 and 25 wins, every pantheon), Pantheons
-  (a win with each), Gods and Titans, Battle (Champion, 100 kills, a win under 15 min, a win without
+- 48 achievements in seven groups: Career (the two lesson medals of 9.2, first win, 10 games, 10 and 25 wins, every pantheon), Pantheons
+  (a win with each), Gods and Titans (also Wrath of Heaven: a god power cast, `godPower` events; Keeper of Relics:
+  a relic housed in an own Temple, `relic` events with `ev: 'house'`), Battle (Champion, 100 kills, a win under 15 min, a win without
   losing a building, outnumbered), City (City Palace, 10,000 gathered, Manor, stone wall), Challenges
-  (Normal, Hard and Brutal AI, a human enemy, an ally, the Decade of Peace, waves 10 and 20 of the Trial of the Titans, an hour-long game).
+  (Normal, Hard and Brutal AI, a human enemy, an ally, the Decade of Peace, waves 10 and 20 of the Trial of the Titans, an hour-long game,
+  Hallowed Ground: a Sacred Victory, `finish` gets `how` from `gameOver.how`; Seize the Day: a daily challenge won; Daily Devotion:
+  a seven-day daily streak, `finish` gets `daily: { streak }` from `recordDaily`, which runs first; the longest run is kept as
+  `best.streak` for its progress bar), Campaign (one per chapter, all its missions won: `recordCampaign(chaptersDone())` after a
+  mission is won and when the Career screen opens, so chapters finished before these existed count too; not a game of the career).
 - Game-over screen: under the statistics, a card per achievement the match unlocked and a line
-  "Career: W wins in G games (P%) · U of 40 achievements". Title screen: a Career button (a red count of
+  "Career: W wins in G games (P%) · U of N achievements". Title screen: a Career button (a red count of
   unseen unlocks) opens the Career screen: profile tiles, wins by pantheon (at most five cards to a row, each
   name on one line), the last games as chips and
   the gallery (locked ones dimmed, progress bars for counted ones, "New" on the unseen, cleared on opening).
@@ -2900,7 +2909,7 @@ achievements with the time, and the ones not yet seen.
   in its tooltip).
 - The guided first match (9.2) is not a game of the career: no tracker runs in it. Its victory keeps the best
   medal (`best.medal`, 1 bronze … 3 gold, `recordTutorial`) and unlocks First Lessons (any medal) and Top of
-  the Class (gold), which with the Trial's two and Brutal's one makes 40 achievements; the career screen lists the medal.
+  the Class (gold); the career screen lists the medal.
 
 ### 9.2 Guided first match (src/game/tutorial.js, src/ui/hud-tutorial.js, src/data/medals.js)
 Learn to Play (title screen, under Play vs AI; a gold "New? Start here" tag while the career has no game and

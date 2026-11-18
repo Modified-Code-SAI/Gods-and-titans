@@ -30,7 +30,7 @@ export class CareerTracker {
       result: null, pantheon: null, time: 0,
       godsSummoned: 0, maxGodsAtOnce: 0, maxGodLevel: 0, titanSummoned: false, enemyTitansFallen: 0,
       maxRank: 0, kills: 0, losses: 0, gathered: 0, buildingsLost: 0, maxTier: 1,
-      manor: false, stoneWall: false,
+      manor: false, stoneWall: false, powersCast: 0, relicsHoused: 0,
       enemies: [], teamSize: 1, peace: !!(setup && setup.peaceMinutes > 0),
     };
   }
@@ -116,6 +116,18 @@ export class CareerTracker {
         }
         break;
       }
+      case 'godPower':
+        if (ev.player === me) {
+          m.powersCast++;
+          this.dirty = true;
+        }
+        break;
+      case 'relic':
+        if (ev.ev === 'house' && ev.player === me) {
+          m.relicsHoused++;
+          this.dirty = true;
+        }
+        break;
       case 'tierUp':
         if (ev.player === me && ev.tier > m.maxTier) {
           m.maxTier = ev.tier;
@@ -192,7 +204,7 @@ export class CareerTracker {
     this.observe();
     if (!this.m.pantheon) this.readSides();
     this.recorded = true;
-    const got = this.career.recordMatch({ ...this.m, ...(extra || {}), result }) || []; // extra: { wave } for the Trial of the Titans
+    const got = this.career.recordMatch({ ...this.m, ...(extra || {}), result }) || []; // extra: { wave } for the Trial of the Titans, { how } (gameOver.how), { daily: { streak } }
     this.unlockedHere.push(...got);
     return this.unlockedHere.slice();
   }

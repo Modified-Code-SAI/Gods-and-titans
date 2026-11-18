@@ -1,7 +1,7 @@
 // The campaign's progress on this device (DESIGN 5.16): which missions are won and the best game time of each,
 // kept in localStorage under 'mythicwar-campaign' (nothing goes over the wire). A mission opens once the one before
 // it is won, so a chapter's first mission opens with the last of the chapter before. Every storage access is guarded like src/game/career.js: blocked storage or Node keeps it in memory.
-import { CHAPTER_BY_ID, MISSIONS, chapterOf } from '../data/campaign.js';
+import { CHAPTERS, CHAPTER_BY_ID, MISSIONS, chapterOf } from '../data/campaign.js';
 
 const STORAGE_KEY = 'mythicwar-campaign';
 
@@ -70,6 +70,11 @@ export function nextToPlay(p = getProgress()) {
 export function wonCount(p = getProgress(), chapter = null) {
   const list = chapter && Object.hasOwn(CHAPTER_BY_ID, chapter) ? CHAPTER_BY_ID[chapter].missions : MISSIONS;
   return list.filter((m) => Object.hasOwn(p.won, m.id)).length;
+}
+
+/** The ids of the chapters whose every mission is won. */
+export function chaptersDone(p = getProgress()) {
+  return CHAPTERS.filter((c) => wonCount(p, c.id) === c.missions.length).map((c) => c.id);
 }
 
 /** Is a chapter open: its first mission is. */

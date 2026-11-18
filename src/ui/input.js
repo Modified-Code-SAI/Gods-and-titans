@@ -16,7 +16,7 @@ import { unitBark, BarkGate } from '../audio/sfx-voices.js';
 import { checkPlacement, checkWallLine, footprintAt, peaceAnchors } from '../game/placement.js';
 import { TouchInput } from './touch-input.js';
 import { GamepadInput } from './gamepad-input.js';
-import { HoverTag, hoverTagInfo, HOVER_TAG_DELAY } from './hover-tag.js';
+import { HoverTag, hoverTagInfo, relicTagInfo, siteTagInfo, HOVER_TAG_DELAY } from './hover-tag.js';
 import { getCommandCard, withCardKeys, buttonForKey, buildCheck, trainCheck, affordReason } from './command-card.js';
 import { normKey, bindingsOf, actionOf, cardKeysOf, PAN_ACTIONS } from './key-bindings.js';
 import { isComplete, isWallEntity, isMergingEntity, armyIds } from './hud-data.js';
@@ -89,6 +89,8 @@ export class InputController {
     this.lastArmy = -Infinity; // when Ctrl+A last selected the army (a second tap jumps to it)
     this.hoverId = null;
     this.hoverRelic = null; // a relic on the ground under the cursor (vs.relicNear)
+    this.hoverSite = null; // the sacred site whose ground is under the cursor (vs.siteNear), for its hover tag
+    this.hoverGroundSince = 0; // when the cursor came to rest on hoverRelic / hoverSite
     this.hoverTree = false; // a known tree under the cursor (the work cursor's axe)
     this.hoverAt = 0;
     this.hoverMoved = true;
@@ -1766,7 +1768,11 @@ export class InputController {
       const e = this.pick(p.x, p.y);
       const id = e ? e.id : null;
       const g = e ? null : this.ground(p.x, p.y);
-      this.hoverRelic = g ? this.vs.relicNear(g.x, g.y) : null;
+      const relic = g ? this.vs.relicNear(g.x, g.y) : null;
+      const site = g && !relic && typeof this.vs.siteNear === 'function' ? this.vs.siteNear(g.x, g.y) : null;
+      if (relic !== this.hoverRelic || site !== this.hoverSite) this.hoverGroundSince = now;
+      this.hoverRelic = relic;
+      this.hoverSite = site;
       this.hoverTree = !!g && this.forestAt(g.x, g.y);
       if (id !== this.hoverId) {
         this.hoverId = id;
@@ -1775,6 +1781,7 @@ export class InputController {
       }
     } else if ((!this.overCanvas || overlay) && this.hoverId !== null) {
       this.hoverRelic = null;
+      this.hoverSite = null;
       this.hoverTree = false;
       this.hoverId = null;
       r.setHover(null);
@@ -1816,7 +1823,11 @@ export class InputController {
   updateHoverTag(now) {
     const busy = this.mode.kind === 'place' || this.leftDown || this.midDown || !this.wallTip.hidden;
     const e = !busy && this.hoverId !== null && now - this.hoverSince >= HOVER_TAG_DELAY ? this.vs.knownEntity(this.hoverId) : null;
-    if (e) this.hoverTag.show(hoverTagInfo(e, this.vs), this.mx, this.my);
+    if (e) return this.hoverTag.show(hoverTagInfo(e, this.vs), this.mx, this.my);
+    // A relic on the ground or a sacred site has no entity: its tag comes from the ground under the cursor.
+    const ground = !busy && this.hoverId === null && now - this.hoverGroundSince >= HOVER_TAG_DELAY;
+    if (ground && this.hoverRelic) this.hoverTag.show(relicTagInfo(this.hoverRelic), this.mx, this.my);
+    else if (ground && this.hoverSite) this.hoverTag.show(siteTagInfo(this.hoverSite, this.vs), this.mx, this.my);
     else this.hoverTag.hide();
   }
 

@@ -161,6 +161,29 @@ export class Selection {
     if (!same || prevActive !== this.activeType) this.changed();
   }
 
+  /**
+   * Buildings that became one (four Houses raised into a Manor): wherever the selection or a control group held
+   * any of `fromIds`, it holds `newId` in their place. Returns true when the selection changed.
+   */
+  replaceMerged(fromIds, newId) {
+    if (!Array.isArray(fromIds) || !fromIds.length) return false;
+    const gone = new Set(fromIds);
+    const swap = (ids) => {
+      if (!ids.some((id) => gone.has(id))) return null;
+      const out = ids.filter((id) => !gone.has(id));
+      if (!out.includes(newId)) out.push(newId);
+      return out;
+    };
+    for (const [n, ids] of this.groups) {
+      const next = swap(ids);
+      if (next) this.groups.set(n, next);
+    }
+    const next = swap(this.ids);
+    if (!next) return false;
+    this.set(next);
+    return true;
+  }
+
   clear() {
     this.army = false;
     if (!this.ids.length) return;
