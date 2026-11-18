@@ -11,6 +11,7 @@ export const NEWS = [
     title: 'Sharper rivals',
     items: [
       'The computer players now build their Houses in squares once they are a Town, and combine them into Manors.',
+      'Online, every player now gets the match replay at the end, not only the host: Watch Replay is on everyone\'s end screen.',
       'After a daily challenge, Copy result puts your day, score and streak on the clipboard to share with a friend.',
     ],
   },

@@ -233,3 +233,25 @@ test('rematch on the wire: a host cannot send a client to a room before the game
   assert.equal(client.rematchRoom, undefined);
   host.stop();
 });
+
+test('replay on the wire: once the game is over the host gives each guest the match\'s replay, once', async () => {
+  const { host, client } = makeGame();
+  host.start();
+  client.start();
+  await client.ready;
+  const got = [];
+  client.onReplayRecord((r) => got.push(r));
+  const record = { format: 1, id: 'abc', cmds: [[1, 0, { type: 'stop', units: [1] }]] };
+  assert.equal(host.sendReplay(record), 0, 'not while the game is played');
+  for (const c of host.clients.values()) c.conn.send({ t: 'replay', record }); // a host that sends one early is ignored
+  host.step(4);
+  await waitFor(() => client.snap && client.snap.gameOver, 3000, 'game over at the client');
+  assert.equal(host.sendReplay(record), 1);
+  assert.equal(host.sendReplay(record), 0, 'once');
+  await waitFor(() => got.length === 1, 3000, 'the replay');
+  assert.deepEqual(got[0], record);
+  for (const c of host.clients.values()) c.conn.send({ t: 'replay', record });
+  await sleep(30);
+  assert.equal(got.length, 1, 'a second copy is ignored');
+  host.stop();
+});

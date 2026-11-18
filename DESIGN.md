@@ -3009,7 +3009,13 @@ A match against the computer (one human, the rest AI; not the guided first match
 The sim is deterministic (same setup and the same commands on the same ticks give the same game), so a
 replay is not a video: it is the GameSetup, every command the World accepted with its tick, the chat with
 its ticks, and checksums.
-- Recording (host only: a client has no World): `ReplayRecorder` sets `World.onCommand`, which
+- Guests of an online game get the host's recording: when the game is over the host's `keepReplay` sends it to every
+  player still connected (`HostSession.sendReplay`, message `replay` with the record, once per game, only after a
+  snapshot with `gameOver`; it is chunked like any large message). The client takes one (`ClientSession`
+  `onReplayRecord`; earlier or second copies are bad messages) and `Game.onHostReplay` checks it with `sanitizeReplay`,
+  sets `pov` to its own seat and `result` to its own, keeps it with its replays and redraws the game-over buttons
+  (Watch Replay). A game the heir finished after a host migration has no recording (the heir's World was not recorded).
+- Recording (on the host: a client has no World): `ReplayRecorder` sets `World.onCommand`, which
   `issueCommand` calls for each command it queues, from every player (the AIs and an AI that took over
   from a player who left too), as the compact form of `normalizeCommand`'s copy (empty fields dropped;
   normalizing it again gives the same command). On each host snapshot, at most every 10 s of game time,

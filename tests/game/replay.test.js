@@ -13,6 +13,7 @@ import {
 } from '../../src/game/replay.js';
 import { ReplaySession, PlaybackClock } from '../../src/game/replay-session.js';
 import { MatchSaver } from '../../src/game/game-saves.js';
+import { Game } from '../../src/game/game.js';
 import { unpackMatch } from '../../src/game/save-game.js';
 import {
   setReplayBackend, memoryBackend, saveReplay, listReplays, loadReplay, deleteReplay, packReplay, unpackReplay, MAX_REPLAYS,
@@ -341,3 +342,35 @@ test('a carried recording that does not fit the loaded game, or is too long, is 
   host.stop();
   rec.detach();
 });
+
+test('a guest keeps the host\'s replay seen from its own seat, with its own result, and offers Watch Replay', async () => {
+  setReplayBackend(memoryBackend());
+  const { record } = game();
+  let refreshed = 0;
+  const g = {
+    disposed: false, replay: null, replayRecord: null, onReplay: () => {},
+    viewState: { myIndex: 1, myTeam: 2, gameOver: { winningTeam: 1 } },
+    hud: { overlays: { refreshGameOver: () => refreshed++ } },
+  };
+  Game.prototype.onHostReplay.call(g, JSON.parse(JSON.stringify({ ...record, result: 'victory', pov: 0 })));
+  assert.ok(g.replayRecord);
+  assert.equal(g.replayRecord.pov, 1, 'seen from the guest\'s seat');
+  assert.equal(g.replayRecord.result, 'defeat', 'the guest\'s own result');
+  assert.equal(g.replayRecord.cmds.length, record.cmds.length);
+  assert.equal(refreshed, 1, 'the game-over buttons are drawn again');
+  assert.ok(Game.prototype.canWatchReplay.call(g));
+  await waitForStore(() => listReplays(), (l) => l.some((m) => m.id === record.id));
+  Game.prototype.onHostReplay.call(g, { junk: true });
+  assert.equal(g.replayRecord.pov, 1, 'kept once');
+  const h = { ...g, replayRecord: null };
+  Game.prototype.onHostReplay.call(h, { format: 1, setup: 'nope' });
+  assert.equal(h.replayRecord, null, 'a bad record is dropped');
+});
+
+async function waitForStore(read, ok) {
+  for (let i = 0; i < 100; i++) {
+    if (ok(await read())) return;
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  assert.fail('not stored');
+}

@@ -37,6 +37,7 @@ export const MSG = {
   HANDOFF: 'handoff',
   // Rematch, once the game is over (DESIGN 7): a client asks for one ({}), the host says its room is open again ({ room }).
   REMATCH: 'rematch',
+  REPLAY: 'replay', // host → client after the game: the match's replay record (DESIGN 9.5)
 };
 
 // Wire framing. A frame is a string: a JSON object ('{…}'), a chunk

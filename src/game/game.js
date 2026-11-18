@@ -53,7 +53,7 @@ import { nextMission } from '../data/campaign.js';
 import { CampaignVoice } from './campaign-voice.js';
 import { TauntVoice } from './taunt-voice.js';
 import { recordMission, chaptersDone } from './campaign-progress.js';
-import { ReplayRecorder } from './replay.js';
+import { ReplayRecorder, sanitizeReplay } from './replay.js';
 import { saveReplay } from './replay-store.js';
 import { ReplaySession } from './replay-session.js';
 import { ReplayBar } from '../ui/hud-replay.js';
@@ -1752,6 +1752,14 @@ export class Game {
     }
     this.replayRecord = record;
     if (record) saveReplay(record).catch(() => {});
+    // The guests get it too, so they can watch it (only when the game ended, not when the host leaves early).
+    if (record && result && this.session && typeof this.session.sendReplay === 'function') {
+      try {
+        this.session.sendReplay(record);
+      } catch (err) {
+        console.warn('[game] the replay could not be sent', err);
+      }
+    }
     return record;
   }
 
@@ -2003,6 +2011,24 @@ export class Game {
     this.sessionOffs.push(session.onEnd((info) => this.onEnd(info)));
     if (typeof session.onRematch === 'function') this.sessionOffs.push(session.onRematch((info) => this.onNetRematch(info)));
     if (typeof session.onPause === 'function') this.sessionOffs.push(session.onPause((p) => this.onNetPause(p)));
+    if (typeof session.onReplayRecord === 'function') this.sessionOffs.push(session.onReplayRecord((rec) => this.onHostReplay(rec)));
+  }
+
+  /**
+   * A guest's copy of the match's replay, sent by the host when the game is over (DESIGN 9.5): checked, seen from
+   * my seat and with my result, kept with my replays, and offered as Watch Replay on the game-over screen.
+   */
+  onHostReplay(raw) {
+    if (this.disposed || this.replay || this.replayRecord) return;
+    const clean = sanitizeReplay(raw);
+    if (!clean) return;
+    const vs = this.viewState;
+    const me = vs ? vs.myIndex : -1;
+    const wt = vs && vs.gameOver ? vs.gameOver.winningTeam : clean.winningTeam;
+    const result = clean.result === 'survival' ? 'survival' : me < 0 ? null : wt === null || wt === undefined ? 'draw' : wt === vs.myTeam ? 'victory' : 'defeat';
+    this.replayRecord = { ...clean, pov: me, result };
+    saveReplay(this.replayRecord).catch(() => {});
+    if (this.hud && this.hud.overlays) this.hud.overlays.refreshGameOver();
   }
 
   /** Is this an online game, which pauses for everyone (not a match against the computer only)? */

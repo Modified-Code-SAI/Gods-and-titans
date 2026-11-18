@@ -119,10 +119,12 @@ const gameRuns = async (order) => {
   for (const p of order) await slowFrames(p);
 };
 // End the game from the host's side: every player of the other team surrenders.
-const endGame = (hostPage, loser) => hostPage.evaluate((team) => {
+// `play` seconds of game time pass first (stepped at once), so the match is long enough to keep a replay.
+const endGame = (hostPage, loser, play = 0) => hostPage.evaluate(([team, secs]) => {
   const s = window.__game.session;
+  if (secs > 0 && typeof s.step === 'function') s.step(secs * 20); // 20 ticks a second
   for (const p of s.setup.players) if (p.team === team) s.world.issueCommand(p.index, { type: 'surrender' });
-}, loser);
+}, [loser, play]);
 const gameOverButtons = (p) => p.evaluate(() => [...document.querySelectorAll('.hud-gameover .hud-obtns button')].map((b) => `${b.textContent}${b.disabled ? ' (disabled)' : ''}`));
 const clickButton = (p, re) => p.evaluate((src) => {
   const b = [...document.querySelectorAll('.hud-gameover .hud-obtns button')].find((x) => new RegExp(src).test(x.textContent));
@@ -137,7 +139,7 @@ try {
   log('room', code);
   const rows0 = await lobbyRows(host);
   log('host lobby:', JSON.stringify(rows0));
-  check(rows0.filter((r) => r.kind === 'open').length === 3, 'a new online room has three Open seats');
+  check(rows0.filter((r) => r.kind === 'open').length === 5, 'a new online room has five Open seats (six seats since #163)');
   await shot(host, 'lobby-default');
   for (const [p, n] of [[cleo, 1], [dax, 2]]) {
     await p.goto(`${BASE}/?transport=local&join=${code}`);
@@ -163,13 +165,15 @@ try {
   check(team('Dax', setup1) === team('Hosta', setup1), 'the second friend is on the host\'s side');
 
   // ---- 2. Game over; Dax asks for a rematch, the host opens it, both friends come back.
-  await endGame(host, team('Cleo', setup1));
+  await endGame(host, team('Cleo', setup1), 35);
   for (const p of pages) await fastFrames(p);
   for (const p of pages) await until(p, () => !!document.querySelector('.hud-gameover'), 'game-over screen', 120000);
   await sleep(1500);
   for (const [p, who] of [[host, 'host'], [cleo, 'Cleo'], [dax, 'Dax']]) log(`${who} buttons:`, JSON.stringify(await gameOverButtons(p)));
   check((await gameOverButtons(host))[0] === 'Rematch', 'the host is offered Rematch');
   check((await gameOverButtons(cleo))[0] === 'Rematch', 'a friend is offered Rematch');
+  check((await gameOverButtons(host)).includes('Watch Replay'), 'the host can watch the replay');
+  for (const [p, who] of [[cleo, 'Cleo'], [dax, 'Dax']]) check((await gameOverButtons(p)).includes('Watch Replay'), `${who} got the host's replay and can watch it`);
   await clickButton(dax, /^Rematch$/);
   await sleep(1500);
   const daxWaits = await gameOverButtons(dax);
