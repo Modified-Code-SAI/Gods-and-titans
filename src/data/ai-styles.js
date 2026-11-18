@@ -36,6 +36,28 @@ export function styleInfo(id) {
   return typeof id === 'string' && Object.hasOwn(STYLES, id) ? STYLES[id] : BALANCED;
 }
 
+/** What a lobby slot may ask for: a style drawn for it ('random'), Balanced, or one of the styles. */
+export const STYLE_CHOICES = ['random', 'balanced', ...STYLE_IDS];
+
+/** A slot's style choice ('random' when unknown). */
+export function styleChoice(id) {
+  return STYLE_CHOICES.includes(id) ? id : 'random';
+}
+
+/** The style a setup player gets from a slot's choice: drawn when 'random', null for Balanced. */
+export function resolveStyle(choice, seed, index) {
+  const c = styleChoice(choice);
+  if (c === 'random') return drawStyle(seed, index);
+  return c === 'balanced' ? null : c;
+}
+
+/** A slot choice's name and icon, for the lobby. */
+export function styleChoiceInfo(id) {
+  const c = styleChoice(id);
+  if (c === 'random') return { name: 'Any style', icon: '🎲', blurb: 'A play style drawn for this computer player when the game starts.' };
+  return c === 'balanced' ? BALANCED : STYLES[c];
+}
+
 /**
  * The style a lobby gives a computer player, drawn from the game's seed and the player's index:
  * one of the styles or null (balanced), each about as likely.

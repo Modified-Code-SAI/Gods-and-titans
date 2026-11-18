@@ -7,7 +7,7 @@
 import { MAX_PLAYERS, PLAYER_COLORS, PEACE_LENGTHS, START_PURSE_CHOICES } from '../config.js';
 import { PANTHEONS, PANTHEON_LIST } from '../data/index.js';
 import { RNG, hashSeed } from '../sim/rng.js';
-import { drawStyle } from '../data/ai-styles.js';
+import { resolveStyle, styleChoice, STYLE_CHOICES } from '../data/ai-styles.js';
 import * as mapgen from '../sim/mapgen.js';
 import { LANDSCAPE_CHOICES, resolveLandscape } from '../data/landscapes.js';
 import {
@@ -103,7 +103,7 @@ function distinctNames(names) {
 const layoutOf = (s) => `${s.kind === 'human' ? 'open' : s.kind}|${s.team}|${s.kind === 'ai' ? s.difficulty : ''}`;
 
 function slotOf(kind, extra = {}) {
-  return { kind, name: '', pantheon: 'random', team: 1, color: 0, difficulty: 'normal', peerId: null, ...extra };
+  return { kind, name: '', pantheon: 'random', team: 1, color: 0, difficulty: 'normal', style: 'random', peerId: null, ...extra };
 }
 
 /** A secret a client keeps to win its seat back after a lost link or a reload (DESIGN 7). */
@@ -141,6 +141,7 @@ export function sanitizeLobbyState(state) {
       team: intIn(s.team, 1, MAX_PLAYERS) ?? 1,
       color: intIn(s.color, 0, PLAYER_COLORS.length - 1) ?? 0,
       difficulty: DIFFICULTIES.includes(s.difficulty) ? s.difficulty : 'normal',
+      style: styleChoice(s.style),
       peerId: typeof s.peerId === 'string' ? s.peerId.slice(0, 128) : null,
     }));
   }
@@ -201,7 +202,7 @@ export function buildSetup(state, seed, version = PROTOCOL_VERSION) {
   const players = active.map(({ slot, slotIndex }, index) => {
     slotToPlayer.set(slotIndex, index);
     const ai = slot.kind === 'ai';
-    const style = ai ? drawStyle(seed, index) : null; // a computer player's play style (DESIGN 10), from the seed
+    const style = ai ? resolveStyle(slot.style, seed, index) : null; // a computer player's play style (DESIGN 10): the host's pick, or drawn from the seed
     return {
       index,
       name: names[index],
@@ -581,6 +582,7 @@ export class LobbyHost {
     if (team !== null) t.team = team;
     const color = intIn(patch.color, 0, PLAYER_COLORS.length - 1);
     if (color !== null) this.setColor(i, color, byHost);
+    if (byHost && t.kind === 'ai' && STYLE_CHOICES.includes(patch.style)) t.style = patch.style;
     if (byHost && t.kind === 'ai' && DIFFICULTIES.includes(patch.difficulty)) {
       t.difficulty = patch.difficulty;
       t.name = aiName(t.difficulty);
@@ -845,7 +847,7 @@ export class LobbyHost {
         if (slot === 0) return slotOf('host', { ...extra, name: sanitizeName(name || p.name, 'Host'), peerId: 'host' });
         if (p.kind === 'ai') {
           const difficulty = DIFFICULTIES.includes(p.difficulty) ? p.difficulty : 'normal';
-          return slotOf('ai', { ...extra, difficulty, name: aiName(difficulty) });
+          return slotOf('ai', { ...extra, difficulty, name: aiName(difficulty), style: p.style ? styleChoice(p.style) : 'random' });
         }
         return slotOf('human', extra);
       });

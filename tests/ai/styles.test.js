@@ -67,3 +67,35 @@ test('the lobby draws a style for each computer player from the seed; the setup 
   const sides = matchSides(setup, 0);
   assert.equal(sides[1].players[0].who, 'Computer · Hard · Raider');
 });
+
+test('the host can pick a style for each computer player in the lobby; Any style draws one', async () => {
+  const { STYLE_CHOICES, styleChoice, resolveStyle, styleChoiceInfo } = await import('../../src/data/ai-styles.js');
+  const { LobbyHost, sanitizeLobbyState } = await import('../../src/net/lobby.js');
+  assert.deepEqual(STYLE_CHOICES, ['random', 'balanced', ...STYLE_IDS]);
+  assert.equal(styleChoice('nonsense'), 'random');
+  assert.equal(resolveStyle('balanced', 7, 1), null);
+  assert.equal(resolveStyle('guardian', 7, 1), 'guardian');
+  assert.equal(resolveStyle('random', 7, 1), drawStyle(7, 1));
+  for (const c of STYLE_CHOICES) assert.ok(styleChoiceInfo(c).icon && styleChoiceInfo(c).name);
+  // a picked style reaches the setup; a slot without one draws as before
+  const st = state();
+  st.slots[1].style = 'builder';
+  st.slots[2].style = 'balanced';
+  const setup = buildSetup(st, 42).setup;
+  assert.equal(setup.players[1].style, 'builder');
+  assert.ok(!('style' in setup.players[2]) || setup.players[2].style === null);
+  // the lobby keeps a choice only for computer players, and only from the host
+  const lobby = await LobbyHost.create({ transport: 'none', name: 'Host' });
+  try {
+    const ai = lobby.state.slots.findIndex((s) => s.kind === 'ai');
+    assert.ok(ai > 0);
+    assert.equal(lobby.state.slots[ai].style, 'random');
+    lobby.setSlot(ai, { style: 'raider' });
+    assert.equal(lobby.state.slots[ai].style, 'raider');
+    lobby.setSlot(ai, { style: 'sneaky' });
+    assert.equal(lobby.state.slots[ai].style, 'raider');
+    assert.equal(sanitizeLobbyState({ ...lobby.state, slots: lobby.state.slots.map((s) => ({ ...s, style: 'x' })) }).slots[ai].style, 'random');
+  } finally {
+    lobby.close?.();
+  }
+});
