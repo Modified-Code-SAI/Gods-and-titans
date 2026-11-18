@@ -3096,7 +3096,10 @@ second Barracks, towers, Titan Gate in City; train a mix of warriors/archers/cre
 when its buildings are attacked; attack in waves when its army is strong enough (later and
 smaller on easy); target the nearest enemy base (prefer the weakest enemy in multi-enemy
 games); gods cast abilities sensibly (damage on clumps, heals when allies hurt, ultimates in
-big fights); retreat badly hurt gods to base. It combines no Houses into Manors (5.3: it keeps building Houses ahead of its cap) and builds no walls, and wall segments are invisible to its scans (`worldDigest`,
+big fights); retreat badly hurt gods to base. From the Town on it places each new House to fill out a square of four (`houseBlockSpot` in
+src/ai/placement.js: the fullest partial square near home whose free cells are all placeable and whose 4x4 block keeps
+the walkway ring; the opening's layout is unchanged) and, with no threat, a Town and 400 gold / 200 wood in the bank,
+combines one finished square at a time into a Manor (5.3, `planManors` in src/ai/production.js). It builds no walls, and wall segments are invisible to its scans (`worldDigest`,
 `scanWorld`, team targeting): they are neither buildings it counts nor targets it picks, and an army shut out by a
 player's wall breaks through it like any soldier (5.5). Its Barracks also trains the pantheon elite soldier (4.10)
 once it is a Town, as the melee or ranged soldier its army is short of. Hard is fair (no resource cheats), and so is Brutal. Army size stops at the

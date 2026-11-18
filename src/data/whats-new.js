@@ -6,6 +6,14 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-wave-two',
+    date: '18 November 2026',
+    title: 'Sharper rivals',
+    items: [
+      'The computer players now build their Houses in squares once they are a Town, and combine them into Manors.',
+    ],
+  },
+  {
     id: '2026-11-18-loose-ends',
     date: '18 November 2026',
     title: 'Loose ends',

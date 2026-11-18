@@ -4,7 +4,7 @@
 import { BUILDINGS } from '../data/index.js';
 import { POP_MAX } from '../config.js';
 import { haveOf, doneOf } from './scan.js';
-import { findSpot } from './placement.js';
+import { findSpot, houseBlockSpot } from './placement.js';
 import { onLongHaul } from './economy.js';
 
 const HAUL_BUILD = 20; // tiles: how much farther a builder may be than a worker on a long haul (pickBuilder)
@@ -69,7 +69,10 @@ function baseSpot(ai, type) {
   const world = ai.world;
   switch (type) {
     case 'house':
-      return findSpot(world, ai, type, home.x, home.y, { minR: 4.5, maxR: 16, ideal: 6.5, dir: { x: -front.x, y: -front.y }, dirWeight: 4 });
+      // From the Town on, Houses go up in squares of four, so they can be combined into Manors (the opening's
+      // layout is left as it was: its timing is tuned).
+      return (world.players[ai.me].tier >= 2 && houseBlockSpot(world, ai, home.x, home.y))
+        || findSpot(world, ai, type, home.x, home.y, { minR: 4.5, maxR: 16, ideal: 6.5, dir: { x: -front.x, y: -front.y }, dirWeight: 4 });
     case 'barracks':
       return findSpot(world, ai, type, home.x, home.y, { minR: 5.5, maxR: 16, ideal: 7.5, dir: front, dirWeight: 8 });
     case 'shrine':
