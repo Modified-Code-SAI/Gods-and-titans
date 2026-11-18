@@ -62,7 +62,7 @@ test('winning Chapter II opens Chapter III, whose last mission finishes it once'
   assert.equal(nextToPlay().id, 'eriu');
 });
 
-test('winning Chapter III opens Chapter IV, whose last mission finishes the campaign once', () => {
+test('winning Chapter III opens Chapter IV, whose last mission finishes it once', () => {
   resetProgress();
   for (const m of MISSIONS.slice(0, 14)) recordMission(m.id, 900);
   assert.equal(chapterUnlocked('balor_eye'), false, 'Chapter IV is shut until Chapter III is won');
@@ -74,7 +74,23 @@ test('winning Chapter III opens Chapter IV, whose last mission finishes the camp
   assert.deepEqual([wonCount(undefined, 'balor_eye'), wonCount()], [4, 19]);
   assert.equal(recordMission('mag_tuired', 1500).chapterDone, true);
   assert.equal(recordMission('mag_tuired', 1400).chapterDone, false);
-  assert.equal(nextToPlay(), MISSIONS[19], 'all won: the last one stays chosen');
+  assert.equal(chapterUnlocked('serpent'), true, 'Chapter V opens with the last of Chapter IV');
+  assert.equal(nextToPlay().id, 'izumo');
+});
+
+test('winning Chapter IV opens Chapter V, whose last mission finishes the campaign once', () => {
+  resetProgress();
+  for (const m of MISSIONS.slice(0, 19)) recordMission(m.id, 900);
+  assert.equal(chapterUnlocked('serpent'), false, 'Chapter V is shut until Chapter IV is won');
+  recordMission('mag_tuired', 900);
+  assert.equal(chapterUnlocked('serpent'), true);
+  assert.equal(isUnlocked('izumo'), true);
+  assert.equal(isUnlocked('fox_shrines'), false);
+  for (const m of MISSIONS.slice(20, 24)) assert.equal(recordMission(m.id, 800).chapterDone, false);
+  assert.deepEqual([wonCount(undefined, 'serpent'), wonCount()], [4, 24]);
+  assert.equal(recordMission('orochi', 1500).chapterDone, true);
+  assert.equal(recordMission('orochi', 1400).chapterDone, false);
+  assert.equal(nextToPlay(), MISSIONS[24], 'all won: the last one stays chosen');
 });
 
 test('a stored progress is cleaned: unknown missions and bad numbers go', () => {
