@@ -1,10 +1,11 @@
-// The campaign (DESIGN 5.16): six chapters of five linked missions each. Chapter I, "The Long Winter", for
+// The campaign (DESIGN 5.16): seven chapters of five linked missions each. Chapter I, "The Long Winter", for
 // the Greeks against raiders out of the frozen north; Chapter II, "The Wolf Age", for the Norse against Loki,
 // opened by winning the last mission of Chapter I; Chapter III, "The Sea of Chaos", for the Egyptians against
 // Akkad and Tiamat, opened by winning the last of Chapter II; Chapter IV, "The Eye of Balor", for the Celts against
 // Balor and the Fomorians, opened by winning the last of Chapter III; Chapter V, "The Eight-Headed Serpent",
 // for the Japanese of Izumo against Yamata no Orochi, opened by winning the last of Chapter IV; Chapter VI, "The New
-// Fire", for the Aztecs against the cult of Cipactli, opened by winning the last of Chapter V. Plain data, read by the sim (src/sim/campaign.js runs the
+// Fire", for the Aztecs against the cult of Cipactli, opened by winning the last of Chapter V; Chapter VII, "The Dragon
+// of the Swamp", for the West Africans of Oyo against Ninki Nanka, opened by winning the last of Chapter VI. Plain data, read by the sim (src/sim/campaign.js runs the
 // objectives and the scripted events), the HUD (the objective panel) and the menu (the chapter
 // screen and the briefings). The briefings and the lines said during a mission are recorded
 // (assets/narration/campaign, tools/narration/render.py --campaign); a line's clip is named by
@@ -1010,6 +1011,170 @@ const NEW_FIRE = [
   },
 ];
 
+const DRAGON_SWAMP = [
+  {
+    id: 'oyo',
+    title: 'The Drums of Oyo',
+    place: 'The city of Oyo, by the Niger',
+    seed: 11101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'west_african', team: 1 },
+      { name: 'Cult of the Swamp', pantheon: 'west_african', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'house', tag: 'drummers', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Oyo, the city of horsemen on the plains above the Niger. The rains have not come for two years, and the river is shrinking into the mangroves. The talking drums say a cult has risen in the swamps, feeding a dragon that no one may look on and live: Ninki Nanka. Now the cult wants the drummers silenced, so that no warning can travel from village to village. Raise a Temple, call the orishas, and keep the drummers\' house standing.',
+    victory: 'The cult\'s raiders run back to the river, and the drums of Oyo are beating again. They carry a warning: the cult\'s sorcerers have taken the sacred grove of Osun, and they are poisoning its waters.',
+    defeat: 'The cult burned the drummers\' house, and the drums are silent. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '⚡', text: 'Summon one of the orishas' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off the cult\'s raiders', hidden: true },
+      { id: 'drummers', kind: 'protect', tag: 'drummers', icon: '🥁', text: 'Keep the drummers\' house standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the cult\'s camp' },
+    ],
+    events: [
+      { at: 4, say: 'The drums fall quiet at the edge of the city. The cult is coming for the drummers. Make ready.' },
+      { at: 270, say: 'The cult comes out of the long grass, and a sasabonsam swings down from the trees with them! They make for the drummers.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['archer', 2], ['west_african_sasabonsam', 1]), at: 'front', march: true, target: 'drummers' } },
+      { after: 'raid', say: 'The raiders are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'osun_grove',
+    title: 'The Grove of Osun',
+    place: 'The sacred grove of Osun',
+    seed: 11301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'west_african', team: 1 },
+      { name: 'Swamp Sorcerers', pantheon: 'west_african', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'The sacred grove of Osun, where the river goddess keeps her shrines among the trees. The cult\'s sorcerers have taken the holy stones, and every day they pour poison into her waters. Send your Worshippers and Priests to the stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes the river will be poisoned beyond saving.',
+    victory: 'The grove is ours, and the river runs clean again. But the sorcerers have gone to the Ifá oracle\'s temple, and tonight, when the moon is dark, they will come with every beast of the night to tear it down.',
+    defeat: 'The sorcerers held the grove, and the river is poisoned. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'stones', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'Hyena men in the grove! The sorcerers send them to drive you from the stones.', spawn: { owner: 1, tag: 'hyenas', units: U(['west_african_bultungin', 2], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'The water is turning dark. Five minutes left!' },
+    ],
+  },
+  {
+    id: 'ifa',
+    title: 'The Night of the Hyenas',
+    place: 'The temple of the Ifá oracle',
+    seed: 11403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'west_african', team: 1 },
+      { name: 'Beasts of the Night', pantheon: 'west_african', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'oracle', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the cult's camp early does not end the night: the oracle must still be kept until the dawn
+    briefing: 'The Ifá oracle has read the palm nuts, and she knows where the dragon sleeps. The cult must not let her speak. Tonight the moon is dark, and they come with hyena men and the vampires of the forest to tear her temple down. Keep the Temple standing through ten minutes of darkness, and at dawn she will tell us the way.',
+    victory: 'The dawn has come, and the oracle has spoken. Ninki Nanka sleeps in the mangroves at the river\'s mouth, behind the cult\'s stilt towers. And whoever looks on its face must look at it through a mirror, or die.',
+    defeat: 'The oracle\'s temple has fallen, and her words are lost.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'oracle', kind: 'protect', tag: 'oracle', icon: '🔮', text: 'Keep the Temple of the oracle standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The moon is dark tonight. Put your soldiers between the cult\'s beasts and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'oracle' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['west_african_bultungin', 2], ['archer', 1]), at: 'front', march: true, target: 'oracle' } },
+      { at: 255, say: 'A sasabonsam drops out of the trees with them! Hold the line!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['west_african_sasabonsam', 1]), at: 'front', march: true, target: 'oracle' } },
+      { at: 285, say: 'The aziza, the little folk of the forest, have come to fight at your side!', spawn: { owner: 0, tag: 'aziza', units: U(['west_african_aziza', 3]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['west_african_bultungin', 3], ['archer', 2]), at: 'front', march: true, target: 'oracle' } },
+      { at: 435, say: 'Two sasabonsam this time, and more hyena men behind them!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['west_african_sasabonsam', 2]), at: 'front', march: true, target: 'oracle' } },
+      { at: 525, say: 'The last of the beasts are coming. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['west_african_sasabonsam', 1], ['warrior', 6], ['archer', 4], ['west_african_bultungin', 2]), at: 'front', march: true, target: 'oracle' } },
+      { at: 600, spawn: { owner: 0, tag: 'hunters', units: U(['west_african_dart_hunter', 4], ['warrior', 6], ['archer', 2]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'stilt_towers',
+    title: 'The Stilt Towers',
+    place: 'The mangroves at the river\'s mouth',
+    seed: 11504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'west_african', team: 1 },
+      { name: 'Keepers of the Mud', pantheon: 'west_african', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'stilts', ring: 9 }, { type: 'tower', tag: 'stilts', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'At the river\'s mouth the cult has raised two towers on stilts above the mangroves, to watch the only way into the dragon\'s swamp. Muster an army, then tear the towers down. Two sasabonsam hang in the trees before them. Bring them down too, if you can.',
+    victory: 'The stilt towers have fallen, and the way into the swamp is open. Ogun has forged mirrors of polished iron for every soldier. And from across the sea, an old friend has come: the eagle warriors of the lake city, who have killed a monster before.',
+    defeat: 'The stilt towers still stand. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'towers', kind: 'destroy', tag: 'stilts', icon: '🗼', text: 'Tear down the two stilt towers', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'sasabonsam', kind: 'kill', tag: 'sasabonsam', optional: true, icon: '🦇', text: 'Bonus: bring down the two sasabonsam' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'sasabonsam', units: U(['west_african_sasabonsam', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The towers stand beyond the keepers\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the towers!', reveal: 'towers' },
+      { at: 540, say: 'The keepers come out to meet you, with the hyena men at their side!', spawn: { owner: 1, tag: 'keepers', units: U(['west_african_bultungin', 4], ['west_african_sasabonsam', 1], ['archer', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'ninki_nanka',
+    title: 'The Dragon of the Swamp',
+    place: 'The deep swamp, where the river ends',
+    seed: 11611,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'west_african', team: 1 },
+      { name: 'Host of Ninki Nanka', pantheon: 'west_african', team: 2, difficulty: 'normal' },
+      { name: 'Eagles of the Lake', pantheon: 'aztec', team: 1, difficulty: 'normal' },
+      { name: 'Cult of the Mangrove', pantheon: 'west_african', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['ninki_nanka'], // breaking the cult before 13:00 does not end it: the dragon still wakes, and must fall
+    briefing: 'The deep swamp where the river ends, and where Ninki Nanka sleeps: a dragon as long as a river, with a crown of mirrors on its head. The cult and its host stand before the swamp, and the eagle warriors of the lake city stand with us. Break the cult. And when the dragon wakes, keep your iron mirrors high, and bring it down.',
+    victory: 'Ninki Nanka has fallen, and the swamp is still. That night the rains came at last, and the Niger rose and ran to the sea again. The drums of Oyo carried the news from village to village, and seven peoples have now stood together against the dark.',
+    defeat: 'The dragon has woken, and the swamp has swallowed the river. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Ninki Nanka and the cult of the mangrove' },
+      { id: 'ninki_nanka', kind: 'kill', tag: 'ninki_nanka', icon: '🐉', text: 'Slay Ninki Nanka, the dragon of the swamp', hidden: true, waitText: 'The dragon wakes' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The eagle warriors of the lake city stand beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The swamp is steaming. Something long and vast is moving in the reeds.' },
+      { at: 780, say: 'Ninki Nanka rises from the swamp, its crown of mirrors blazing! Bring it down!', reveal: 'ninki_nanka', spawn: { owner: 1, tag: 'ninki_nanka', units: U(['west_african_ninki_nanka', 1]), at: 'front', march: true, always: true } },
+      { after: 'ninki_nanka', say: 'The dragon has fallen! Now finish the cult.' },
+      // Its guard, on a tag of their own: "Slay Ninki Nanka" is done when it falls, not when the last of them does.
+      { at: 780, spawn: { owner: 1, tag: 'ninki_guard', units: U(['west_african_sasabonsam', 2], ['west_african_bultungin', 2]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -1065,6 +1230,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the Aztecs',
     blurb: 'The great cycle is ending, and every fire is out. If the new fire fails, the sun will not rise. Five battles for the Mexica of the lake city.',
     missions: NEW_FIRE,
+  },
+  {
+    id: 'dragon_swamp',
+    chapter: 'Chapter VII',
+    title: 'The Dragon of the Swamp',
+    pantheon: 'west_african',
+    people: 'the West Africans',
+    blurb: 'The rains have failed, and in the mangroves a cult feeds a dragon no one may look on and live. Five battles for the people of Oyo.',
+    missions: DRAGON_SWAMP,
   },
 ].map((c, ci) => Object.freeze({
   ...c,

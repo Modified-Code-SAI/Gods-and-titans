@@ -95,13 +95,18 @@ test('winning Chapter IV opens Chapter V, and Chapter V opens Chapter VI', () =>
   assert.equal(nextToPlay().id, 'tenochtitlan');
 });
 
-test('the last mission of Chapter VI finishes the campaign once', () => {
+test('winning Chapter VI opens Chapter VII, whose last mission finishes the campaign once', () => {
   resetProgress();
   for (const m of MISSIONS.slice(0, 29)) recordMission(m.id, 900);
+  assert.equal(chapterUnlocked('dragon_swamp'), false, 'Chapter VII is shut until Chapter VI is won');
   assert.equal(recordMission('cipactli', 1500).chapterDone, true);
-  assert.equal(recordMission('cipactli', 1400).chapterDone, false);
-  assert.equal(wonCount(), 30);
-  assert.equal(nextToPlay(), MISSIONS[29], 'all won: the last one stays chosen');
+  assert.equal(chapterUnlocked('dragon_swamp'), true);
+  assert.equal(nextToPlay().id, 'oyo');
+  for (const m of MISSIONS.slice(30, 34)) recordMission(m.id, 900);
+  assert.equal(recordMission('ninki_nanka', 1500).chapterDone, true);
+  assert.equal(recordMission('ninki_nanka', 1400).chapterDone, false);
+  assert.equal(wonCount(), 35);
+  assert.equal(nextToPlay(), MISSIONS[34], 'all won: the last one stays chosen');
 });
 
 test('a stored progress is cleaned: unknown missions and bad numbers go', () => {

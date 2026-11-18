@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-dragon-swamp',
+    date: '18 November 2026',
+    title: 'Campaign Chapter VII: The Dragon of the Swamp',
+    items: [
+      'A new campaign chapter opens once you finish The New Fire: five missions for the West Africans of Oyo.',
+      'Save the drummers of Oyo, free the sacred grove of Osun, and guard the Ifá oracle through a night of hyena men.',
+      'Then break the stilt towers and face Ninki Nanka, the dragon of the swamp, with the eagle warriors at your side. Every line is spoken.',
+    ],
+  },
+  {
     id: '2026-11-18-new-fire',
     date: '18 November 2026',
     title: 'Campaign Chapter VI: The New Fire',
