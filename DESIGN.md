@@ -962,7 +962,7 @@ const snap = world.getSnapshot();         // ViewSnapshot (6.3); includes and cl
   campaign: 'shore',           // optional, a campaign mission (5.16); local only, never from a lobby
   players: [ // dense, index = position in this array = start position index
     { index: 0, name: 'Austin', team: 1, pantheon: 'greek', color: '#d63a3a', kind: 'human', difficulty: null },
-    { index: 1, name: 'AI (Normal)', team: 2, pantheon: 'norse', color: '#3a78d6', kind: 'ai', difficulty: 'normal' },
+    { index: 1, name: 'AI (Normal)', team: 2, pantheon: 'norse', color: '#3a78d6', kind: 'ai', difficulty: 'normal', style: 'raider' }, // style optional (10)
   ],
 }
 ```
@@ -3111,7 +3111,16 @@ you, the shown objectives, Begin Mission, Hear the briefing). Progress lives in 
 ## 10. AI (src/ai/)
 
 `createAI(world, playerIndex, difficulty) → { tick() }` (difficulty `'tutorial'` is the sleeping camp of 5.13,
-`src/ai/tutorial-ai.js`; it is never offered in the lobby). Called every sim tick on the host;
+`src/ai/tutorial-ai.js`; it is never offered in the lobby). Play styles (src/data/ai-styles.js, laid over the
+difficulty profile by `withStyle` in src/ai/profiles.js): a lobby draws one for each computer player from the seed
+(`drawStyle(seed, index)`, each of four about as likely) into `setup.players[i].style`: Raider (first wave at 0.8
+of the time, waves at 0.8 of the pop and interval, a later second mine, one tower fewer), Builder (four more
+worshippers, earlier mines and tiers, first wave at 1.25 of the time with 1.3 of the pop), Guardian (two more
+towers, first wave at 1.1 of the time, marches at 1.05 of the fight ratio), or none: Balanced, the profile itself.
+A style changes only when and how hard it fights, never how fast it thinks or what it may do, so it is as fair as
+its difficulty: over 30 to 40 Normal 1v1 games against a balanced AI (same seeds and pantheons), Raider won 5 more,
+Builder 4 more, Guardian 1 fewer than a balanced one did. A stand-in for a dropped player and campaign and daily AIs
+play balanced. The loading screen names it ("Computer · Hard · Raider"). Called every sim tick on the host;
 thinks every `AI_THINK_INTERVAL[difficulty]` ticks. Reads world state, acts **only** through
 `world.issueCommand(playerIndex, cmd)`. Behavior: keep training worshippers up to what its
 mines, wood line and prayer slots can use (at most 15/30/34/34 by difficulty; a mine takes only

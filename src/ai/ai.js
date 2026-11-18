@@ -5,7 +5,7 @@
 // resource cheats) and never throws: a failing think is logged once and the
 // AI carries on.
 import { RNG, hashSeed } from '../sim/rng.js';
-import { profileFor } from './profiles.js';
+import { profileFor, STYLE_IDS } from './profiles.js';
 import { scanWorld } from './scan.js';
 import { refreshEconomy, manageWorkers, minersFor } from './economy.js';
 import { planBuildings, resumeSites } from './build.js';
@@ -42,7 +42,10 @@ export class AIPlayer {
     this.me = me;
     this.standIn = !!(opts && opts.standIn);
     this.difficulty = DIFFICULTIES.has(difficulty) ? difficulty : 'normal';
-    this.prof = profileFor(this.difficulty);
+    // A computer player's play style (profiles.js STYLES), from the setup; a stand-in plays balanced.
+    const style = this.standIn ? null : world.setup && world.setup.players && world.setup.players[me] ? world.setup.players[me].style : null;
+    this.style = style && STYLE_IDS.includes(style) ? style : null;
+    this.prof = profileFor(this.difficulty, this.style);
     const seed = world.setup ? world.setup.seed : 1;
     this.rng = new RNG(hashSeed(`${seed}:ai:${me}`));
     this.phase = (me * 7 + 3) % this.prof.think;

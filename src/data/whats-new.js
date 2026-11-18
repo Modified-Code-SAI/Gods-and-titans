@@ -6,6 +6,15 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-ai-styles',
+    date: '18 November 2026',
+    title: 'Rivals with a temper',
+    items: [
+      'Computer players now each have a play style: Raiders strike early and often, Builders grow huge and strike late, Guardians hide behind towers.',
+      'The loading screen tells you which style each computer player has, so you can plan for it.',
+    ],
+  },
+  {
     id: '2026-11-18-wave-four',
     date: '18 November 2026',
     title: 'Rich starts',
