@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-tablet',
+    date: '18 November 2026',
+    title: 'Campaign Chapter VIII: The Tablet of Destinies',
+    items: [
+      'A new campaign chapter opens once you finish The Dragon of the Swamp: five missions for the Mesopotamians of Babylon.',
+      'Save the scribes of Babylon, win back the shrines of Nippur, and guard the house of Marduk through a night of monsters.',
+      'Then break the towers of Kingu and face Tiamat, the salt sea, with the horsemen of Oyo at your side. Every line is spoken.',
+    ],
+  },
+  {
     id: '2026-11-18-guardian-walls',
     date: '18 November 2026',
     title: 'Guardians build walls',

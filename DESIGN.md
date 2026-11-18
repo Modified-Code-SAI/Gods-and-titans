@@ -887,7 +887,8 @@ then Chapter III, "The Sea of Chaos" (five for the Egyptians against Akkad and T
 Balor" (five for the Celts against Balor's Fomorians), then Chapter V, "The Eight-Headed Serpent" (five for the
 Japanese of Izumo against the serpent cult and Yamata no Orochi), then Chapter VI, "The New Fire" (five for the Aztecs
 of the lake city against the cult of Cipactli), then Chapter VII, "The Dragon of the Swamp" (five for the West
-Africans of Oyo against the swamp cult and Ninki Nanka), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+Africans of Oyo against the swamp cult and Ninki Nanka), then Chapter VIII, "The Tablet of Destinies" (five for the
+Mesopotamians of Babylon against Kingu and Tiamat), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -977,6 +978,18 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   wins all five (the last at 16:02), an idle one loses all five, an Easy one wins all five (slowly: the towers at
   37:05, the dragon at 27:11). The summoned minions (Osebo, Onini) are never spawned by a mission: they carry a
   duration only when an ability summons them.
+  Chapter VIII: The Gate of the Gods (a Temple, a god, and a raid with an ugallu at 4:30 that makes for the tagged
+  house of the scribes), The Shrines of Nippur (hold two sacred sites for 1:30 within 18:00 against an Easy AI,
+  ugallu at 6:00), The Night of Monsters (hold the tagged Temple of Marduk ten minutes against six waves with scorpion
+  men, mušḫuššu, ugallu and Anzû, two lamassu for the hero at 4:45 and soldiers at 10:00; `waitFor: ['hold']`), The
+  Towers of Kingu (muster fourteen soldiers, which reveals "tear down Kingu's two tagged towers"; two mušḫuššu stand
+  guard as a bonus kill; the wardens come out at 9:00), The Tablet of Destinies (conquer a Normal and an Easy
+  Mesopotamian AI with the West African ally "Horsemen of Oyo"; Tiamat rises at 13:00 with two mušḫuššu and two
+  ugallu on their own tag, `waitFor: ['tiamat']`). Its seed 12606 was picked from a sweep of 12601 to 12616, where a
+  Normal hero won 10 of 16 (the mirror match is the hardest finale). AI-only runs of Chapter VIII: a Normal hero
+  wins all five (the last at 15:17), an idle one loses all five, an Easy one wins the first and third. The narration
+  was rendered from a respelt copy of the lines (mush-hush-shoo, Kin-goo, Esa-geela, oo-gah-loo) so Kokoro says the
+  names; the clip names still come from the real words.
 
 ## 6. Simulation API (src/sim/)
 

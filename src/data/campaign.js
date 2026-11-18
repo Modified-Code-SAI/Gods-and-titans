@@ -1175,6 +1175,170 @@ const DRAGON_SWAMP = [
   },
 ];
 
+const TABLET = [
+  {
+    id: 'babylon',
+    title: 'The Gate of the Gods',
+    place: 'Babylon, on the Euphrates',
+    seed: 12101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'mesopotamian', team: 1 },
+      { name: 'Raiders of Kingu', pantheon: 'mesopotamian', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'house', tag: 'scribes', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Babylon, the gate of the gods, on the banks of the Euphrates. The tablet of destinies, that gives its keeper rule over heaven and earth, has been stolen, and Kingu wears it on his breast. Tiamat, the salt sea, has made him captain of her eleven monsters, and his raiders are coming up the river. The scribes of Babylon are writing down the names of the gods, so that whatever happens they will not be forgotten. Raise a Temple, call the gods, and keep the scribes\' house standing.',
+    victory: 'Kingu\'s raiders are running down the river. One of them, taken alive, says Kingu has sent his priests to Nippur, to the shrines of Enlil, to scratch the names of the gods from the holy stones.',
+    defeat: 'The raiders burned the house of the scribes. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '🌀', text: 'Summon a god of the two rivers' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off Kingu\'s raiders', hidden: true },
+      { id: 'scribes', kind: 'protect', tag: 'scribes', icon: '📜', text: 'Keep the house of the scribes standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the raiders\' camp' },
+    ],
+    events: [
+      { at: 4, say: 'Boats on the river, coming up from the south. Kingu\'s raiders want the scribes. Make ready.' },
+      { at: 270, say: 'The raiders are on the bank, and an ugallu, a lion-demon of the storm, runs with them! They make for the scribes.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['archer', 2], ['mesopotamian_ugallu', 1]), at: 'front', march: true, target: 'scribes' } },
+      { after: 'raid', say: 'The raiders are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'nippur',
+    title: 'The Shrines of Nippur',
+    place: 'The holy city of Nippur',
+    seed: 12301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'mesopotamian', team: 1 },
+      { name: 'Priests of Kingu', pantheon: 'mesopotamian', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'Nippur, the holy city of Enlil, where the names of the gods are cut into the standing stones. Kingu\'s priests have taken the stones, and day by day they are scratching the names away. Send your Worshippers and Priests to the holy stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes the names will be gone for ever.',
+    victory: 'The shrines of Nippur are ours, and the names of the gods are safe. But Tiamat\'s eleven monsters have gathered at last, and tonight they march on the Esagila, the house of Marduk in Babylon.',
+    defeat: 'The priests held the stones, and the names of the gods are gone. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'stones', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'Lion-demons in the city! The priests send the ugallu to drive you from the stones.', spawn: { owner: 1, tag: 'ugallu', units: U(['mesopotamian_ugallu', 2], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'Half the names are gone from the stones. Five minutes left!' },
+    ],
+  },
+  {
+    id: 'esagila',
+    title: 'The Night of Monsters',
+    place: 'The Esagila, the house of Marduk',
+    seed: 12403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'mesopotamian', team: 1 },
+      { name: 'The Eleven Monsters', pantheon: 'mesopotamian', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'esagila', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the monsters' camp early does not end the night: the Esagila must still be kept until the dawn
+    briefing: 'The Esagila, the house of Marduk, whose roof touches heaven. Tonight Tiamat sends her eleven monsters against it: scorpion men, lion-demons, the dragon mušḫuššu, and birds of the storm. If the house of Marduk falls, no god will dare to stand against her. Keep the Temple standing through ten minutes of darkness, until the dawn.',
+    victory: 'The dawn has come, and the house of Marduk still stands. The gods have met in council, and they have chosen Marduk to fight Tiamat. But first the tablet of destinies must be won back from Kingu, who waits behind two great towers on the road to the sea.',
+    defeat: 'The Esagila has fallen, and the gods have lost heart.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'esagila', kind: 'protect', tag: 'esagila', icon: '🏛️', text: 'Keep the Temple of Marduk standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The night is falling, and the monsters come with it. Put your soldiers between them and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'esagila' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['mesopotamian_slinger', 3], ['mesopotamian_scorpion_man', 1]), at: 'front', march: true, target: 'esagila' } },
+      { at: 255, say: 'Scorpion men out of the dark, and a mušḫuššu behind them! Hold the line!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['mesopotamian_scorpion_man', 2], ['mesopotamian_mushussu', 1]), at: 'front', march: true, target: 'esagila' } },
+      { at: 285, say: 'The lamassu, the winged bulls of the city gates, have come to stand beside you!', spawn: { owner: 0, tag: 'lamassu', units: U(['mesopotamian_lamassu', 2]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['mesopotamian_slinger', 4], ['mesopotamian_ugallu', 2]), at: 'front', march: true, target: 'esagila' } },
+      { at: 435, say: 'Anzû birds in the dark sky! Archers, look up!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['mesopotamian_anzu', 3]), at: 'front', march: true, target: 'esagila' } },
+      { at: 525, say: 'Two mušḫuššu lead the last of them. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['mesopotamian_mushussu', 2], ['warrior', 6], ['archer', 4], ['mesopotamian_scorpion_man', 2]), at: 'front', march: true, target: 'esagila' } },
+      { at: 600, spawn: { owner: 0, tag: 'guards', units: U(['warrior', 8], ['mesopotamian_slinger', 4]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'kingu',
+    title: 'The Towers of Kingu',
+    place: 'The road to the salt sea',
+    seed: 12504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'mesopotamian', team: 1 },
+      { name: 'Wardens of Kingu', pantheon: 'mesopotamian', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'towers', ring: 9 }, { type: 'tower', tag: 'towers', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'On the road to the salt sea, Kingu has raised two great towers, and the tablet of destinies is kept between them. Muster an army, then tear the towers down. Two mušḫuššu, the serpent-dragons of Tiamat, lie before them. Bring them down too, if you can.',
+    victory: 'Kingu\'s towers have fallen, and the tablet of destinies is fastened on the breast of Marduk. Only Tiamat is left, the salt sea herself. And across the desert the horsemen of Oyo have come, who remember how the world stood with them against the dragon of the swamp.',
+    defeat: 'Kingu\'s towers still stand, and the tablet is still his. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'towers', kind: 'destroy', tag: 'towers', icon: '🗼', text: 'Tear down Kingu\'s two towers', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'mushussu', kind: 'kill', tag: 'mushussu', optional: true, icon: '🐍', text: 'Bonus: slay the two mušḫuššu' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'mushussu', units: U(['mesopotamian_mushussu', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The towers stand beyond the wardens\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the towers!', reveal: 'towers' },
+      { at: 540, say: 'The wardens come out to meet you, with scorpion men at their side!', spawn: { owner: 1, tag: 'wardens', units: U(['mesopotamian_scorpion_man', 3], ['mesopotamian_ugallu', 1], ['mesopotamian_slinger', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'salt_sea',
+    title: 'The Tablet of Destinies',
+    place: 'Where the two rivers meet the sea',
+    seed: 12606,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'mesopotamian', team: 1 },
+      { name: 'Host of Kingu', pantheon: 'mesopotamian', team: 2, difficulty: 'normal' },
+      { name: 'Horsemen of Oyo', pantheon: 'west_african', team: 1, difficulty: 'normal' },
+      { name: 'Children of Tiamat', pantheon: 'mesopotamian', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['tiamat'], // breaking Kingu's host before 13:00 does not end it: Tiamat still rises, and must fall
+    briefing: 'Where the Tigris and the Euphrates run into the salt sea, the last of Kingu\'s host stands on the shore, and behind them the water is rising. The horsemen of Oyo stand with us. Break Kingu\'s host. And when Tiamat comes up out of the sea, bring the mother of monsters down, and end this war for ever.',
+    victory: 'Marduk\'s net has caught the salt sea, and his storm winds have filled her. Tiamat has fallen, and out of her body the heavens and the earth are made anew. The tablet of destinies is with the gods again, and eight peoples have now stood together against the dark.',
+    defeat: 'Tiamat has risen, and the salt sea has covered the land between the rivers. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Kingu and the children of Tiamat' },
+      { id: 'tiamat', kind: 'kill', tag: 'tiamat', icon: '🐉', text: 'Slay Tiamat, the salt sea', hidden: true, waitText: 'Tiamat rises from the sea' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The horsemen of Oyo stand beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The sea is boiling at the river mouths. Something vast is coming up out of the deep.' },
+      { at: 780, say: 'Tiamat rises from the salt sea! Bring the mother of monsters down!', reveal: 'tiamat', spawn: { owner: 1, tag: 'tiamat', units: U(['mesopotamian_tiamat', 1]), at: 'front', march: true, always: true } },
+      { after: 'tiamat', say: 'Tiamat has fallen! Now finish Kingu\'s host.' },
+      // Her monsters, on a tag of their own: "Slay Tiamat" is done when she falls, not when the last of them does.
+      { at: 780, spawn: { owner: 1, tag: 'tiamat_brood', units: U(['mesopotamian_mushussu', 2], ['mesopotamian_ugallu', 2]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -1239,6 +1403,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the West Africans',
     blurb: 'The rains have failed, and in the mangroves a cult feeds a dragon no one may look on and live. Five battles for the people of Oyo.',
     missions: DRAGON_SWAMP,
+  },
+  {
+    id: 'tablet',
+    chapter: 'Chapter VIII',
+    title: 'The Tablet of Destinies',
+    pantheon: 'mesopotamian',
+    people: 'the Mesopotamians',
+    blurb: 'Kingu has stolen the tablet of destinies, and Tiamat\'s eleven monsters are marching on Babylon. Five battles for the people of the two rivers.',
+    missions: TABLET,
   },
 ].map((c, ci) => Object.freeze({
   ...c,
