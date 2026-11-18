@@ -9,7 +9,7 @@
 // ids left in them are not reported. "pop-over-cap" is legal after losing Houses.)
 //
 // Usage: node tools/sim-audit.mjs [--seeds=1-3] [--max=25] [--teams=1v1|2v2|ffa|3v3|ffa6] [--diff=hard]
-//        [--pantheons=greek,norse] [--every=20] [--peace=30] [--sacred] [--landscape=islands] [--purse=rich] [--determinism] [--strict]
+//        [--pantheons=greek,norse] [--every=20] [--peace=30] [--sacred] [--landscape=islands] [--purse=rich] [--style=guardian] [--determinism] [--strict]
 //
 // --strict (CI): exit 1 when a game breaks an invariant, an AI throws, a command errors or a replay differs.
 // Stuck and unproductive units, far gold hops, pop-over-cap and stale prayer-slot ids are only printed.
@@ -113,6 +113,7 @@ function runGame(g) {
   if (opt.sacred) setup.sacredVictory = true;
   if (opt.landscape) setup.landscape = opt.landscape;
   if (opt.purse) setup.startPurse = opt.purse;
+  if (opt.style) for (const p of setup.players) p.style = opt.style; // every AI plays this style (DESIGN 10)
   const world = createWorld(setup);
   const ais = setup.players.map((p) => createAI(world, p.index, p.difficulty));
   const issues = new Map();

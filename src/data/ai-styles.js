@@ -21,8 +21,8 @@ export const STYLES = {
     add: { workers: 4 },
   },
   guardian: {
-    name: 'Guardian', icon: '🛡️', blurb: 'Walls itself in with towers and only marches when it is sure.',
-    scale: { firstAttack: 1.1, attackRatio: 1.05 },
+    name: 'Guardian', icon: '🛡️', blurb: 'Walls the front of its base, raises towers, and only marches when it is sure.',
+    scale: { firstAttack: 1.05 },
     add: { towersMax: 2 },
   },
 };

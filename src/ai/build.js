@@ -126,7 +126,19 @@ function expansionSpot(ai) {
 function towerSpot(ai) {
   const t = ai.towerTarget;
   if (!t) return null;
+  // A guard tower for an expansion stands back from the mine, clear of the ring its miners stand on and walk
+  // through (towers at the mine's edge boxed its workers in); a tower where the base was hit goes where asked.
+  if (!t.urgent) return findSpot(ai.world, ai, 'tower', t.x, t.y, { minR: 4.5, maxR: 9, ideal: 5 });
   return findSpot(ai.world, ai, 'tower', t.x, t.y, { minR: 1.5, maxR: 8, ideal: 2.5 });
+}
+
+/** Towers of this AI and its allies already within 8 tiles of a spot. */
+function towersNear(s, x, y) {
+  let n = 0;
+  for (const list of [s.buildings, s.allyBuildings || []]) {
+    for (const b of list) if (!b.dead && b.type === 'tower' && Math.hypot(b.x - x, b.y - y) < 8) n++;
+  }
+  return n;
 }
 
 /** Distance from the best drop-off to the nearest trees (for storehouse planning). */
@@ -221,6 +233,9 @@ export function planBuildings(ai, s, wants) {
 
   // Towers where the base was hit (or guarding the expansion).
   const towers = haveOf(s, 'tower');
+  // An expansion is guarded once two towers (its own or an ally's) stand by it: the rest of the allowance is
+  // kept for where the base is hit, not spent ringing one mine.
+  if (ai.towerTarget && !ai.towerTarget.urgent && towersNear(s, ai.towerTarget.x, ai.towerTarget.y) >= 2) ai.towerTarget = null;
   if (ai.towerTarget && towers < prof.towersMax && t > 150 && !s.pending.some((q) => q.b === 'tower')) {
     add(ai.towerTarget.urgent ? 85 : 58, 'tower', () => towerSpot(ai), { reserve: !!ai.towerTarget.urgent });
   }

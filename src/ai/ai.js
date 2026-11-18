@@ -9,6 +9,7 @@ import { profileFor, STYLE_IDS } from './profiles.js';
 import { scanWorld } from './scan.js';
 import { refreshEconomy, manageWorkers, minersFor } from './economy.js';
 import { planBuildings, resumeSites } from './build.js';
+import { planWalls } from './walls.js';
 import { planProduction, planResearch, planManors } from './production.js';
 import { runMilitary, newMilitary, defendingHome } from './military.js';
 import { runMicro } from './micro.js';
@@ -46,6 +47,8 @@ export class AIPlayer {
     const style = this.standIn ? null : world.setup && world.setup.players && world.setup.players[me] ? world.setup.players[me].style : null;
     this.style = style && STYLE_IDS.includes(style) ? style : null;
     this.prof = profileFor(this.difficulty, this.style);
+    this.walls = this.style === 'guardian'; // a Guardian walls the front of its base (walls.js)
+    this.wall = null;
     const seed = world.setup ? world.setup.seed : 1;
     this.rng = new RNG(hashSeed(`${seed}:ai:${me}`));
     this.phase = (me * 7 + 3) % this.prof.think;
@@ -138,6 +141,7 @@ export class AIPlayer {
     planProduction(this, s, wants);
     planResearch(this, s, wants);
     planManors(this, s, wants);
+    planWalls(this, s, wants);
     const left = this.spend(s, wants);
     if (!this.standIn) runAid(this, left);
     this.updateRallies(s);
