@@ -3188,7 +3188,8 @@ Guardian won 11 to 13 while it still waited for 1.05 of the fight ratio and 1.1 
 those went back to 1 and 1.05: the wall and its stone are its caution now. Expansion guard towers (any AI with two
 or more towers allowed) stand 4.5 to 9 tiles from the mine, clear of its miners, and stop at two towers by the mine,
 the AI's own or an ally's (an audit of four Hard Guardians found allies ringing one mine with nine towers and
-their miners boxed in). Its own wall segments,
+their miners boxed in). A Worshipper carrying a relic, or on its way to one, is never picked to build (`pickBuilder`):
+the relic errand and the build used to swap it every think, frozen between the two. Its own wall segments,
 like everyone's, are invisible to its scans (`worldDigest`,
 `scanWorld`, team targeting): they are neither buildings it counts nor targets it picks, and an army shut out by a
 player's wall breaks through it like any soldier (5.5). Its Barracks also trains the pantheon elite soldier (4.10)

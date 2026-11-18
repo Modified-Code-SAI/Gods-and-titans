@@ -36,7 +36,7 @@ test('only a Guardian plans a wall, once it is a Town with wood to spare, and st
   const worker = (id) => ({ id, x: 30, y: 48 });
   const mk = (over = {}) => ({
     walls: true, threat: null, standIn: false, wall: null, me: 0,
-    world: { map: openMap(), mineList: [], buildingList: [], tickCount: 0 },
+    world: { map: openMap(), mineList: [], buildingList: [], relics: [], tickCount: 0 },
     home: () => ({ x: 20, y: 48 }),
     frontDir: () => ({ x: 1, y: 0 }),
     militia: null, hauls: new Map(),
@@ -82,4 +82,16 @@ test('a line that would shut the base away from a mine or the map\'s middle is n
   assert.equal(cutsOff(openMap(river), home, [], closed), true, 'closing the gate shuts the middle away');
   const mine = { tx: 50, ty: 47, size: 3, x: 51.5, y: 48.5, amount: 5000 };
   assert.equal(cutsOff(openMap(river), home, [mine], closed), true);
+});
+
+test('a worker carrying a relic is never picked to build (the relic errand and the build swapped every think)', async () => {
+  const { pickBuilder } = await import('../../src/ai/build.js');
+  const carrier = { id: 1, x: 10, y: 10 };
+  const other = { id: 2, x: 20, y: 20 };
+  const ai = { world: { relics: [{ state: 'carried', carrier }], tickCount: 0 }, militia: null, hauls: new Map() };
+  const s = { workers: [carrier, other], job: new Map([[1, 'gold'], [2, 'gold']]) };
+  assert.equal(pickBuilder(ai, s, 10, 10), other);
+  s.job.set(1, 'relic');
+  ai.world.relics = [];
+  assert.equal(pickBuilder(ai, s, 10, 10), other, 'nor one on its way to pick one up');
 });
