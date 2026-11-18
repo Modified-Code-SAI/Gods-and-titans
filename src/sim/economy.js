@@ -90,7 +90,8 @@ export function deposit(world, u) {
   const p = world.players[u.owner];
   if (p) {
     // A harvest blessing (god power boon) adds to every load brought in while it lasts.
-    const amount = Math.round(u.carryAmount * (1 + boonPct(p, 'gather')));
+    // A handicap (DESIGN 5.1) keeps only its share of the load.
+    const amount = Math.round(u.carryAmount * (1 + boonPct(p, 'gather')) * (p.handicap ?? 1));
     if (u.carry === 'g') {
       p.gold += amount;
       p.stats.gold += amount;

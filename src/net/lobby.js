@@ -4,7 +4,7 @@
 // Both sides distrust each other's messages: the host validates and rate-limits
 // every client patch / chat / ping; a client cleans the lobby state and checks
 // the GameSetup before it uses them.
-import { MAX_PLAYERS, PLAYER_COLORS, PEACE_LENGTHS, START_PURSE_CHOICES } from '../config.js';
+import { MAX_PLAYERS, PLAYER_COLORS, PEACE_LENGTHS, START_PURSE_CHOICES, HANDICAPS } from '../config.js';
 import { PANTHEONS, PANTHEON_LIST } from '../data/index.js';
 import { RNG, hashSeed } from '../sim/rng.js';
 import { resolveStyle, styleChoice, STYLE_CHOICES } from '../data/ai-styles.js';
@@ -103,7 +103,7 @@ function distinctNames(names) {
 const layoutOf = (s) => `${s.kind === 'human' ? 'open' : s.kind}|${s.team}|${s.kind === 'ai' ? s.difficulty : ''}`;
 
 function slotOf(kind, extra = {}) {
-  return { kind, name: '', pantheon: 'random', team: 1, color: 0, difficulty: 'normal', style: 'random', peerId: null, ...extra };
+  return { kind, name: '', pantheon: 'random', team: 1, color: 0, difficulty: 'normal', style: 'random', handicap: 100, peerId: null, ...extra };
 }
 
 /** A secret a client keeps to win its seat back after a lost link or a reload (DESIGN 7). */
@@ -142,6 +142,7 @@ export function sanitizeLobbyState(state) {
       color: intIn(s.color, 0, PLAYER_COLORS.length - 1) ?? 0,
       difficulty: DIFFICULTIES.includes(s.difficulty) ? s.difficulty : 'normal',
       style: styleChoice(s.style),
+      handicap: HANDICAPS.includes(s.handicap) ? s.handicap : 100,
       peerId: typeof s.peerId === 'string' ? s.peerId.slice(0, 128) : null,
     }));
   }
@@ -212,6 +213,7 @@ export function buildSetup(state, seed, version = PROTOCOL_VERSION) {
       kind: ai ? 'ai' : 'human',
       difficulty: ai ? slot.difficulty : null,
       ...(style ? { style } : {}),
+      ...(!ai && HANDICAPS.includes(slot.handicap) && slot.handicap !== 100 ? { handicap: slot.handicap } : {}), // DESIGN 5.1
     };
   });
   const setup = { version, seed, mapSize: state.mapSize, players };
@@ -519,8 +521,8 @@ export class LobbyHost {
     const index = this.slotIndexOf(m.peerId);
     if (msg.t === MSG.LOBBY) {
       if (index >= 0 && isObject(msg.patch) && m.limits.patch.take()) {
-        const { pantheon, team, color } = msg.patch;
-        if (this.patchSlot(index, { pantheon, team, color }, false)) this.changed();
+        const { pantheon, team, color, handicap } = msg.patch;
+        if (this.patchSlot(index, { pantheon, team, color, handicap }, false)) this.changed();
       }
     } else if (msg.t === MSG.CHAT) {
       if (index < 0 || !m.limits.chat.take()) return;
@@ -583,6 +585,8 @@ export class LobbyHost {
     const color = intIn(patch.color, 0, PLAYER_COLORS.length - 1);
     if (color !== null) this.setColor(i, color, byHost);
     if (byHost && t.kind === 'ai' && STYLE_CHOICES.includes(patch.style)) t.style = patch.style;
+    // a handicap (DESIGN 5.1): the host sets anyone's, a player their own; a computer player has its difficulty instead
+    if ((t.kind === 'human' || t.kind === 'host') && HANDICAPS.includes(patch.handicap)) t.handicap = patch.handicap;
     if (byHost && t.kind === 'ai' && DIFFICULTIES.includes(patch.difficulty)) {
       t.difficulty = patch.difficulty;
       t.name = aiName(t.difficulty);
@@ -843,7 +847,7 @@ export class LobbyHost {
       slots = order.map((index, slot) => {
         const p = players[index];
         const color = Math.max(0, PLAYER_COLORS.indexOf(p.color));
-        const extra = { team: intIn(p.team, 1, MAX_PLAYERS) ?? 1, color, pantheon: isPantheonChoice(p.pantheon) ? p.pantheon : 'random' };
+        const extra = { team: intIn(p.team, 1, MAX_PLAYERS) ?? 1, color, pantheon: isPantheonChoice(p.pantheon) ? p.pantheon : 'random', handicap: HANDICAPS.includes(p.handicap) ? p.handicap : 100 };
         if (slot === 0) return slotOf('host', { ...extra, name: sanitizeName(name || p.name, 'Host'), peerId: 'host' });
         if (p.kind === 'ai') {
           const difficulty = DIFFICULTIES.includes(p.difficulty) ? p.difficulty : 'normal';
@@ -1168,10 +1172,10 @@ export class LobbyClient {
     return () => this.kickCbs.delete(cb);
   }
 
-  /** Change my own slot: { pantheon, team, color }. */
+  /** Change my own slot: { pantheon, team, color, handicap }. */
   setMine(patch = {}) {
     const p = {};
-    for (const k of ['pantheon', 'team', 'color']) if (patch[k] !== undefined) p[k] = patch[k];
+    for (const k of ['pantheon', 'team', 'color', 'handicap']) if (patch[k] !== undefined) p[k] = patch[k];
     return this.conn.send({ t: MSG.LOBBY, patch: p });
   }
 

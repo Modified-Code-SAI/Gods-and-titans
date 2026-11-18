@@ -33,7 +33,8 @@ export function matchSides(setup, myIndex = -1) {
     const me = p.index === myIndex;
     // A computer player's play style (DESIGN 10) follows its level; a balanced one shows the level alone.
     const style = p.kind === 'ai' && p.style ? ` · ${styleInfo(p.style).name}` : '';
-    const who = me ? 'You' : p.kind === 'ai' ? `Computer · ${LEVELS[p.difficulty] || 'Normal'}${style}` : 'Player';
+    const handicap = p.kind !== 'ai' && Number.isInteger(p.handicap) && p.handicap < 100 ? ` · Handicap ${p.handicap}%` : ''; // DESIGN 5.1
+    const who = me ? `You${handicap}` : p.kind === 'ai' ? `Computer · ${LEVELS[p.difficulty] || 'Normal'}${style}` : `Player${handicap}`;
     sides.get(key).players.push({
       name: String(p.name || `Player ${(p.index ?? 0) + 1}`),
       pantheon: pan && pan.name ? pan.name : 'Unknown',

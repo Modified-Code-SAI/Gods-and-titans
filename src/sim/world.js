@@ -3,6 +3,7 @@
 import {
   DT, START_RESOURCES, START_WORKERS, POP_MAX, GOD_XP_LEVELS, GOD_MAX_LEVEL, GOD_LEVEL_HP, GOD_LEVEL_DAMAGE,
   GOD_LEVEL_ARMOR, XP_RANGE, UNDER_ATTACK_COOLDOWN, NEUTRAL, PLAYER_COLORS, MINE_SLOTS,
+  HANDICAPS,
 } from '../config.js';
 import { BUILDINGS, GOLD_MINE, PANTHEONS, PANTHEON_LIST, getUnitType, xpValue } from '../data/index.js';
 import { NO_MODS, computeMods, buildingMods, unitMods } from '../data/upgrades.js';
@@ -113,6 +114,7 @@ export class World {
         color: sp.color || PLAYER_COLORS[i % PLAYER_COLORS.length],
         kind: sp.kind || 'human',
         difficulty: sp.difficulty ?? null,
+        handicap: HANDICAPS.includes(sp.handicap) ? sp.handicap / 100 : 1, // share of gathered gold, wood and prayed faith
         gold: this.start.gold,
         wood: this.start.wood,
         faith: this.start.faith,
@@ -873,7 +875,7 @@ export class World {
       b.prayingCount = n;
       const p = this.players[b.owner];
       if (p && n > 0) {
-        const rate = n * b.def.faithRate * (1 + buildingMods(p.mods, b.type).faith) * (1 + boonPct(p, 'faith'));
+        const rate = n * b.def.faithRate * (1 + buildingMods(p.mods, b.type).faith) * (1 + boonPct(p, 'faith')) * (p.handicap ?? 1); // a save from before handicaps has none
         p.faithRate += rate;
         p.faith += rate * DT;
         p.stats.faith += rate * DT;

@@ -632,6 +632,8 @@ kbd {
 .mw-style-chip { flex: 0 0 auto; width: 2em; height: 2em; display: inline-grid; place-items: center; padding: 0; border-radius: 6px; border: 1px solid rgba(214, 180, 106, 0.35); background: rgba(20, 16, 10, 0.55); color: inherit; font-size: 0.95em; cursor: pointer; }
 .mw-style-chip:hover, .mw-style-chip:focus-visible { border-color: rgba(240, 206, 130, 0.85); background: rgba(48, 38, 20, 0.7); }
 .mw-style-chip.is-static { cursor: default; opacity: 0.85; }
+.mw-handicap-chip { width: auto; min-width: 2.9em; padding: 0 0.35em; font-size: 0.78em; font-variant-numeric: tabular-nums; opacity: 0.7; }
+.mw-handicap-chip.is-on { opacity: 1; color: #f0c674; border-color: rgba(240, 198, 116, 0.7); }
 .mw-tag {
   flex: none;
   padding: 0.15em 0.55em;

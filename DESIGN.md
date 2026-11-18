@@ -370,7 +370,13 @@ lists them Village, Town, City; `POWERS` has every one by id (30 in all; `valida
 Each player: Town Center (tier 1, Village) at its start position, 5 Worshippers, 400 gold,
 200 wood, 50 faith. The lobby's Starting resources may raise that purse for every player (`setup.startPurse`,
 `START_PURSES` in config.js): Plenty 1500 gold, 1000 wood, 200 faith; Rich 5000 gold, 4000 wood, 1000 faith
-(Standard leaves the setup without the key; a daily twist still applies on top, `startOf` in data/twists.js). A gold mine (12000) 2–4 tiles from the Town Center, a forest edge 6–10
+(Standard leaves the setup without the key; a daily twist still applies on top, `startOf` in data/twists.js). A human player may
+play with a handicap (`setup.players[i].handicap`, one of `HANDICAPS` 90/80/70/60/50, absent at 100): they keep
+that percent of every load their workers bring in and of the faith their prayers make (`p.handicap`, applied in
+economy.js `deposit` and `accrueFaith`; sacred sites, spoils and god powers are untouched), so friends of
+different skill can play an even game. In the lobby the host sets anyone's with the percent button beside the
+name and a player their own; others see it when below 100%, and the loading screen names it ("Player · Handicap 80%").
+A computer player has none: its difficulty does that job. A gold mine (12000) 2–4 tiles from the Town Center, a forest edge 6–10
 tiles away. Population cap = sum of `popProvided` of completed buildings, max `POP_MAX` (200): a Town
 Center gives 12 and a House 8 (10 with Large Families), so 24 Houses and a Town Center reach it (19 with
 Large Families). Four Houses in a square can be combined into a Manor (5.3) that gives 48 instead of
@@ -994,7 +1000,7 @@ const snap = world.getSnapshot();         // ViewSnapshot (6.3); includes and cl
   survival: true,              // optional, Trial of the Titans (5.14): every player on team 1 against monster waves
   campaign: 'shore',           // optional, a campaign mission (5.16); local only, never from a lobby
   players: [ // dense, index = position in this array = start position index
-    { index: 0, name: 'Austin', team: 1, pantheon: 'greek', color: '#d63a3a', kind: 'human', difficulty: null },
+    { index: 0, name: 'Austin', team: 1, pantheon: 'greek', color: '#d63a3a', kind: 'human', difficulty: null, handicap: 80 }, // handicap optional (5.1)
     { index: 1, name: 'AI (Normal)', team: 2, pantheon: 'norse', color: '#3a78d6', kind: 'ai', difficulty: 'normal', style: 'raider' }, // style optional (10)
   ],
 }
