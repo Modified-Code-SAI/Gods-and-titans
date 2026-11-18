@@ -121,10 +121,15 @@ try {
   await cleo.locator('.mw-slot.is-me .mw-pbtn').click();
     await cleo.locator('.mw-pgrid > *').nth(2).click();
   await sleep(1000);
-  const lobbyAtHost = await host.evaluate(() => [...document.querySelectorAll('.mw-slot')].map((r) => r.textContent.replace(/\s+/g, ' ').slice(0, 80)));
+  const lobbyAtHost = await host.evaluate(() => [...document.querySelectorAll('.mw-slot')].map((r) => r.textContent.replace(/\s+/g, ' ').slice(0, 160)));
   log('host sees lobby:', JSON.stringify(lobbyAtHost));
   const cleoPantheon = await cleo.evaluate(() => document.querySelector('.mw-slot.is-me .mw-pbtn-name')?.textContent);
   check(cleoPantheon && cleoPantheon !== 'Random' && lobbyAtHost[1].includes(cleoPantheon.slice(0, 5)), `Cleo's pantheon pick (${cleoPantheon}) shows on the host`);
+  // Cleo gives herself a handicap (DESIGN 5.1): her percent button, seen by the host.
+  await cleo.locator('.mw-slot.is-me .mw-handicap-chip').click();
+  const hostHandicap = await until(host, () => document.querySelectorAll('.mw-slot')[1]?.querySelector('.mw-handicap-chip')?.textContent === '90%' && '90%', 'handicap at the host', 10000)
+    .catch(() => null);
+  check(hostHandicap === '90%', `Cleo's handicap (${hostHandicap}) shows on the host`);
   // Lobby chat
   await dax.evaluate(() => 0);
   await shot(host, 'lobby-host-three');
