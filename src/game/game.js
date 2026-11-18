@@ -1587,7 +1587,7 @@ export class Game {
     if (!day || this.dailyCounted || !vs || vs.myIndex < 0) return null;
     this.dailyCounted = true;
     try {
-      return recordDaily(day, scoreOf(vs.players[vs.myIndex]).total, won);
+      return { ...recordDaily(day, scoreOf(vs.players[vs.myIndex]).total, won), day, won: !!won, time: vs.time }; // day, won, time: for Copy result
     } catch (err) {
       console.warn('[game] daily record failed', err);
       return null;

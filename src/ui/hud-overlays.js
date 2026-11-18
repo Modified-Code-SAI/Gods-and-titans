@@ -6,6 +6,8 @@ import { getSettings, saveSettings } from '../settings.js';
 import { sfx } from '../audio/sfx.js';
 import { sanitizeReason } from '../net/protocol.js';
 import { el } from './hud-dom.js';
+import { copyText } from './menu-dom.js';
+import { dailyShareText } from '../game/daily.js';
 import { chronicleView } from './hud-chronicle.js';
 import { formatClock } from './hud-data.js';
 import { TIME_OF_DAY_OPTIONS } from './time-of-day-options.js';
@@ -35,7 +37,29 @@ function dailyLine(d) {
     : d.isNew ? `Daily challenge: ${n(d.score)} points, a new best today (it was ${n(d.previous)}).`
       : `Daily challenge: ${n(d.score)} points · today's best ${n(d.best)}.`;
   const streak = d.streak > 1 ? ` 🔥 ${d.streak} days in a row.` : '';
-  return el('div', `hud-go-best hud-go-daily${d.isNew ? ' is-new' : ''}`, score + streak);
+  const line = el('div', `hud-go-best hud-go-daily${d.isNew ? ' is-new' : ''}`, score + streak);
+  const text = dailyShareText(d, gameLink());
+  if (text) {
+    // Copy result: the day's result as words to paste to a friend.
+    const copy = el('button', 'mw-btn mw-btn--ghost mw-btn--small hud-go-share', 'Copy result');
+    copy.type = 'button';
+    copy.title = 'Copy the result of today\'s challenge, to share it';
+    copy.addEventListener('click', async () => {
+      const ok = await copyText(text);
+      copy.textContent = ok ? 'Copied!' : 'Could not copy';
+    });
+    line.append(' ', copy);
+  }
+  return line;
+}
+
+/** The game's own address (no query or hash), for a shared result; empty outside a browser. */
+function gameLink() {
+  try {
+    return typeof location !== 'undefined' && /^https?:$/.test(location.protocol) ? `${location.origin}${location.pathname}` : '';
+  } catch {
+    return '';
+  }
 }
 
 function survivalLine(wave) {

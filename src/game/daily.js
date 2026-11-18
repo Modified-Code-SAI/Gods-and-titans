@@ -104,6 +104,23 @@ export function dailyLabel(ch) {
   return `${ch.twist.name} · ${mine} vs ${vs}`;
 }
 
+/**
+ * The words a player can paste to share a daily result (the game-over screen's Copy result):
+ * "Mythic War daily challenge, 2026-11-18 · Golden Age · Norse vs Aztec
+ *  Victory in 18:32 · 4,210 points · 3 days in a row
+ *  <link>". `d` is recordDaily's answer with { day, won, time }; `link` the game's address, or none.
+ */
+export function dailyShareText(d, link = '') {
+  if (!d || !DAY_RE.test(d.day || '')) return '';
+  const t = Math.max(0, Math.floor(Number(d.time) || 0));
+  const clock = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+  const parts = [`${d.won ? 'Victory' : 'Defeat'} in ${clock}`, `${num(d.score).toLocaleString('en-US')} points`];
+  if (d.streak > 1) parts.push(`${d.streak} days in a row`);
+  const lines = [`Mythic War daily challenge, ${d.day} · ${dailyLabel(dailyChallenge(d.day))}`, parts.join(' · ')];
+  if (link) lines.push(link);
+  return lines.join('\n');
+}
+
 // ------------------------------------------------------------------ the record
 
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0);

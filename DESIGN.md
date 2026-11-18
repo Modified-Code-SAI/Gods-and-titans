@@ -2958,7 +2958,9 @@ and a chip in the top bar's left group (`Hud.showTwist`: the twist's icon and na
 in view for the whole match, a loaded one too.
 It counts once, like the career (9.1): at the game-over screen, or on leaving a match the career counts as a
 loss. The score is the chronicle's (5.11, `scoreOf`) and the game-over screen says it against today's best
-with the streak. Play Again replays the same day's challenge; it is not kept for Quick Match. The record lives in
+with the streak, and a Copy result button puts the result on the clipboard as words to share (`dailyShareText`:
+"Mythic War daily challenge, <day> · <dailyLabel>", "Victory in m:ss · N points · S days in a row" and the game's
+address). Play Again replays the same day's challenge; it is not kept for Quick Match. The record lives in
 localStorage under `mythicwar-daily`: `{ days: { day: { best, plays, won } } }`, the last 60 days. The streak
 is the run of days played up to today, or up to yesterday while today is not played yet.
 

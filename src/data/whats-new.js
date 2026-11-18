@@ -11,6 +11,7 @@ export const NEWS = [
     title: 'Sharper rivals',
     items: [
       'The computer players now build their Houses in squares once they are a Town, and combine them into Manors.',
+      'After a daily challenge, Copy result puts your day, score and streak on the clipboard to share with a friend.',
     ],
   },
   {

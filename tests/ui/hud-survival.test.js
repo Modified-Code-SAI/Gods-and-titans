@@ -121,3 +121,11 @@ test('a finished trial raises the best wave in the career, counts as a game but 
   assert.ok(got.some((a) => a.id === 'titans_bane'));
   resetCareer();
 });
+
+test('a daily challenge\'s end screen has a Copy result button', () => {
+  const { hud } = setup({});
+  hud.overlays.showGameOver({ result: 'victory', winningTeam: 1, daily: { day: '2026-11-18', won: true, time: 600, score: 1200, best: 1200, previous: 0, isNew: true, first: true, streak: 2, plays: 1 } });
+  const text = hud.overlays.current.el.textContent;
+  assert.match(text, /Daily challenge: 1,200 points/);
+  assert.match(text, /Copy result/);
+});
