@@ -836,6 +836,21 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       h('span.mw-toggle-track', { 'aria-hidden': 'true' }, h('span.mw-toggle-knob')),
       h('span.mw-toggle-text', h('span', SACRED_NAME), h('small', M.SACRED_NOTE)));
     const victoryStatic = h('div.mw-map-static');
+    // Starting resources (DESIGN 5.1): what every player begins with.
+    const purseBtns = M.PURSES.map((p) => h('button.mw-seg', {
+      type: 'button',
+      title: p.blurb,
+      dataset: { purse: p.id },
+      onclick: () => {
+        try {
+          if (typeof lobby.setPurse === 'function') lobby.setPurse(p.id);
+        } catch (err) {
+          toast(err?.message || 'Could not change the starting resources.');
+        }
+      },
+    }, h('span', p.name)));
+    const purseNote = h('div.mw-hint.mw-purse-note');
+    const purseStatic = h('div.mw-map-static');
     const options = h('div.mw-lobby-options',
       isHost ? h('div.mw-opt-group',
         h('div.mw-label', 'Presets'),
@@ -858,6 +873,10 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       h('div.mw-opt-group.mw-victory-group',
         h('div.mw-label', 'Victory'),
         isHost ? [sacredToggle, victoryStatic] : victoryStatic,
+      ),
+      h('div.mw-opt-group.mw-purse-group',
+        h('div.mw-label', 'Starting resources'),
+        isHost ? [h('div.mw-segmented', purseBtns), purseNote] : purseStatic,
       ),
     );
 
@@ -1035,6 +1054,10 @@ export function createMenu({ root, onStart, onIntro = null, onLoad = null, onRep
       modeStatic.textContent = M.gameModeLabel(st());
       sacredInput.checked = M.sacredOn(st());
       victoryStatic.textContent = M.victoryLabel(st());
+      const purse = M.purseChoice(st());
+      purseBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.purse === purse));
+      purseNote.textContent = M.PURSES.find((p) => p.id === purse).blurb;
+      purseStatic.textContent = M.purseLabel(st());
       if (isHost) {
         // A trial has no rival team to win against: the Sacred Victory toggle gives way to the trial's goal.
         sacredToggle.hidden = survival;

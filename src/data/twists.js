@@ -7,6 +7,8 @@
 //     start?: { gold?, wood? (multipliers), faith? (added), workers? },
 //     allies?: AI teammates, enemies?: [difficulty, …] (one team), survival?, sacred?, mapSize? }
 
+import { START_PURSES } from '../config.js';
+
 export const TWISTS = [
   { id: 'golden', name: 'Golden Age', icon: '💰', desc: 'Every city starts with three times the gold and wood.', start: { gold: 3, wood: 3 } },
   { id: 'blessed', name: 'Blessed Start', icon: '🙏', desc: 'Every city starts with 400 faith: a god is within reach from the first minute.', start: { faith: 350 } },
@@ -21,14 +23,24 @@ export const TWISTS = [
 
 export const TWIST_BY_ID = Object.fromEntries(TWISTS.map((t) => [t.id, t]));
 
+/** The starting resources a setup asks for besides the standard ones ({ gold, wood, faith }), or null. */
+export function purseOf(setup) {
+  const id = setup && setup.startPurse;
+  return typeof id === 'string' && Object.hasOwn(START_PURSES, id) ? START_PURSES[id] : null;
+}
+
 /** The twist a setup asks for, or null (a normal game, or an unknown id). */
 export function twistOf(setup) {
   const id = setup && setup.twist;
   return typeof id === 'string' && Object.hasOwn(TWIST_BY_ID, id) ? TWIST_BY_ID[id] : null;
 }
 
-/** A player's starting gold, wood and faith and number of worshippers under a setup's twist. */
+/**
+ * A player's starting gold, wood and faith and number of worshippers: the lobby's starting resources
+ * (setup.startPurse, DESIGN 5.1) in place of the base, then the setup's twist.
+ */
 export function startOf(setup, base, workers) {
+  base = purseOf(setup) || base;
   const s = (twistOf(setup) || {}).start || {};
   return {
     gold: Math.round(base.gold * (s.gold ?? 1)),

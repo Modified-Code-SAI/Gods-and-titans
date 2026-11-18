@@ -3,7 +3,7 @@
 // types and typed fields before they reach World.issueCommand. Clients check
 // what a (possibly buggy) host sends before it reaches the ViewState: the
 // GameSetup from `start` and every snapshot. Pure: runs in Node too.
-import { MAX_PLAYERS, PLAYER_COLORS, TRADE_RESOURCES, TRADE_MAX, PEACE_LENGTHS, MAX_QUEUE } from '../config.js';
+import { MAX_PLAYERS, PLAYER_COLORS, TRADE_RESOURCES, TRADE_MAX, PEACE_LENGTHS, MAX_QUEUE, START_PURSE_CHOICES } from '../config.js';
 import { UNITS, BUILDINGS, ABILITIES, PANTHEONS, UPGRADES } from '../data/index.js';
 import { MARKS } from '../data/marks.js';
 import { POWERS } from '../data/powers.js';
@@ -164,6 +164,7 @@ export function validateSetup(setup, myIndex) {
   if (PEACE_LENGTHS.includes(setup.peaceMinutes)) clean.peaceMinutes = setup.peaceMinutes; // Decade of Peace
   else if (setup.survival === true) clean.survival = true; // Trial of the Titans (never together with a peace)
   if (setup.sacredVictory === true) clean.sacredVictory = true; // Sacred Victory (5.11)
+  if (START_PURSE_CHOICES.includes(setup.startPurse) && setup.startPurse !== 'standard') clean.startPurse = setup.startPurse; // starting resources (5.1)
   if (isLandscape(setup.landscape) && setup.landscape !== 'classic') clean.landscape = setup.landscape; // DESIGN 6.7
   return { setup: clean, myIndex };
 }

@@ -1,6 +1,6 @@
 // Pure helpers for the menu and lobby screens (no DOM, runs in Node tests).
 import { LANDSCAPE_CHOICES, landscapeInfo } from '../data/landscapes.js';
-import { MAX_PLAYERS, mapTiles, PLAYER_COLORS, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SACRED_NAME, SACRED_HOLD } from '../config.js';
+import { MAX_PLAYERS, mapTiles, PLAYER_COLORS, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, PEACE_LENGTHS, PEACE_NAME, SURVIVAL_NAME, SACRED_NAME, SACRED_HOLD, START_RESOURCES, START_PURSES, START_PURSE_CHOICES } from '../config.js';
 import { sanitizeName, sanitizeChat, sanitizeReason } from '../net/protocol.js';
 import { displayColor } from '../team-colors.js';
 
@@ -435,6 +435,24 @@ export function landscapeChoice(state) {
 export function landscapeLabel(state) {
   const info = landscapeInfo(landscapeChoice(state));
   return `${info.icon} ${info.name}: ${info.blurb}`;
+}
+
+/** The starting resources, as the lobby offers them (DESIGN 5.1): { id, name, gold, wood, faith, blurb }. */
+export const PURSES = START_PURSE_CHOICES.map((id) => {
+  const r = id === 'standard' ? START_RESOURCES : START_PURSES[id];
+  const name = id[0].toUpperCase() + id.slice(1);
+  return { id, name, ...r, blurb: `${r.gold} gold, ${r.wood} wood and ${r.faith} faith for every player at the start.` };
+});
+
+/** The lobby's starting resources ('standard', 'plenty' or 'rich'). */
+export function purseChoice(state) {
+  return START_PURSE_CHOICES.includes(state && state.purse) ? state.purse : 'standard';
+}
+
+/** The starting resources in words: what a client sees where the host has buttons. */
+export function purseLabel(state) {
+  const p = PURSES.find((x) => x.id === purseChoice(state));
+  return `${p.name}: ${p.gold} gold, ${p.wood} wood, ${p.faith} faith`;
 }
 
 /** Is Sacred Victory on in the lobby (DESIGN 5.11)? Never in a Trial of the Titans. */

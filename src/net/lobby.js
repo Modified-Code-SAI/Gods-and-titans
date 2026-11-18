@@ -4,7 +4,7 @@
 // Both sides distrust each other's messages: the host validates and rate-limits
 // every client patch / chat / ping; a client cleans the lobby state and checks
 // the GameSetup before it uses them.
-import { MAX_PLAYERS, PLAYER_COLORS, PEACE_LENGTHS } from '../config.js';
+import { MAX_PLAYERS, PLAYER_COLORS, PEACE_LENGTHS, START_PURSE_CHOICES } from '../config.js';
 import { PANTHEONS, PANTHEON_LIST } from '../data/index.js';
 import { RNG, hashSeed } from '../sim/rng.js';
 import * as mapgen from '../sim/mapgen.js';
@@ -152,6 +152,7 @@ export function sanitizeLobbyState(state) {
     peace: PEACE_LENGTHS.includes(state.peace) ? state.peace : 0,
     survival: state.survival === true && !PEACE_LENGTHS.includes(state.peace),
     sacred: state.sacred === true,
+    purse: START_PURSE_CHOICES.includes(state.purse) ? state.purse : 'standard',
     started: state.started === true,
     slots,
   };
@@ -215,6 +216,7 @@ export function buildSetup(state, seed, version = PROTOCOL_VERSION) {
   if (PEACE_LENGTHS.includes(state.peace)) setup.peaceMinutes = state.peace; // Decade of Peace
   else if (survival) setup.survival = true; // Trial of the Titans
   if (state.sacred === true && !setup.survival) setup.sacredVictory = true; // Sacred Victory (DESIGN 5.11), never in a trial
+  if (START_PURSE_CHOICES.includes(state.purse) && state.purse !== 'standard') setup.startPurse = state.purse; // starting resources (DESIGN 5.1)
   if (typeof mapgen.mapHash === 'function') {
     setup.mapHash = mapgen.mapHash(mapgen.generateMap(mapgen.mapOptions(setup)));
   }
@@ -284,6 +286,7 @@ export class LobbyHost {
       peace: 0,
       survival: false,
       sacred: false,
+      purse: 'standard',
       started,
       slots: [slotOf('host', { name: sanitizeName(name, 'Host'), peerId: 'host' })],
     };
@@ -659,6 +662,14 @@ export class LobbyHost {
     return true;
   }
 
+  /** Starting resources (DESIGN 5.1): 'standard', 'plenty' or 'rich'. */
+  setPurse(id) {
+    if (this.started || !START_PURSE_CHOICES.includes(id) || this.state.purse === id) return false;
+    this.state.purse = id;
+    this.changed();
+    return true;
+  }
+
   /**
    * Arrange slots: 'coop' (humans on team 1 vs AI Normal on team 2, medium map),
    * '1v1' (2 slots, small map), '2v2' (teams 1,1,2,2), 'ffa' (everyone alone); online the
@@ -841,6 +852,7 @@ export class LobbyHost {
       this.state.peace = PEACE_LENGTHS.includes(setup.peaceMinutes) ? setup.peaceMinutes : 0;
       this.state.survival = setup.survival === true && !this.state.peace;
       this.state.sacred = setup.sacredVictory === true;
+      this.state.purse = START_PURSE_CHOICES.includes(setup.startPurse) ? setup.startPurse : 'standard';
       this.state.preset = null;
     }
     // Each human seat of the last game is held for its player (by their token), Open meanwhile.

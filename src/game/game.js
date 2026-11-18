@@ -53,7 +53,7 @@ import { nextMission } from '../data/campaign.js';
 import { CampaignVoice } from './campaign-voice.js';
 import { TauntVoice } from './taunt-voice.js';
 import { recordMission, chaptersDone } from './campaign-progress.js';
-import { ReplayRecorder, sanitizeReplay } from './replay.js';
+import { ReplayRecorder, sanitizeReplay, MAX_HANDOFF_REPLAY_COMMANDS } from './replay.js';
 import { saveReplay } from './replay-store.js';
 import { ReplaySession } from './replay-session.js';
 import { ReplayBar } from '../ui/hud-replay.js';
@@ -491,12 +491,7 @@ export class Game {
       if (!resumed) this.recorder = new ReplayRecorder({ world: session.world, setup: session.setup, myIndex: session.myIndex });
       else if (resumed.replay) this.recorder = ReplayRecorder.resume({ world: session.world, carried: resumed.replay });
     }
-    if (this.recorder) {
-      this.recorder.attach();
-      this.offs.push(this.viewState.on('snapshot', () => this.recorder.sample()));
-      this.offs.push(session.onChat((line) => this.recorder.chat(line)));
-      this.offs.push(() => this.recorder.detach());
-    }
+    if (this.recorder) this.hookRecorder(session);
     // The career and achievements on this device (src/game/career-tracker.js): nothing goes over the wire.
     // The guided first match is not a game of the career: its medal is kept instead (checkEnd); nor is a
     // campaign mission, whose wins and best times the campaign keeps (src/game/campaign-progress.js).
@@ -1763,6 +1758,24 @@ export class Game {
     return record;
   }
 
+  /** Feed the recorder: every snapshot (for its checksums) and chat line, until the Game goes. */
+  hookRecorder(session) {
+    const rec = this.recorder;
+    rec.attach();
+    this.offs.push(this.viewState.on('snapshot', () => rec.sample()));
+    this.offs.push(session.onChat((line) => rec.chat(line)));
+    this.offs.push(() => rec.detach());
+  }
+
+  /** The heir now hosts (adopt): record on from the replay the old host's copy carried, seen through my own eyes. */
+  recordOn(session, carried) {
+    const rec = ReplayRecorder.resume({ world: session.world, carried });
+    if (!rec) return;
+    rec.myIndex = this.myIndex;
+    this.recorder = rec;
+    this.hookRecorder(session);
+  }
+
   /** Can the game-over screen offer Watch Replay? */
   canWatchReplay() {
     return !!this.replayRecord && typeof this.onReplay === 'function' && !this.disposed;
@@ -2107,7 +2120,13 @@ export class Game {
     if (this.disposed || session !== this.session || session.stopped) return;
     const [saveGame, net] = mods;
     const room = makeRoomCode();
-    session.enableHandoff({ room, here, tokens, pack: (world, ais) => net.encodeState(JSON.stringify(saveGame.packMatch(world, ais))) });
+    // The replay so far rides along (not past MAX_HANDOFF_REPLAY_COMMANDS: the copy goes out every few seconds),
+    // so the heir keeps recording and everyone still gets Watch Replay at the end.
+    const extra = () => {
+      const r = this.recorder;
+      return r && !r.done && r.cmds.length <= MAX_HANDOFF_REPLAY_COMMANDS ? { replay: r.carry() } : {};
+    };
+    session.enableHandoff({ room, here, tokens, pack: (world, ais) => net.encodeState(JSON.stringify(saveGame.packMatch(world, ais, extra()))) });
     if (this.myToken) saveTicket({ roomCode: room, token: this.myToken, myIndex: session.myIndex, name: session.playerName(session.myIndex), transport: this.netTransport(), proof: session.proofs.get(session.myIndex) });
   }
 
@@ -2132,6 +2151,7 @@ export class Game {
       const net = await import('../net/handoff.js');
       let session;
       let lobby = null;
+      let carried = null; // the replay so far, from the host's copy (prepareHandoff)
       // Only my own link may have gone: if the host takes me back, nothing moves (a split game would be worse).
       // (A host who quit through the menu said it hands over: no need to ask.)
       const back = reason === REASONS.HOST_QUIT ? null : await net.reachHost({ plan, token: this.myToken, name, transport });
@@ -2150,6 +2170,7 @@ export class Game {
           plan, backup, transport,
           makeSession: (save) => {
             const loaded = saveGame.unpackMatch(save);
+            carried = loaded.extra.replay || null;
             return new HostSession({
               setup: loaded.world.setup, myIndex: this.myIndex, conns: new Map(), resumed: true, viewState: this.viewState,
               createWorld: () => loaded.world,
@@ -2167,7 +2188,7 @@ export class Game {
         if (lobby) lobby.close();
         return;
       }
-      this.adopt(session, lobby, !!back);
+      this.adopt(session, lobby, !!back, carried);
     } catch (err) {
       console.warn('[game] the game could not move to a new host', err);
       this.migrating = false;
@@ -2180,8 +2201,11 @@ export class Game {
     }
   }
 
-  /** Carry on with the session of the game's new host (DESIGN 7): this browser's own, or the heir's (or the old host's, reached again). */
-  adopt(session, lobby, reconnected = false) {
+  /**
+   * Carry on with the session of the game's new host (DESIGN 7): this browser's own, or the heir's (or the old host's, reached again).
+   * An heir that now hosts records on from the replay the old host's copy carried (none: no replay of this match).
+   */
+  adopt(session, lobby, reconnected = false, carried = null) {
     this.listenTo(session);
     this.session = session;
     if (this.handoffLobby) this.handoffLobby.close();
@@ -2191,6 +2215,7 @@ export class Game {
     // The game went back a few seconds: the units' motion history is of a future that will not happen.
     this.viewState.resetMotion();
     session.start();
+    if (session.isHost && carried && !this.recorder && !this.replay && session.world) this.recordOn(session, carried);
     if (this.hud) {
       this.hud.overlays.hideWaiting();
       if (reconnected) this.hud.message('Reconnected to the host.', 'system', { icon: '🔁' });
