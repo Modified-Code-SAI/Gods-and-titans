@@ -1466,7 +1466,9 @@ game leaves one base free as a rich guarded expansion. No river center feature.
     The replay recording rides in the backup's `extra.replay` (`ReplayRecorder.carry`, up to
     `MAX_HANDOFF_REPLAY_COMMANDS`, 60,000 commands, over an hour of a busy game; a longer one stays behind): the heir,
     now hosting, records on from it (`Game.recordOn`, its own seat as the replay's eyes), so every player still gets
-    Watch Replay at the end. Not carried over: the chat history, the voices' memory.
+    Watch Replay at the end. A host quitting through the menu finishes its own copy first (`countLeave`), so
+    `quitToMenu` keeps the recording so far (`quitCarry`) for the last copy `handOff` sends (tools/rematch-check.mjs
+    checks Watch Replay on both friends after such a move). Not carried over: the chat history, the voices' memory.
     A tree felled in the few seconds the game goes back stays felled in the view. A modified heir sees
     the whole game and every token: a trade-off for friends' games. Anyone can open a room code, so
     each seat has a proof (`HostSession.proofs`, random, in that seat's own `plan` and in the heir's

@@ -220,13 +220,15 @@ try {
   await until(heir, () => window.__game && window.__game.session.isHost && !window.__game.migrating && !window.__game.ended, 'the heir hosts', 120000);
   await until(other, () => window.__game && !window.__game.session.isHost && !window.__game.migrating && window.__game.session.ready, 'the other friend follows', 120000);
   await until(heir, () => !window.__game.session.pause, 'the new host goes on', 60000).catch(() => null);
-  await endGame(heir, team('Cleo', setup2));
+  await endGame(heir, team('Cleo', setup2), 35); // (long enough for a replay to be kept)
   await fastFrames(other);
   for (const p of [heir, other]) await until(p, () => !!document.querySelector('.hud-gameover'), 'game-over after the move', 120000);
   await sleep(1500);
   const heirBtns = await gameOverButtons(heir);
   log('heir buttons:', JSON.stringify(heirBtns));
   check(heirBtns[0] === 'Rematch', 'the new host is offered Rematch');
+  check(heirBtns.includes('Watch Replay'), 'the new host kept the replay through the move and can watch it');
+  check((await gameOverButtons(other)).includes('Watch Replay'), 'the other friend got the new host\'s replay');
   await clickButton(heir, /^Rematch$/);
   await inLobby(heir);
   const newCode = await until(heir, () => document.querySelector('.mw-room-code')?.textContent.trim() || null, 'the new host\'s room code');

@@ -373,6 +373,15 @@ test('an heir that takes an online game over records on from the copy the host s
   host2.stop();
   rec.detach();
 
+  // A host quitting through the menu finishes its own copy first (countLeave): the last copy carries what it had.
+  hostGame.quitCarry = rec.carry();
+  rec.finish({ result: null });
+  const last = JSON.parse(await decodeState(await handoff.pack(host.world, host.ais)));
+  assert.equal(last.extra.replay.tick, host.world.tickCount, 'the copy sent on quitting still carries the recording');
+  hostGame.quitCarry = null;
+  assert.equal(JSON.parse(await decodeState(await handoff.pack(host.world, host.ais))).extra.replay, undefined, 'a finished recording with nothing kept goes without');
+  rec.done = false;
+
   // A recording past the cap stays behind: the copy goes every few seconds.
   rec.cmds.length = MAX_HANDOFF_REPLAY_COMMANDS + 1;
   const big = JSON.parse(await decodeState(await handoff.pack(host.world, host.ais)));
