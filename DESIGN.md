@@ -880,7 +880,8 @@ missions for the Greeks against Norse raiders), then Chapter II, "The Wolf Age" 
 then Chapter III, "The Sea of Chaos" (five for the Egyptians against Akkad and Tiamat), then Chapter IV, "The Eye of
 Balor" (five for the Celts against Balor's Fomorians), then Chapter V, "The Eight-Headed Serpent" (five for the
 Japanese of Izumo against the serpent cult and Yamata no Orochi), then Chapter VI, "The New Fire" (five for the Aztecs
-of the lake city against the cult of Cipactli), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+of the lake city against the cult of Cipactli), then Chapter VII, "The Dragon of the Swamp" (five for the West
+Africans of Oyo against the swamp cult and Ninki Nanka), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -958,6 +959,18 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   Easy Aztec AI with the Japanese ally "Samurai of Izumo"; Cipactli rises at 13:00 with two xiuhcoatl and two jaguar
   spirits on their own tag, `waitFor: ['cipactli']`). AI-only runs of Chapter VI: a Normal hero wins all five (the
   last at 17:36), an idle one loses all five, an Easy one wins the first three.
+  Chapter VII: The Drums of Oyo (a Temple, a god, and a raid with a sasabonsam at 4:30 that makes for the tagged
+  house of the drummers), The Grove of Osun (hold two sacred sites for 1:30 within 18:00 against an Easy AI, hyena
+  men at 6:00), The Night of the Hyenas (hold the tagged Temple of the Ifá oracle ten minutes against six waves with
+  bultungin and sasabonsam, aziza for the hero at 4:45, dart hunters at 10:00; `waitFor: ['hold']`), The Stilt
+  Towers (muster fourteen soldiers, which reveals "tear down the two tagged stilt towers"; two sasabonsam stand guard
+  as a bonus kill; the keepers come out at 9:00), The Dragon of the Swamp (conquer a Normal and an Easy West African
+  AI with the Aztec ally "Eagles of the Lake"; Ninki Nanka wakes at 13:00 with two sasabonsam and two bultungin on
+  their own tag, `waitFor: ['ninki_nanka']`; its seed was picked because the Normal hero lost on 11605 and 11606,
+  where the two enemy AIs broke its army just before the dragon came). AI-only runs of Chapter VII: a Normal hero
+  wins all five (the last at 16:02), an idle one loses all five, an Easy one wins all five (slowly: the towers at
+  37:05, the dragon at 27:11). The summoned minions (Osebo, Onini) are never spawned by a mission: they carry a
+  duration only when an ability summons them.
 
 ## 6. Simulation API (src/sim/)
 
