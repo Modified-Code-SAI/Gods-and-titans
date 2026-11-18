@@ -1,7 +1,8 @@
-// The campaign (DESIGN 5.16): three chapters of five linked missions each. Chapter I, "The Long Winter", for
+// The campaign (DESIGN 5.16): four chapters of five linked missions each. Chapter I, "The Long Winter", for
 // the Greeks against raiders out of the frozen north; Chapter II, "The Wolf Age", for the Norse against Loki,
 // opened by winning the last mission of Chapter I; Chapter III, "The Sea of Chaos", for the Egyptians against
-// Akkad and Tiamat, opened by winning the last of Chapter II. Plain data, read by the sim (src/sim/campaign.js runs the
+// Akkad and Tiamat, opened by winning the last of Chapter II; Chapter IV, "The Eye of Balor", for the Celts against
+// Balor and the Fomorians, opened by winning the last of Chapter III. Plain data, read by the sim (src/sim/campaign.js runs the
 // objectives and the scripted events), the HUD (the objective panel) and the menu (the chapter
 // screen and the briefings). The briefings and the lines said during a mission are recorded
 // (assets/narration/campaign, tools/narration/render.py --campaign); a line's clip is named by
@@ -515,6 +516,170 @@ const CHAOS_SEA = [
   },
 ];
 
+const BALOR_EYE = [
+  {
+    id: 'eriu',
+    title: 'Ships from the West',
+    place: 'The shore of Ériu',
+    seed: 8101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'celtic', team: 1 },
+      { name: 'Fomorian Raiders', pantheon: 'celtic', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'storehouse', tag: 'harvest', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Ériu, the green island at the edge of the world. Since the sea of chaos was stilled, the gods have been quiet. But out of the western sea come the Fomorians, a people of storm and blight, and their king is Balor of the evil eye. Raise a Temple, and call the gods of the Tuatha Dé Danann. And guard the storehouse: the harvest must last the winter.',
+    victory: 'The Fomorians are driven back to their ships. They will come again, the druids say, for the tribute Balor has always taken: the grain and the milk of Ériu.',
+    defeat: 'The Fomorians burned the harvest. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '🍀', text: 'Summon a god of the Tuatha Dé Danann' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off the Fomorian raiders', hidden: true },
+      { id: 'harvest', kind: 'protect', tag: 'harvest', icon: '🌾', text: 'Keep the storehouse of the harvest standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the raiders\' camp' },
+    ],
+    events: [
+      { at: 4, say: 'Black sails on the western sea. The Fomorians will come for the harvest. Make ready.' },
+      { at: 270, say: 'The Fomorians are ashore, with a hound of the hills at their heels! They make for the harvest.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['archer', 2], ['celtic_cu_sith', 1]), at: 'front', march: true, target: 'harvest' } },
+      { after: 'raid', say: 'The raiders are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'tara',
+    title: 'The Hills of Tara',
+    place: 'The sacred hills around Tara',
+    seed: 8301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'celtic', team: 1 },
+      { name: 'Stewards of Balor', pantheon: 'celtic', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'The Fomorians have come for their tribute, and their tax-gatherers have taken the sacred hills around Tara, where the kings of Ériu are made. Send your Worshippers and Priests to the holy stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes the tribute is due.',
+    victory: 'The hills of Tara are ours again, and the tribute will not be paid. Balor\'s answer comes on the wind: on the night of Samhain, when the door between the worlds stands open, his host will come for the Hill of the Druids.',
+    defeat: 'The tax-gatherers hold the hills, and the tribute is paid. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'hills', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'Banshees out of the west! The tax-gatherers send them to drive you from the hills.', spawn: { owner: 1, tag: 'banshee', units: U(['celtic_banshee', 2], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'The tax-gatherers count the grain. Five minutes until the tribute is due!' },
+    ],
+  },
+  {
+    id: 'samhain',
+    title: 'The Night of Samhain',
+    place: 'The Hill of the Druids',
+    seed: 8403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'celtic', team: 1 },
+      { name: 'Host of the Fomori', pantheon: 'celtic', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'hill', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the Fomorian camp early does not shut the door between the worlds: the night still has to be held
+    briefing: 'Samhain, the night when summer dies and the door between the worlds stands open. Balor\'s host is coming for the Hill of the Druids, and the dead ride with it. Keep the Temple on the hill standing through ten minutes of darkness, until the dawn shuts the door again and the Fianna come down from the hills to your aid.',
+    victory: 'The dawn has come, and the door between the worlds is shut. The Fianna have come. But on Tory, off the northern coast, Balor has raised two great towers, and from them his ships go out to burn the island.',
+    defeat: 'The Temple on the hill has fallen, and the dead walk in Ériu.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'hill', kind: 'protect', tag: 'hill', icon: '🔥', text: 'Keep the Temple on the hill standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'Night is falling, and the door between the worlds is opening. Put your soldiers between the Fomorians and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'hill' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['celtic_woad_raider', 2], ['celtic_cu_sith', 1]), at: 'front', march: true, target: 'hill' } },
+      { at: 255, say: 'The dead ride with them! A headless rider comes out of the dark!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['celtic_dullahan', 1]), at: 'front', march: true, target: 'hill' } },
+      { at: 285, say: 'Brigid lights the fires of Samhain, and the hounds of the hills run at your side!', spawn: { owner: 0, tag: 'hounds', units: U(['celtic_cu_sith', 3]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['celtic_woad_raider', 3], ['celtic_cu_sith', 2]), at: 'front', march: true, target: 'hill' } },
+      { at: 435, say: 'Banshees shriek in the dark sky! Archers, look up!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['celtic_banshee', 3]), at: 'front', march: true, target: 'hill' } },
+      { at: 525, say: 'A headless rider leads the last of them. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['celtic_dullahan', 1], ['warrior', 6], ['archer', 4], ['celtic_woad_raider', 2]), at: 'front', march: true, target: 'hill' } },
+      { at: 600, spawn: { owner: 0, tag: 'fianna', units: U(['warrior', 8], ['archer', 4]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'tory',
+    title: 'The Towers of Tory',
+    place: 'Tory, off the northern coast',
+    seed: 8504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'celtic', team: 1 },
+      { name: 'Wardens of Tory', pantheon: 'celtic', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'towers', ring: 9 }, { type: 'tower', tag: 'towers', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'On Tory, the island of towers off the northern coast, Balor has raised two great towers, and from them his ships go out to burn Ériu. Muster an army, then tear the towers down. Two headless riders, the dullahan, keep watch before them. Bring them down too, if you can.',
+    victory: 'The towers of Tory are broken, and Balor has no harbour on our coast. Now he comes himself, with all the Fomorians, to the plain of Mag Tuired. And when Balor opens his eye, the druids say, whatever it looks upon burns.',
+    defeat: 'Balor\'s ships still sail from Tory. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'towers', kind: 'destroy', tag: 'towers', icon: '🗼', text: 'Tear down the two towers of Tory', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'riders', kind: 'kill', tag: 'riders', optional: true, icon: '💀', text: 'Bonus: bring down the two headless riders' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'riders', units: U(['celtic_dullahan', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The towers stand beyond the wardens\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the towers!', reveal: 'towers' },
+      { at: 540, say: 'The wardens come out to meet you, with banshees over their heads!', spawn: { owner: 1, tag: 'wardens', units: U(['celtic_banshee', 2], ['celtic_woad_raider', 4], ['archer', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'mag_tuired',
+    title: 'The Eye of Balor',
+    place: 'The plain of Mag Tuired',
+    seed: 8605,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'celtic', team: 1 },
+      { name: 'Host of Balor', pantheon: 'celtic', team: 2, difficulty: 'normal' },
+      { name: 'Pharaoh\'s Legion', pantheon: 'egyptian', team: 1, difficulty: 'normal' },
+      { name: 'Fomori of the Sea', pantheon: 'celtic', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['balor'], // breaking the Fomorians before 13:00 does not end it: Balor still comes, and must fall
+    briefing: 'The plain of Mag Tuired, where the last battle for Ériu will be fought. All the Fomorians have come, and Balor of the evil eye comes behind them. The Pharaoh remembers how the peoples of the world stood with her against Tiamat, and her legion has sailed north to stand with us. Break the Fomorians. And when Balor comes onto the field, bring him down: one stone in the eye, the druids say, is all it takes.',
+    victory: 'Balor has fallen on Mag Tuired, struck in his burning eye, and the Fomorians have gone back into the western sea. Ériu is green again, and four peoples have stood together against the dark. For now, the gods are quiet.',
+    defeat: 'Balor\'s eye has opened, and Ériu burns. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Balor and the Fomori of the sea' },
+      { id: 'balor', kind: 'kill', tag: 'balor', icon: '👁️', text: 'Slay Balor of the evil eye', hidden: true, waitText: 'Balor comes to Mag Tuired' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The legion of the Pharaoh stands beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The ground shakes on Mag Tuired. Balor is coming, and his eye is shut, for now.' },
+      { at: 780, say: 'Balor is on the field, and his eye is opening! Bring him down!', reveal: 'balor', spawn: { owner: 1, tag: 'balor', units: U(['celtic_balor', 1]), at: 'front', march: true, always: true } },
+      { after: 'balor', say: 'Balor has fallen! Now finish the Fomorians.' },
+      // His guard, on a tag of their own: "Slay Balor" is done when he falls, not when the last of them does.
+      { at: 780, spawn: { owner: 1, tag: 'balor_guard', units: U(['celtic_woad_raider', 4]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -543,6 +708,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the Egyptians',
     blurb: 'Out of the east come the priests of Tiamat, to drown the world in the sea of chaos. Five battles for the Egyptians of the Nile.',
     missions: CHAOS_SEA,
+  },
+  {
+    id: 'balor_eye',
+    chapter: 'Chapter IV',
+    title: 'The Eye of Balor',
+    pantheon: 'celtic',
+    people: 'the Celts',
+    blurb: 'Out of the western sea come the Fomorians, and their king Balor has an eye that burns whatever it looks upon. Five battles for the Tuatha Dé Danann of Ériu.',
+    missions: BALOR_EYE,
   },
 ].map((c, ci) => Object.freeze({
   ...c,

@@ -6,6 +6,17 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-18-balor',
+    date: '18 November 2026',
+    title: 'Campaign Chapter IV: The Eye of Balor',
+    items: [
+      'A new campaign chapter opens once you finish The Sea of Chaos: five missions for the Celts against Balor\'s Fomorians.',
+      'Defend the harvest, hold the hills of Tara, keep the fires lit through the night of Samhain and tear down the towers of Tory.',
+      'In the last battle, Balor of the evil eye himself walks onto the field of Mag Tuired. Every briefing is spoken aloud.',
+      'Finishing the chapter earns its own achievement.',
+    ],
+  },
+  {
     id: '2026-11-18-wave-two',
     date: '18 November 2026',
     title: 'Sharper rivals',

@@ -875,7 +875,8 @@ Treasures of world myth that give creeping a reward beyond the bounty (WC3 items
 A GameSetup with `campaign: '<mission id>'` (built by `campaignSetup(id, { name, version })`, started from the
 chapter screen of 9.6, solo, no lobby) plays one mission of the campaign: Chapter I, "The Long Winter" (five
 missions for the Greeks against Norse raiders), then Chapter II, "The Wolf Age" (five for the Norse against Loki),
-then Chapter III, "The Sea of Chaos" (five for the Egyptians against Akkad and Tiamat), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+then Chapter III, "The Sea of Chaos" (five for the Egyptians against Akkad and Tiamat), then Chapter IV, "The Eye of
+Balor" (five for the Celts against Balor's Fomorians), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -926,6 +927,15 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   of Monsters (conquer a Normal and an Easy Mesopotamian AI with the Norse ally "Jarl of Hordaland"; Tiamat rises at
   13:00 with three mušḫuššu on their own tag, `waitFor: ['tiamat']`). AI-only runs of Chapter III: a Normal hero
   wins all five, an idle one loses all five, an Easy one wins the first three.
+  Chapter IV: Ships from the West (a Temple, a god, and a raid with a cú sith at 4:30 that makes for the tagged
+  storehouse of the harvest), The Hills of Tara (hold two sacred sites for 1:30 within 18:00 against an Easy AI,
+  banshees at 6:00), The Night of Samhain (hold the tagged Temple on the hill ten minutes against six waves with
+  headless riders and banshees, cú sith hounds for the hero at 4:45, the Fianna at 10:00; `waitFor: ['hold']`), The
+  Towers of Tory (muster fourteen soldiers, which reveals "tear down the two tagged towers"; two dullahan stand guard
+  as a bonus kill; the wardens come out at 9:00), The Eye of Balor (conquer a Normal and an Easy Celtic AI with the
+  Egyptian ally "Pharaoh's Legion"; Balor walks at 13:00 with four woad raiders on their own tag, `waitFor:
+  ['balor']`). AI-only runs of Chapter IV: a Normal hero wins all five (the last at 21:00), an idle one loses all
+  five, an Easy one wins the first four.
 
 ## 6. Simulation API (src/sim/)
 

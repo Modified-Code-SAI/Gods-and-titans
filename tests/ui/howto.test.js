@@ -117,6 +117,6 @@ test('How to Play comes as five pages, and the campaign tip counts the real chap
   const pages = howToPages();
   assert.deepEqual(pages.map(([id]) => id), ['basics', 'war', 'modes', 'controls', 'beyond']);
   for (const [, , kids] of pages) assert.ok(kids.length > 0);
-  assert.equal(CHAPTERS.length, 3);
-  assert.match(text, /the Campaign on the title screen is three chapters of five linked missions, for the Greeks, the Norse and the Egyptians/);
+  assert.equal(CHAPTERS.length, 4);
+  assert.match(text, /the Campaign on the title screen is four chapters of five linked missions, for the Greeks, the Norse, the Egyptians and the Celts/);
 });

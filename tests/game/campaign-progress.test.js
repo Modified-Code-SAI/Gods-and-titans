@@ -58,7 +58,23 @@ test('winning Chapter II opens Chapter III, whose last mission finishes it once'
   assert.deepEqual([wonCount(undefined, 'chaos_sea'), wonCount()], [4, 14]);
   assert.equal(recordMission('eridu', 1500).chapterDone, true);
   assert.equal(recordMission('eridu', 1400).chapterDone, false);
-  assert.equal(nextToPlay(), MISSIONS[14], 'all won: the last one stays chosen');
+  assert.equal(chapterUnlocked('balor_eye'), true, 'Chapter IV opens with the last of Chapter III');
+  assert.equal(nextToPlay().id, 'eriu');
+});
+
+test('winning Chapter III opens Chapter IV, whose last mission finishes the campaign once', () => {
+  resetProgress();
+  for (const m of MISSIONS.slice(0, 14)) recordMission(m.id, 900);
+  assert.equal(chapterUnlocked('balor_eye'), false, 'Chapter IV is shut until Chapter III is won');
+  recordMission('eridu', 900);
+  assert.equal(chapterUnlocked('balor_eye'), true);
+  assert.equal(isUnlocked('eriu'), true);
+  assert.equal(isUnlocked('tara'), false);
+  for (const m of MISSIONS.slice(15, 19)) assert.equal(recordMission(m.id, 800).chapterDone, false);
+  assert.deepEqual([wonCount(undefined, 'balor_eye'), wonCount()], [4, 19]);
+  assert.equal(recordMission('mag_tuired', 1500).chapterDone, true);
+  assert.equal(recordMission('mag_tuired', 1400).chapterDone, false);
+  assert.equal(nextToPlay(), MISSIONS[19], 'all won: the last one stays chosen');
 });
 
 test('a stored progress is cleaned: unknown missions and bad numbers go', () => {
