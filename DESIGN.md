@@ -889,7 +889,8 @@ Japanese of Izumo against the serpent cult and Yamata no Orochi), then Chapter V
 of the lake city against the cult of Cipactli), then Chapter VII, "The Dragon of the Swamp" (five for the West
 Africans of Oyo against the swamp cult and Ninki Nanka), then Chapter VIII, "The Tablet of Destinies" (five for the
 Mesopotamians of Babylon against Kingu and Tiamat), then Chapter IX, "The Dragon King's Flood" (five for the Chinese of
-Chentang against Ao Guang and the four Dragon Kings), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+Chentang against Ao Guang and the four Dragon Kings), then Chapter X, "The Poisoned River" (five for the Hindus of
+Vrindavan against Kaliya, the king of the nagas; with it every pantheon has a chapter), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -1002,6 +1003,16 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   monster, so the boss is a flight of four dragons (4,200 health in the air, against a titan's 6,000 on the ground).
   A Normal hero won the finale on 11 of the seeds 13601 to 13612. AI-only runs of Chapter IX: a Normal hero wins all
   five (the last at 19:59), an idle one loses all five, an Easy one wins all but the second and the fifth.
+  Chapter X: The Herds of Vrindavan (a Temple, a god, and a raid with a naga at 4:30 that makes for the tagged
+  storehouse of the cowherds), The Kadamba Grove (hold two sacred sites for 1:30 within 18:00 against an Easy AI,
+  nagas at 6:00), The Night on the Yamuna (hold the tagged Temple of Vrindavan ten minutes against six waves with
+  nagas, a Garuda for the hero at 4:45, vanaras at 10:00; `waitFor: ['hold']`), The Serpent Towers (muster fourteen
+  soldiers, which reveals "tear down the two tagged serpent towers"; two nagas stand guard as a bonus kill; the
+  guards come out at 9:00), The Serpent King (conquer a Normal and an Easy Hindu AI with the Chinese ally "Chentang
+  Crossbows"; at 13:00 six nagas rise as Kaliya and his queens, with warriors and archers on their own tag,
+  `waitFor: ['kaliya']`). Airavata is Indra's mount, not a monster, so the boss is again a group of creatures. Its
+  seed 14605 came from a sweep of 14601 to 14616, where a Normal hero won 13 of 16. AI-only runs of Chapter X: a
+  Normal hero wins all five (the last at 17:44), an idle one loses all five, an Easy one wins the first four.
 
 ## 6. Simulation API (src/sim/)
 

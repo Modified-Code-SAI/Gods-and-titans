@@ -123,7 +123,7 @@ test('winning Chapter VII opens Chapter VIII', () => {
   assert.equal(nextToPlay().id, 'chentang');
 });
 
-test('winning Chapter VIII opens Chapter IX, whose last mission finishes the campaign once', () => {
+test('winning Chapter VIII opens Chapter IX', () => {
   resetProgress();
   for (const m of MISSIONS.slice(0, 39)) recordMission(m.id, 900);
   assert.equal(chapterUnlocked('dragon_king'), false, 'Chapter IX is shut until Chapter VIII is won');
@@ -134,7 +134,21 @@ test('winning Chapter VIII opens Chapter IX, whose last mission finishes the cam
   assert.equal(recordMission('east_sea', 1500).chapterDone, true);
   assert.equal(recordMission('east_sea', 1400).chapterDone, false);
   assert.equal(wonCount(), 45);
-  assert.equal(nextToPlay(), MISSIONS[44], 'all won: the last one stays chosen');
+  assert.equal(nextToPlay().id, 'vrindavan');
+});
+
+test('winning Chapter IX opens Chapter X, whose last mission finishes the campaign once', () => {
+  resetProgress();
+  for (const m of MISSIONS.slice(0, 44)) recordMission(m.id, 900);
+  assert.equal(chapterUnlocked('poisoned_river'), false, 'Chapter X is shut until Chapter IX is won');
+  assert.equal(recordMission('east_sea', 1500).chapterDone, true);
+  assert.equal(chapterUnlocked('poisoned_river'), true);
+  assert.equal(nextToPlay().id, 'vrindavan');
+  for (const m of MISSIONS.slice(45, 49)) recordMission(m.id, 900);
+  assert.equal(recordMission('kaliya', 1500).chapterDone, true);
+  assert.equal(recordMission('kaliya', 1400).chapterDone, false);
+  assert.equal(wonCount(), 50);
+  assert.equal(nextToPlay(), MISSIONS[49], 'all won: the last one stays chosen');
 });
 
 test('a stored progress is cleaned: unknown missions and bad numbers go', () => {

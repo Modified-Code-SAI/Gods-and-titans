@@ -10,10 +10,10 @@ import { MAP_SIZES } from '../../src/config.js';
 
 const KINDS = new Set(['build', 'gods', 'army', 'kill', 'destroy', 'protect', 'survive', 'hold', 'conquer']);
 
-test('nine chapters of five linked missions, each chapter for one pantheon', () => {
-  assert.deepEqual(CHAPTERS.map((c) => [c.chapter, c.pantheon, c.missions.length]), [['Chapter I', 'greek', 5], ['Chapter II', 'norse', 5], ['Chapter III', 'egyptian', 5], ['Chapter IV', 'celtic', 5], ['Chapter V', 'japanese', 5], ['Chapter VI', 'aztec', 5], ['Chapter VII', 'west_african', 5], ['Chapter VIII', 'mesopotamian', 5], ['Chapter IX', 'chinese', 5]]);
-  assert.equal(MISSIONS.length, 45);
-  assert.equal(new Set(MISSIONS.map((m) => m.id)).size, 45);
+test('ten chapters of five linked missions, each chapter for one pantheon', () => {
+  assert.deepEqual(CHAPTERS.map((c) => [c.chapter, c.pantheon, c.missions.length]), [['Chapter I', 'greek', 5], ['Chapter II', 'norse', 5], ['Chapter III', 'egyptian', 5], ['Chapter IV', 'celtic', 5], ['Chapter V', 'japanese', 5], ['Chapter VI', 'aztec', 5], ['Chapter VII', 'west_african', 5], ['Chapter VIII', 'mesopotamian', 5], ['Chapter IX', 'chinese', 5], ['Chapter X', 'hindu', 5]]);
+  assert.equal(MISSIONS.length, 50);
+  assert.equal(new Set(MISSIONS.map((m) => m.id)).size, 50);
   assert.deepEqual(MISSIONS, CHAPTERS.flatMap((c) => c.missions), 'the missions in the order they open');
   for (const c of CHAPTERS) {
     assert.equal(CHAPTER_BY_ID[c.id], c);
@@ -36,7 +36,8 @@ test('nine chapters of five linked missions, each chapter for one pantheon', () 
   assert.equal(nextMission('cipactli').id, 'oyo', 'the end of Chapter VI leads into Chapter VII');
   assert.equal(nextMission('ninki_nanka').id, 'babylon', 'the end of Chapter VII leads into Chapter VIII');
   assert.equal(nextMission('salt_sea').id, 'chentang', 'the end of Chapter VIII leads into Chapter IX');
-  assert.equal(nextMission('east_sea'), null);
+  assert.equal(nextMission('east_sea').id, 'vrindavan', 'the end of Chapter IX leads into Chapter X');
+  assert.equal(nextMission('kaliya'), null);
   assert.equal(chapterOf('nope'), null);
 });
 
