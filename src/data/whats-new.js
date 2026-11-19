@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-19-dragon-king',
+    date: '19 November 2026',
+    title: 'Campaign Chapter IX: The Dragon King\'s Flood',
+    items: [
+      'A new campaign chapter opens once you finish The Tablet of Destinies: five missions for the Chinese of Chentang.',
+      'Guard the town\'s rice from the yaksha, save the shrines of Kunlun, and keep the temple standing through a night of flood.',
+      'Then break the sea gates and bring down the four Dragon Kings, with the slingers of Babylon at your side. Every line is spoken.',
+    ],
+  },
+  {
     id: '2026-11-18-tablet',
     date: '18 November 2026',
     title: 'Campaign Chapter VIII: The Tablet of Destinies',

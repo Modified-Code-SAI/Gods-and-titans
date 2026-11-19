@@ -888,7 +888,8 @@ Balor" (five for the Celts against Balor's Fomorians), then Chapter V, "The Eigh
 Japanese of Izumo against the serpent cult and Yamata no Orochi), then Chapter VI, "The New Fire" (five for the Aztecs
 of the lake city against the cult of Cipactli), then Chapter VII, "The Dragon of the Swamp" (five for the West
 Africans of Oyo against the swamp cult and Ninki Nanka), then Chapter VIII, "The Tablet of Destinies" (five for the
-Mesopotamians of Babylon against Kingu and Tiamat), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
+Mesopotamians of Babylon against Kingu and Tiamat), then Chapter IX, "The Dragon King's Flood" (five for the Chinese of
+Chentang against Ao Guang and the four Dragon Kings), in order (`CHAPTERS`, each mission carrying its `chapter` id and its number `n` in it; `MISSIONS` is all of them
 in the order they open). The hero is always player 0; the mission's data fixes the seed, map size,
 the computer players (name, pantheon, team, difficulty; `'tutorial'` is the sleeping camp of 5.13), whether creep
 camps are spawned, and each side's start (`start[i]`: purse, a Town Center health in place of 2000, finished
@@ -990,6 +991,17 @@ buildings placed in front of the Town Center, some tagged, and units). The hero'
   wins all five (the last at 15:17), an idle one loses all five, an Easy one wins the first and third. The narration
   was rendered from a respelt copy of the lines (mush-hush-shoo, Kin-goo, Esa-geela, oo-gah-loo) so Kokoro says the
   names; the clip names still come from the real words.
+  Chapter IX: The Pass of Chentang (a Temple, a god, and a raid with crossbowmen at 4:30 that makes for the tagged
+  granary), The Shrines of Kunlun (hold two sacred sites for 1:30 within 18:00 against an Easy AI, a celestial dragon
+  at 6:00), The Night of the Flood (hold the tagged Temple of Chentang ten minutes against six waves with crossbowmen
+  and celestial dragons, three fenghuang for the hero at 4:45, guardian lions at 10:00; `waitFor: ['hold']`), The
+  Sea Gates (muster fourteen soldiers, which reveals "tear down the two tagged sea gates"; two celestial dragons stand
+  guard as a bonus kill; the keepers come out at 9:00), The Four Dragon Kings (conquer a Normal and an Easy Chinese AI
+  with the Mesopotamian ally "Slingers of Babylon"; at 13:00 four celestial dragons rise as the Dragon Kings, with
+  crossbowmen and warriors on their own tag, `waitFor: ['kings']`). The Chinese titan Pangu is a creator, not a
+  monster, so the boss is a flight of four dragons (4,200 health in the air, against a titan's 6,000 on the ground).
+  A Normal hero won the finale on 11 of the seeds 13601 to 13612. AI-only runs of Chapter IX: a Normal hero wins all
+  five (the last at 19:59), an idle one loses all five, an Easy one wins all but the second and the fifth.
 
 ## 6. Simulation API (src/sim/)
 

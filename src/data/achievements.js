@@ -58,7 +58,7 @@ const PANTHEON_TITLES = {
 
 // One per campaign chapter: win all of its missions. Checked by recordCampaign (src/game/career.js) with
 // m.chapters, the ids of the chapters finished on this device, after a mission is won and when the Career opens.
-const CHAPTER_ICONS = { long_winter: '❄️', wolf_age: '🐺', chaos_sea: '🌊', balor_eye: '👁', serpent: '🐍', new_fire: '🔥', dragon_swamp: '🐉', tablet: '📜' };
+const CHAPTER_ICONS = { long_winter: '❄️', wolf_age: '🐺', chaos_sea: '🌊', balor_eye: '👁', serpent: '🐍', new_fire: '🔥', dragon_swamp: '🐉', tablet: '📜', dragon_king: '🌊' };
 const chapterAchievements = CHAPTERS.map((ch) => ({
   id: `chapter_${ch.id}`, group: 'campaign', name: ch.title, icon: CHAPTER_ICONS[ch.id] || '📜', chapter: ch.id,
   desc: `Finish ${ch.chapter} of the campaign: win all ${ch.missions.length} of its missions.`,
