@@ -6,6 +6,16 @@
 /** The updates, newest first: { id, date, title, items: string[] }. */
 export const NEWS = [
   {
+    id: '2026-11-19-poisoned-river',
+    date: '19 November 2026',
+    title: 'Campaign Chapter X: The Poisoned River',
+    items: [
+      'A new campaign chapter opens once you finish The Dragon King\'s Flood: five missions for the Hindus of Vrindavan.',
+      'Kaliya, the king of the nagas, has poisoned the Yamuna. Guard the cowherds, save the kadamba grove, and hold the temple until Garuda comes.',
+      'Then break the serpent towers and face Kaliya himself. With this chapter, every one of the ten peoples has a story of its own.',
+    ],
+  },
+  {
     id: '2026-11-19-dragon-king',
     date: '19 November 2026',
     title: 'Campaign Chapter IX: The Dragon King\'s Flood',

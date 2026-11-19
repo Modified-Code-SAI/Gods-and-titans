@@ -1515,6 +1515,7 @@ kbd {
 .mw-cmap.is-new_fire { --sea: #173a3f; --sea-hi: #23565a; --land: #7a7a4a; --land-hi: #b4a86a; --coast: #f0dcae; --ring: rgba(150, 70, 20, 0.45); }
 .mw-cmap.is-dragon_swamp { --sea: #1f3a2c; --sea-hi: #2f5640; --land: #8a7444; --land-hi: #c4a466; --coast: #ead2a0; --ring: rgba(60, 90, 40, 0.45); }
 .mw-cmap.is-dragon_king { --sea: #12324a; --sea-hi: #1f4f6e; --land: #6f8a5a; --land-hi: #a6bf84; --coast: #eadfb8; --ring: rgba(150, 40, 40, 0.42); }
+.mw-cmap.is-poisoned_river { --sea: #1b2f2a; --sea-hi: #2c4a42; --land: #7f8f4e; --land-hi: #b8c474; --coast: #efe2b0; --ring: rgba(170, 90, 20, 0.42); }
 .mw-cmap.is-tablet { --sea: #163a4a; --sea-hi: #245a6c; --land: #a98a58; --land-hi: #d6b67e; --coast: #f2e2b8; --ring: rgba(40, 70, 120, 0.42); }
 .mw-cmap-sea { fill: var(--sea); }
 .mw-cmap-waves path { fill: none; stroke: var(--sea-hi); stroke-width: 1.4; stroke-linecap: round; opacity: 0.8; }

@@ -1503,6 +1503,170 @@ const DRAGON_KING = [
   },
 ];
 
+const POISONED_RIVER = [
+  {
+    id: 'vrindavan',
+    title: 'The Herds of Vrindavan',
+    place: 'Vrindavan, on the Yamuna',
+    seed: 14101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'hindu', team: 1 },
+      { name: 'Serpents of Kaliya', pantheon: 'hindu', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'storehouse', tag: 'herds', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Vrindavan, the village of the cowherds, on the banks of the river Yamuna. Kaliya, the king of the nagas, has made his home in the river, and his venom has turned the water black. The cattle that drink from it fall dead, and the trees on the bank are bare. Now his serpents are coming up the bank to burn the cowherds\' stores and drive the people away. Raise a Temple, call the gods, and keep the storehouse standing.',
+    victory: 'The serpents have slid back into the black water. But the river is still poison, and it is spreading. The old cowherds say the kadamba grove upstream is holy, and while its stones are tended, one stretch of the river stays clean.',
+    defeat: 'The serpents burned the stores, and the cowherds have fled Vrindavan. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '🔱', text: 'Summon one of the gods' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off the serpents of Kaliya', hidden: true },
+      { id: 'herds', kind: 'protect', tag: 'herds', icon: '🌾', text: 'Keep the cowherds\' storehouse standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the serpents\' camp' },
+    ],
+    events: [
+      { at: 4, say: 'The river is black this morning, and the reeds are moving. The serpents will come for the stores. Make ready.' },
+      { at: 270, say: 'They are on the bank, and a naga is with them, spitting venom! They make for the storehouse.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['archer', 2], ['hindu_naga', 1]), at: 'front', march: true, target: 'herds' } },
+      { after: 'raid', say: 'The serpents are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'kadamba',
+    title: 'The Kadamba Grove',
+    place: 'The kadamba grove, upstream',
+    seed: 14301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'hindu', team: 1 },
+      { name: 'Priests of the Naga', pantheon: 'hindu', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'The kadamba grove, where one great tree still stands green above the poisoned river. Kaliya\'s priests have taken the holy stones around it, and they are pouring venom on its roots. Send your Worshippers and Priests to the stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes the last green tree on the Yamuna will be dead.',
+    victory: 'The grove is ours, and the kadamba tree still stands. But Kaliya has felt it. Tonight he sends everything that crawls in the river against the temple of Vrindavan.',
+    defeat: 'The kadamba tree is dead, and the whole river is poison. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'stones', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'Nagas in the grove! The priests send them to drive you from the stones.', spawn: { owner: 1, tag: 'nagas', units: U(['hindu_naga', 2], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'The leaves of the kadamba are falling. Five minutes left!' },
+    ],
+  },
+  {
+    id: 'yamuna_night',
+    title: 'The Night on the Yamuna',
+    place: 'The temple of Vrindavan',
+    seed: 14403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'hindu', team: 1 },
+      { name: 'Brood of the River', pantheon: 'hindu', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'mandir', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the brood's camp early does not end the night: the temple must still be kept until the dawn
+    briefing: 'Tonight the river comes for Vrindavan. Kaliya\'s brood will crawl out of the black water, wave after wave, to pull down the temple where the people pray to Vishnu. Keep the Temple standing through ten minutes of darkness. Help is coming on great wings: Garuda, the eagle of Vishnu, is the enemy of every serpent.',
+    victory: 'The dawn has come, and the temple still stands. Garuda has seen where Kaliya hides: in a deep pool of the river, behind two towers his serpents have raised on the bank.',
+    defeat: 'The temple of Vrindavan has fallen, and the river has taken the village.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'mandir', kind: 'protect', tag: 'mandir', icon: '🏛️', text: 'Keep the Temple of Vrindavan standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The night is falling, and the river is stirring. Put your soldiers between the water and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'mandir' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['archer', 2], ['hindu_naga', 1]), at: 'front', march: true, target: 'mandir' } },
+      { at: 255, say: 'Nagas out of the black water! Hold the line!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['hindu_naga', 2]), at: 'front', march: true, target: 'mandir' } },
+      { at: 285, say: 'Garuda has come! The eagle of Vishnu falls on the serpents!', spawn: { owner: 0, tag: 'garuda', units: U(['hindu_garuda', 1]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['archer', 3], ['hindu_naga', 2]), at: 'front', march: true, target: 'mandir' } },
+      { at: 435, say: 'More nagas, and the largest yet! Archers, aim for the hoods!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['hindu_naga', 3]), at: 'front', march: true, target: 'mandir' } },
+      { at: 525, say: 'The last of the brood is coming. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['hindu_naga', 3], ['warrior', 6], ['archer', 4]), at: 'front', march: true, target: 'mandir' } },
+      { at: 600, spawn: { owner: 0, tag: 'vanaras', units: U(['hindu_vanara', 4], ['warrior', 6], ['archer', 2]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'naga_towers',
+    title: 'The Serpent Towers',
+    place: 'The deep pool of the Yamuna',
+    seed: 14504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'hindu', team: 1 },
+      { name: 'Guards of the Pool', pantheon: 'hindu', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'towers', ring: 9 }, { type: 'tower', tag: 'towers', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'On the bank above Kaliya\'s pool, his serpents have raised two towers, and from them they watch every path to the water. Muster an army, then tear the towers down. Two great nagas lie coiled before them. Bring them down too, if you can.',
+    victory: 'The serpent towers have fallen, and the way to the pool is open. And up the river road, under red banners, an old friend has come: the crossbows of Chentang, who know what it is to fight a king of the water.',
+    defeat: 'The serpent towers still stand. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'towers', kind: 'destroy', tag: 'towers', icon: '🗼', text: 'Tear down the two serpent towers', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'nagas', kind: 'kill', tag: 'nagas', optional: true, icon: '🐍', text: 'Bonus: slay the two great nagas' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'nagas', units: U(['hindu_naga', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The towers stand beyond the guards\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the towers!', reveal: 'towers' },
+      { at: 540, say: 'The guards of the pool come out to meet you, with nagas at their side!', spawn: { owner: 1, tag: 'guards', units: U(['hindu_naga', 3], ['warrior', 3], ['archer', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'kaliya',
+    title: 'The Serpent King',
+    place: 'Kaliya\'s pool',
+    seed: 14605,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'hindu', team: 1 },
+      { name: 'Host of Kaliya', pantheon: 'hindu', team: 2, difficulty: 'normal' },
+      { name: 'Chentang Crossbows', pantheon: 'chinese', team: 1, difficulty: 'normal' },
+      { name: 'Brood of the Pool', pantheon: 'hindu', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['kaliya'], // breaking the host before 13:00 does not end it: Kaliya still rises, and must fall
+    briefing: 'Kaliya\'s pool, where the Yamuna runs deepest and blackest. His host and his brood hold the banks, and the crossbows of Chentang stand with us. Break them. And when the serpent king himself rises from the pool, with his queens around him, bring them down, and let the river run clean.',
+    victory: 'Kaliya is beaten. He has bowed his many heads and sworn to leave the Yamuna for the far ocean, and never to return. The river runs clear, the kadamba is in flower, and the herds are drinking at the bank. Ten peoples have now stood together against the dark, and every one of them has its tale.',
+    defeat: 'Kaliya has risen, and the Yamuna is poison from the mountains to the sea. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Kaliya and the brood of the pool' },
+      { id: 'kaliya', kind: 'kill', tag: 'kaliya', icon: '🐍', text: 'Bring down Kaliya and his serpent queens', hidden: true, waitText: 'Kaliya rises from the pool' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The crossbows of Chentang stand beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The pool is boiling, and the water is turning blacker still. The serpent king is waking.' },
+      { at: 780, say: 'Kaliya rises from the pool, with his queens around him! Bring them down!', reveal: 'kaliya', spawn: { owner: 1, tag: 'kaliya', units: U(['hindu_naga', 6]), at: 'front', march: true, always: true } },
+      { after: 'kaliya', say: 'The serpent king is beaten! Now finish his host.' },
+      // His guard, on a tag of their own: "Bring down Kaliya" is done when the nagas fall.
+      { at: 780, spawn: { owner: 1, tag: 'kaliya_guard', units: U(['warrior', 5], ['archer', 4]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -1585,6 +1749,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the Chinese',
     blurb: 'Ao Guang, the Dragon King of the Eastern Sea, has held back the rain for three years, and now he sends the flood. Five battles for the people of Chentang.',
     missions: DRAGON_KING,
+  },
+  {
+    id: 'poisoned_river',
+    chapter: 'Chapter X',
+    title: 'The Poisoned River',
+    pantheon: 'hindu',
+    people: 'the Hindus',
+    blurb: 'Kaliya, the king of the nagas, has made his home in the Yamuna, and his venom has turned the river black. Five battles for the cowherds of Vrindavan.',
+    missions: POISONED_RIVER,
   },
 ].map((c, ci) => Object.freeze({
   ...c,
