@@ -1339,6 +1339,170 @@ const TABLET = [
   },
 ];
 
+const DRAGON_KING = [
+  {
+    id: 'chentang',
+    title: 'The Pass of Chentang',
+    place: 'Chentang Pass, by the Eastern Sea',
+    seed: 13101,
+    mapSize: 'small',
+    creeps: false,
+    players: [
+      { pantheon: 'chinese', team: 1 },
+      { name: 'Yaksha of the Sea', pantheon: 'chinese', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 500, wood: 300, faith: 80, units: U(['warrior', 3]), buildings: [{ type: 'storehouse', tag: 'granary', ring: 8 }] },
+      { townHp: 1500, units: U(['warrior', 3], ['archer', 2]) },
+    ],
+    briefing: 'Chentang Pass, where the mountains come down to the Eastern Sea. Ao Guang, the Dragon King of the Eastern Sea, has sent no rain for three years, and now he demands the town\'s rice as tribute, or he will send the sea itself. His yaksha, the sea demons, are already coming ashore. Raise a Temple, call the gods of heaven, and keep the granary standing: it is all that stands between the town and hunger.',
+    victory: 'The yaksha are driven back into the waves. But the Dragon King has heard, and he is angry. His servants have gone up into the mountains of Kunlun, to break the shrines where the people pray for rain.',
+    defeat: 'The yaksha emptied the granary, and the town will starve. Gather your people and try again.',
+    objectives: [
+      { id: 'temple', kind: 'build', type: 'temple', count: 1, icon: '🏛️', text: 'Raise a Temple' },
+      { id: 'god', kind: 'gods', count: 1, icon: '☁️', text: 'Summon a god of heaven' },
+      { id: 'raid', kind: 'kill', tag: 'raid', icon: '⚔️', text: 'Drive off the yaksha of the sea', hidden: true },
+      { id: 'granary', kind: 'protect', tag: 'granary', icon: '🌾', text: 'Keep the granary standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'camp', kind: 'conquer', optional: true, icon: '🔥', text: 'Bonus: burn the yaksha\'s camp' },
+    ],
+    events: [
+      { at: 4, say: 'The sea is restless below the pass. The yaksha will come for the rice. Make ready.' },
+      { at: 270, say: 'The yaksha come up out of the surf with their crossbows! They make for the granary.', reveal: 'raid', spawn: { owner: 1, tag: 'raid', units: U(['warrior', 3], ['chinese_crossbowman', 3]), at: 'front', march: true, target: 'granary' } },
+      { after: 'raid', say: 'The yaksha are broken. Finish what you started.' },
+    ],
+  },
+  {
+    id: 'kunlun',
+    title: 'The Shrines of Kunlun',
+    place: 'The mountains of Kunlun',
+    seed: 13301,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'chinese', team: 1 },
+      { name: 'Servants of Ao Guang', pantheon: 'chinese', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 600, wood: 400, faith: 150, units: U(['warrior', 3], ['archer', 2], ['priest', 2]), buildings: [{ type: 'barracks' }, { type: 'house' }] },
+      {},
+    ],
+    briefing: 'High in the mountains of Kunlun stand the shrines where the people have prayed for rain since the first emperors. The Dragon King\'s servants have taken them, and they mean to break them stone by stone. Send your Worshippers and Priests to the holy stones, and hold two of them together for a minute and a half. Be quick: in eighteen minutes the shrines will be rubble.',
+    victory: 'The shrines of Kunlun are ours. But from the peaks we saw the sea rising. Tonight the Dragon King will send the flood against Chentang, and the temple of the town must not fall.',
+    defeat: 'The shrines are broken, and no prayer for rain will be heard. Try again, and stand on the holy stones.',
+    objectives: [
+      { id: 'stones', kind: 'hold', count: 2, seconds: 90, limit: 1080, icon: '✨', text: 'Hold two sacred sites at once for 1:30' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The sacred sites glow on the map. Stand a Worshipper or a Priest on one, with no enemy near, to take it.' },
+      { at: 360, say: 'A dragon of the sea flies over the peaks! Archers, look up!', spawn: { owner: 1, tag: 'dragon', units: U(['chinese_celestial_dragon', 1], ['warrior', 3]), at: 'front', march: true } },
+      { at: 780, say: 'The servants are breaking the stones. Five minutes left!' },
+    ],
+  },
+  {
+    id: 'flood_night',
+    title: 'The Night of the Flood',
+    place: 'The temple of Chentang',
+    seed: 13403,
+    mapSize: 'medium',
+    creeps: false,
+    players: [
+      { pantheon: 'chinese', team: 1 },
+      { name: 'Tide of the East Sea', pantheon: 'chinese', team: 2, difficulty: 'tutorial' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 250, units: U(['warrior', 5], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }, { type: 'temple', tag: 'shrine', ring: 11 }] },
+      { townHp: 5000, units: U(['warrior', 4], ['archer', 2]) },
+    ],
+    waitFor: ['hold'], // razing the sea camp early does not end the night: the temple must still be kept until the dawn
+    briefing: 'Tonight the Dragon King sends the sea against Chentang. Wave after wave of his yaksha will come with the tide, and his dragons with them, to drown the temple where the town prays. Keep the Temple standing through ten minutes of darkness, and at dawn the tide will turn.',
+    victory: 'The dawn has come, and the tide has gone out. The temple of Chentang still stands. Now the Dragon King hides behind the sea gates, two towers at the edge of the water. The Monkey King knows the way: he once stole his iron staff from Ao Guang\'s own treasury.',
+    defeat: 'The flood has taken the temple, and Chentang is under the sea.',
+    objectives: [
+      { id: 'hold', kind: 'survive', seconds: 600, icon: '⏳', text: 'Hold out until the dawn' },
+      { id: 'shrine', kind: 'protect', tag: 'shrine', icon: '🏛️', text: 'Keep the Temple of Chentang standing' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The tide is coming in, and the yaksha with it. Put your soldiers between the sea and the Temple.' },
+      { at: 75, spawn: { owner: 1, tag: 'w1', units: U(['warrior', 4], ['archer', 2]), at: 'front', march: true, target: 'shrine' } },
+      { at: 165, spawn: { owner: 1, tag: 'w2', units: U(['warrior', 4], ['chinese_crossbowman', 3]), at: 'front', march: true, target: 'shrine' } },
+      { at: 255, say: 'A sea dragon rides the tide with them! Hold the line!', spawn: { owner: 1, tag: 'w3', units: U(['warrior', 4], ['archer', 3], ['chinese_celestial_dragon', 1]), at: 'front', march: true, target: 'shrine' } },
+      { at: 285, say: 'The fenghuang, the birds of peace, have flown down from the mountains to your side!', spawn: { owner: 0, tag: 'fenghuang', units: U(['chinese_fenghuang', 3]), at: 'home' } },
+      { at: 345, spawn: { owner: 1, tag: 'w4', units: U(['warrior', 6], ['chinese_crossbowman', 4], ['archer', 2]), at: 'front', march: true, target: 'shrine' } },
+      { at: 435, say: 'Two dragons in the storm! Archers, look up!', spawn: { owner: 1, tag: 'w5', units: U(['warrior', 5], ['archer', 4], ['chinese_celestial_dragon', 2]), at: 'front', march: true, target: 'shrine' } },
+      { at: 525, say: 'The last wave of the tide is coming. Hold until the dawn!', spawn: { owner: 1, tag: 'w6', units: U(['chinese_celestial_dragon', 1], ['warrior', 6], ['archer', 4], ['chinese_crossbowman', 2]), at: 'front', march: true, target: 'shrine' } },
+      { at: 600, spawn: { owner: 0, tag: 'lions', units: U(['chinese_guardian_lion', 3], ['warrior', 6], ['chinese_crossbowman', 2]), at: 'home' } },
+    ],
+  },
+  {
+    id: 'sea_gates',
+    title: 'The Sea Gates',
+    place: 'The shore of the Eastern Sea',
+    seed: 13504,
+    mapSize: 'small',
+    players: [
+      { pantheon: 'chinese', team: 1 },
+      { name: 'Keepers of the Gate', pantheon: 'chinese', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 150, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 400, wood: 300, buildings: [{ type: 'tower', tag: 'gates', ring: 9 }, { type: 'tower', tag: 'gates', ring: 9 }, { type: 'barracks', ring: 7 }] },
+    ],
+    briefing: 'At the edge of the Eastern Sea the Dragon King has raised two towers, the gates of his drowned kingdom. While they stand, no army can reach his palace under the waves. Muster an army, then tear the towers down. Two of his dragons circle above them. Bring them down too, if you can.',
+    victory: 'The sea gates have fallen, and the road into the Dragon King\'s kingdom lies open. Ao Guang has called his three brothers, the Dragon Kings of the South, the West and the North, to rise with him. And from the land between the rivers, an old friend has come: the slingers of Babylon, who have fought the sea before.',
+    defeat: 'The sea gates still stand. Try again.',
+    objectives: [
+      { id: 'army', kind: 'army', count: 14, icon: '⚔️', text: 'Muster an army of fourteen soldiers' },
+      { id: 'gates', kind: 'destroy', tag: 'gates', icon: '🗼', text: 'Tear down the two sea gates', hidden: true },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+      { id: 'dragons', kind: 'kill', tag: 'dragons', optional: true, icon: '🐉', text: 'Bonus: bring down the two dragons' },
+    ],
+    events: [
+      { at: 2, spawn: { owner: 1, tag: 'dragons', units: U(['chinese_celestial_dragon', 2]), at: 'front', guard: true } },
+      { at: 4, say: 'The gates stand beyond the keepers\' camp. Gather wood and gold, and muster your army.' },
+      { after: 'army', say: 'Your army is ready. Now tear down the gates!', reveal: 'gates' },
+      { at: 540, say: 'The keepers come out to meet you, with crossbows and a dragon above them!', spawn: { owner: 1, tag: 'keepers', units: U(['chinese_crossbowman', 4], ['chinese_celestial_dragon', 1], ['warrior', 3]), at: 'front', march: true } },
+    ],
+  },
+  {
+    id: 'east_sea',
+    title: 'The Four Dragon Kings',
+    place: 'The palace under the Eastern Sea',
+    seed: 13611,
+    mapSize: 'medium',
+    players: [
+      { pantheon: 'chinese', team: 1 },
+      { name: 'Host of Ao Guang', pantheon: 'chinese', team: 2, difficulty: 'normal' },
+      { name: 'Slingers of Babylon', pantheon: 'mesopotamian', team: 1, difficulty: 'normal' },
+      { name: 'Yaksha of the Deep', pantheon: 'chinese', team: 2, difficulty: 'easy' },
+    ],
+    start: [
+      { gold: 700, wood: 500, faith: 200, units: U(['warrior', 4], ['archer', 3]), buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'house' }] },
+      { gold: 900, wood: 700, faith: 200, buildings: [{ type: 'barracks' }, { type: 'house' }, { type: 'tower', ring: 8 }] },
+      {},
+      { gold: 600, wood: 400 },
+    ],
+    waitFor: ['kings'], // breaking the host before 13:00 does not end it: the four Dragon Kings still rise, and must fall
+    briefing: 'The shore of the Eastern Sea, where the water has drawn back to show the road to the Dragon King\'s palace. His host and his yaksha stand before it, and the slingers of Babylon stand with us. Break them. And when the four Dragon Kings rise out of the sea together, keep your archers close, and bring them down.',
+    victory: 'The four Dragon Kings have fallen into the sea, and they have sworn by heaven to send the rain in its season. That night the rain came down on Chentang, soft and warm, and the rice stood green again. Nine peoples have now stood together against the dark.',
+    defeat: 'The Dragon Kings have risen, and the sea has covered Chentang. Try again.',
+    objectives: [
+      { id: 'conquer', kind: 'conquer', icon: '🔥', text: 'Break the host of Ao Guang and the yaksha of the deep' },
+      { id: 'kings', kind: 'kill', tag: 'kings', icon: '🐉', text: 'Bring down the four Dragon Kings', hidden: true, waitText: 'The Dragon Kings rise' },
+      { id: 'home', kind: 'protect', tag: 'home', icon: '🛡️', text: 'Keep your Town Center standing' },
+    ],
+    events: [
+      { at: 4, say: 'The slingers of Babylon stand beside you. Build, summon, and strike.' },
+      { at: 720, say: 'The sea is drawing back from the shore. Something is coming up out of the deep.' },
+      { at: 780, say: 'The four Dragon Kings rise out of the sea together! Bring them down!', reveal: 'kings', spawn: { owner: 1, tag: 'kings', units: U(['chinese_celestial_dragon', 4]), at: 'front', march: true, always: true } },
+      { after: 'kings', say: 'The Dragon Kings have fallen! Now finish their host.' },
+      // Their yaksha, on a tag of their own: "Bring down the four Dragon Kings" is done when the dragons fall.
+      { at: 780, spawn: { owner: 1, tag: 'kings_guard', units: U(['chinese_crossbowman', 4], ['warrior', 4]), at: 'front', march: true, always: true } },
+    ],
+  },
+];
+
 /** The chapters, in order; a chapter's first mission opens once the last of the chapter before is won. */
 export const CHAPTERS = Object.freeze([
   {
@@ -1412,6 +1576,15 @@ export const CHAPTERS = Object.freeze([
     people: 'the Mesopotamians',
     blurb: 'Kingu has stolen the tablet of destinies, and Tiamat\'s eleven monsters are marching on Babylon. Five battles for the people of the two rivers.',
     missions: TABLET,
+  },
+  {
+    id: 'dragon_king',
+    chapter: 'Chapter IX',
+    title: 'The Dragon King\'s Flood',
+    pantheon: 'chinese',
+    people: 'the Chinese',
+    blurb: 'Ao Guang, the Dragon King of the Eastern Sea, has held back the rain for three years, and now he sends the flood. Five battles for the people of Chentang.',
+    missions: DRAGON_KING,
   },
 ].map((c, ci) => Object.freeze({
   ...c,
