@@ -2,13 +2,13 @@
 
 A real-time strategy game in the style of Warcraft III, in low-poly 3D, that runs in the browser. Lead your Worshippers, grow a Village into a Town and a City, pray at Shrines and Temples for Faith, and summon the creatures, gods and titans of ten mythologies: Greek, Norse, Egyptian, Hindu, Japanese, Chinese, Aztec, Celtic, Mesopotamian and West African.
 
-**Play:** https://austinbryanprice-droid.github.io/Gods-and-titans/
+**Play:** https://modified-code-sai.github.io/Gods-and-titans/
 
-Up to 4 players per match, each a person or a computer opponent (Easy, Normal, Hard or Brutal). Play co-op against the computer or against each other.
+Up to 6 players per match, each a person or a computer opponent (Easy, Normal, Hard or Brutal). Play co-op against the computer or against each other.
 
 New to the game? **Learn to Play** on the title screen is a guided first match: an objective panel, an arrow to each target and glowing buttons walk you through gathering, building, praying, summoning a god, training soldiers and destroying a sleeping camp of raiders, with a gold, silver or bronze medal for how fast you win.
 
-Then try the **Campaign**: Chapter I, *The Long Winter*, five story missions for the Greeks of Thera against raiders from the frozen north, each with its own map, objectives, scripted raids and reinforcements, and a narrated briefing. A mission opens when you win the one before it, and the last ends with Surtr, the fire giant. Winning it opens Chapter II, *The Wolf Age*: five more for the Norse of Hordaland against Loki, from the burning of their winter stores to the last battle on the plain of Vigrid, with the Greeks of Thera beside them. And winning that opens Chapter III, *The Sea of Chaos*: five for the Egyptians of the Nile against the raiders of Akkad and the priests of Tiamat, ending with the Norse at their side in the marshes of Eridu as the mother of monsters rises from the deep.
+Then try the **Campaign**: Chapter I, *The Long Winter*, five story missions for the Greeks of Thera against raiders from the frozen north, each with its own map, objectives, scripted raids and reinforcements, and a narrated briefing. A mission opens when you win the one before it, and the last ends with Surtr, the fire giant. Winning it opens Chapter II, *The Wolf Age*: five more for the Norse of Hordaland against Loki, from the burning of their winter stores to the last battle on the plain of Vigrid, with the Greeks of Thera beside them. And winning that opens Chapter III, *The Sea of Chaos*: five for the Egyptians of the Nile against the raiders of Akkad and the priests of Tiamat, ending with the Norse at their side in the marshes of Eridu as the mother of monsters rises from the deep. Ten chapters in all, one for each pantheon, fifty missions.
 
 ## Playing online with friends
 
@@ -58,7 +58,7 @@ npm install
 npm run serve
 ```
 
-then open http://localhost:8080/. Checks (CI runs all four on every pull request):
+then open http://localhost:8080/. Checks (CI runs them on every pull request):
 
 - `npm test`: the unit tests (about 2.5 minutes).
 - `npm run lint`: ESLint, real mistakes only (unused or undefined names and the like).
@@ -67,7 +67,7 @@ then open http://localhost:8080/. Checks (CI runs all four on every pull request
 
 The deployed site is the same code bundled by `node tools/build-site.mjs` (the Pages workflow runs it): a few minified files with hashed names instead of ~270 modules. Browser tools pick their browser through `tools/browser.mjs`; set `CHROMIUM_PATH` to use another one.
 
-`DESIGN.md` is the full design spec. The game rules live in `src/sim/` (plain JavaScript that also runs in Node), rendering in `src/render/`, the interface in `src/ui/`, online play in `src/net/` and the computer players in `src/ai/`.
+Working on the code, by hand or with an AI coding agent? Start with [AGENTS.md](AGENTS.md), then [docs/](docs/) (architecture, development, gotchas, status, and 120+ feature notes in `docs/knowledge/`). `DESIGN.md` is the full design spec. The game rules live in `src/sim/` (plain JavaScript that also runs in Node), rendering in `src/render/`, the interface in `src/ui/`, online play in `src/net/` and the computer players in `src/ai/`.
 
 ## Credits
 

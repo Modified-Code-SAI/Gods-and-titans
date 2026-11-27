@@ -1,0 +1,12 @@
+# terrain-ground-field
+
+> Smooth ground and clear water (graphics overhaul step 1, terrain thread): the ground field architecture and where each piece lives in src/render
+
+Terrain and water thread of [graphics-overhaul-plan](graphics-overhaul-plan.md) step 1 (2026-10-21), render only: the sim, its grid and `mapData.heights` are untouched. Merged as PR #22 (squash 99f83e8, 2026-10-21 16:43Z, two minutes after Lighting #20 as 33d22e6; Tests and the Pages deploy were green on main, and the merged main rendered right at golden hour, day and night). The branch was `claude/project-thread-ki3kmg`. Traps and numbers: [terrain-render-gotchas](terrain-render-gotchas.md).
+
+- `ground-field.js`: `groundField(map)` (cached per map) is the single height source, 4 samples a tile: Catmull-Rom surface through the sim vertex heights; shore rebuilt from a blurred distance to the water tiles (`SHORE_OFFSET` 0.12, so the coast moves by a fraction of a tile and tile types stay as the sim says); ROCK tiles raised into sandstone outcrops (`0.72 * face * crag`, `RISE_MAX` 1.2, `STRATA_STEP` / `STRATA_AMOUNT` for a hint of ledges). Per-sample shore distance, rise, forest share and cavity go into an RGBA8 data texture. Pure typed arrays, so it builds in Node tests.
+- `height.js`: `heightAt` answers from the field (trees, units, VFX, camera, picking, water and mesh agree). `footprintHeight` (buildings) is still the highest raw sim vertex under the footprint.
+- `terrain.js`: 16x16-tile chunks over shared vertices (per-chunk culling). In the shader, `gShore` from the data texture swaps layers: lake bed only under water, sand in the shallows and wherever the tile map says lake on dry ground, pale-to-damp sand band, sand shelf. Sandstone comes from `rockTex` (ROCK top plus triplanar FACE strata on walls; `TERRAIN_FACE` define on medium and up). Cache key `mythicwar-terrain-v5`.
+- `terrain-water.js`: mesh over the field cells below `WATER_LEVEL` (-0.2) with per-vertex depth (no depth-buffer read), premultiplied output, foam lace, cyan night glow from `uNight`. Reads the Lighting step's `WORLD_UNIFORMS` by reference with fixed noon stand-ins, so it renders on a build without them.
+- `terrain-textures.js`: 8 layers (GRASS, DRY, DIRT, SAND, ROCK, FOREST, BED, FACE); `paintRock` and `paintFace` are new, the sand is pale cream.
+- Tests: `tests/render/ground-field.test.js`, `game-renderer-parts.test.js`, `props.test.js` (heightAt). How to capture stills: [render-shot-workflow](render-shot-workflow.md).

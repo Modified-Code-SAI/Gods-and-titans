@@ -1,0 +1,14 @@
+# graphics-overhaul-plan
+
+> Staged graphics overhaul the owner started 2026-10-21 (smooth, rounded, never blocky) - Ashbound Outpost look target, render-layer decision, step order, status
+
+The owner (2026-10-21) asked for a significant graphics overhaul of the existing game: smooth and rounded, never blocky or voxel, at the quality of his references, across lighting, atmosphere, terrain, water, buildings, NPCs, playable characters and the rest.
+
+- Look target: "Ashbound Outpost" (his project Claude Survivor Builder), a day-to-night lake valley: golden low sun with bloom and shafts, gold/violet/magenta skies, rounded canopies, layered conifers with warm rim light, clear teal water, sand rim, sandstone cliffs, depth haze, moonlit night with stars. Wanted in this game's 3D top-down view. Earlier references: golden-hour village, forest water, Valheim modular building, Enshrouded base; the Minecraft shader shots are for light, sky, haze and water only, never blocky geometry.
+- Decision ("Go ahead and do it in steps"): render-layer work in the existing game, not a new build; sim, net, AI and data untouched. Told him: a stylized take; Valheim-style buildings are realistic; Enshrouded-level characters need authored models and animation, so an asset approach must be decided first.
+- Steps, each its own PR(s): 1. Lighting and atmosphere, Terrain and water, Trees and foliage. 2. Buildings and structures (tri budgets in tests are tight). 3. Units, gods and creatures. 4. Maybe HUD and menus in the Ashbound style.
+- Heavy effects go in High/Ultra; Low must stay playable on an ordinary laptop. Day and night runs by default, switchable in settings, render-only from the sim clock.
+- Status 2026-10-22: step 1 merged (#20 [time-of-day-system](time-of-day-system.md), #22 and #23 [terrain-ground-field](terrain-ground-field.md), #21 [foliage-look](foliage-look.md)). Step 2 buildings is done: part 1 merged as #25 (kit, roof courses, built courts, Greek and Norse roofs, [buildings-kit-code-map](buildings-kit-code-map.md)); parts 2 and 3 merged as #26 (501af67: roofs in courses for the other eight pantheons, rounded walls, towers, gates, temples, shrines, lit lookout lamp), Tests and Deploy green on main, numbers in [buildings-budgets-and-shots](buildings-budgets-and-shots.md). Not yet seen on a real GPU or at Low on the owner's laptop; he was asked to say if anything looks off. Character sample: draft PR #24 (still open on 2026-10-22), Norse only, High/Ultra only, CI green, waiting on the owner's verdict and "Merge it." before the other nine pantheons ([rich-characters](rich-characters.md)).
+
+**Why:** a new coordinator or thread needs the direction, look target and step order without re-asking the owner.
+**How to apply:** pipeline constraints are in [gods-titans-graphics](gods-titans-graphics.md); project background in [mythic-war-game](mythic-war-game.md); update the status line as steps land.

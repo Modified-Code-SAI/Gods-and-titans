@@ -1,0 +1,14 @@
+# alerts-tips-gotchas
+
+> Traps from the alerts and tips work: snapshot order for defeat events, attention-only alerts, late permission prompts, stacked cards, fake-DOM limits for menu tests, driving the real game with window.__game
+
+Found while building [alerts-and-tips](alerts-and-tips.md):
+
+- A ViewState pushes the snapshot (players, time, gameOver) BEFORE it fires that snapshot's events, so on `playerDefeated` the local player already reads `defeated`. AlertEngine handles that event before its `playing()` guard; anything new that reacts to a defeat or game over must do the same.
+- `underAttack` suppresses the "enemies near" alert for 8 s (COVERED_BY_ATTACK). To see the new alert in a live run, drop the enemy 8 tiles from the Town Center and step only 12 ticks.
+- With `alerts: 'off'` the engine still emits an alert carrying only `attention` (the tab text). A sink must look at which parts exist (text, sound, ping, jump), not at `kind` (Cursor Bugbot caught `holdHints` clearing tips for a warning nobody saw).
+- A permission prompt answers whenever the player does: number the picks (`chooseTabAlerts` returns null when superseded) or a late answer overwrites a newer click. A card stacked under another panel (the tip under the checklist) must be re-placed every frame, since the panel can close.
+- Tips need a first look at a low game time: the scheduler sets `nextAt = max(90, t + 30)` at its first look, so a test that jumps straight to t = 95 sees nothing. Call `update()` at t = 1 first.
+- Fake DOM (tests/ui/fake-dom.js): `className` and `classList` are separate (a button starts with its className; clicks toggle the classList), `h()` stores `checked` as an attribute (set `input.checked` yourself before `fire('change')`), an unset `style.top` is `undefined`, no layout (set `offsetTop` and `offsetHeight` by hand), no `querySelectorAll`. The whole menu builds in Node with: `Node[Symbol.hasInstance]` shim, `requestAnimationFrame` stub, a Proxy canvas context (`FakeElement.prototype.getContext`) and `querySelectorAll = () => []` (see tests/ui/alert-settings.test.js).
+- Real-browser smoke runs (Playwright, software GL, `--use-angle=swiftshader`): the page exposes `window.__game`; `__game.session.ticker.run(n)` steps n sim ticks (20 per game second), `__game.session.world.spawnUnit(1, 'warrior', x, y, { silent: true })` drops an enemy, `__game.marks.active()` lists the team marks. Software frames are slow, so a tip card (9 to 18 s on screen) can fade before a screenshot; hover it (`mouseenter`) or shoot sooner. Headless Chromium reports Notification permission 'denied', which exercises the fallback note.
+- The F10 menu is long now (Time of day, three toggles, tips, Alerts, tab row, volume); `.hud-overlay` scrolls, and the Music toggle and Music volume rows (PR #58, next to the sound-effects volume) made it longer: grouping the rows is the next tidy-up.
