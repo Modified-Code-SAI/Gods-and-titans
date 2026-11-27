@@ -1,0 +1,3 @@
+{
+  "install": "npm ci --no-audit --no-fund && (node --input-type=module -e 'import { existsSync } from \"node:fs\"; import { chromium } from \"playwright\"; import { browserPath } from \"./tools/browser.mjs\"; let own = \"\"; try { own = chromium.executablePath(); } catch {} process.exit((own && existsSync(own)) || browserPath() ? 0 : 1);' || npx playwright install chromium)"
+}
