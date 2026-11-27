@@ -1,0 +1,11 @@
+# rich-beast-biped-plan
+
+> Beast bipeds (Vanara, Ugallu, Sasabonsam, Bultungin) rich models on the humanoid rig: dispatch, new files and tables, costs (PR #41)
+
+Units: `hindu_vanara` (creature), `mesopotamian_ugallu` (minion: 8.3k of its 8.5k budget, no room left), `west_african_sasabonsam` (creature, flies, 27 bones), `west_african_bultungin` (creature, scale 2.3). PR #41 (draft, stacked on #40's branch `claude/creatures-reptiles-20tcd3`, 2026-10-24); stills in (an off-repo folder, not kept) Part of [rich-creatures-plans](rich-creatures-plans.md); look traps in [rich-creature-look-traps](rich-creature-look-traps.md).
+
+**Dispatch (not a creature plan):** they ride the humanoid skeleton and pose code. `RICH_BODIES` in rich-humanoid.js = humanoid, giant, beast_biped. `buildRichTemplate` takes the `beast_biped` dims of unit-bodies.js (stooped, digitigrade, stride 1.0) unless the head is in `UPRIGHT_BEASTS` (monkey: the Vanara and the Chinese monkeys keep humanoid dims, so they are unchanged). `heldPiece` returns null for `claws` on a beast biped (the outfit builds claws on the hands). `BEAST_HEADS` (rich-heads.js) = jackal, falcon, monkey, bird, demon, lion, wolf; `demon` on a beast biped is the bat head, else the oni. `RICH_EXTRAS` has `mane`.
+
+**New files:** `rich-beast-heads.js` (`carnivore()` + tables LION, HYENA, BAT; skull stations `[y,rx,rz,dx]`, muzzle `[x,y,ry,rz]`, eye `[x,y,z,size]`, ear `[y,z,rise,size,lean]`, `earFlat`, `earTip`, `mask`, `teeth`; `X(x)=D.headX+x*hs`), `rich-beast.js` (`addClaws`, `addBeastLegs`, `addTalonFeet`, `addPaws`, `addBeastTail` lion|hyena, `addLionMane`, `addHyenaCrest`), `rich-beast-wings.js` (`batWingPieces`: wingR1..L2 rigid pieces, needs `humanoidSpec` opts.wing). New outfit hook `skinPaint(E)` (paint fn or null) is applied to bare skin before head, hands and layers; `outfitFor(pantheon)` returns a fresh merged object per call (patch `OUTFITS`, not the result). `spots(cell,size,k,dark)` in rich-paint.js; the Bultungin alone gets denser lofts (`SPOTTED`).
+
+**Costs:** Vanara 5.4k, Sasabonsam 7.3k, Bultungin 7.6k, Ugallu 8.3k triangles. Tests: tests/render/rich-beast-bipeds.test.js (10) plus gates in rich-models.test.js (the Egyptian head gate now uses `gorilla`, since `wolf` is a built head).

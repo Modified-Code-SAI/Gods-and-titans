@@ -1,11 +1,13 @@
-// The campaign (DESIGN 5.16): seven chapters of five linked missions each. Chapter I, "The Long Winter", for
+// The campaign (DESIGN 5.16): ten chapters of five linked missions each, one per pantheon. Chapter I, "The Long Winter", for
 // the Greeks against raiders out of the frozen north; Chapter II, "The Wolf Age", for the Norse against Loki,
 // opened by winning the last mission of Chapter I; Chapter III, "The Sea of Chaos", for the Egyptians against
 // Akkad and Tiamat, opened by winning the last of Chapter II; Chapter IV, "The Eye of Balor", for the Celts against
 // Balor and the Fomorians, opened by winning the last of Chapter III; Chapter V, "The Eight-Headed Serpent",
 // for the Japanese of Izumo against Yamata no Orochi, opened by winning the last of Chapter IV; Chapter VI, "The New
 // Fire", for the Aztecs against the cult of Cipactli, opened by winning the last of Chapter V; Chapter VII, "The Dragon
-// of the Swamp", for the West Africans of Oyo against Ninki Nanka, opened by winning the last of Chapter VI. Plain data, read by the sim (src/sim/campaign.js runs the
+// of the Swamp", for the West Africans of Oyo against Ninki Nanka, opened by winning the last of Chapter VI;
+// Chapter VIII, "The Tablet of Destinies" (Mesopotamians), Chapter IX, "The Dragon King's Flood" (Chinese) and
+// Chapter X, "The Poisoned River" (Hindus) follow in turn, each opened by the last mission before it. Plain data, read by the sim (src/sim/campaign.js runs the
 // objectives and the scripted events), the HUD (the objective panel) and the menu (the chapter
 // screen and the briefings). The briefings and the lines said during a mission are recorded
 // (assets/narration/campaign, tools/narration/render.py --campaign); a line's clip is named by

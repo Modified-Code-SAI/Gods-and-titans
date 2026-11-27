@@ -1,0 +1,15 @@
+# foliage-look
+
+> How trees, bushes, ferns and palms are drawn since the foliage pass (leaf puffs, needle sprays, quality hook, light) and the gallery/capture tools; read before touching props.js or foliage-shader.js
+
+Trees and foliage thread of the owner's graphics overhaul step 1 ([graphics-overhaul-plan](graphics-overhaul-plan.md), pipeline rules in [gods-titans-graphics](gods-titans-graphics.md)). PR #21 merged 2026-10-21 17:50Z as ecbdcc2 on his "Merge it." (`pr-merge-workflow` (process note, not kept)); it was a draft from that morning, with Lighting and Terrain merged in at 17:19. Cost and outcrop notes: [foliage-cost-and-outcrops](foliage-cost-and-outcrops.md); the three review traps: [shader-expanded-geometry-gotchas](shader-expanded-geometry-gotchas.md).
+
+- **Leaf puffs** (broadleaf 28, birch, bushes): one puff = 6 non-indexed vertices at its centre, aBb = (corner x, corner y, radius, 1). The vertex shader spreads the corners along the camera right/up axes (shadow pass: the light camera, pushed away from the light so the back of the crown casts). The fragment shader gives a sphere normal, the seeded 128 px leaf texture (leaf-texture.js), an outline cut into leaf tips (alpha to coverage on MSAA via uFolMS, hard discard on the Low canvas) and, with `sphereDepth`, gl_FragDepth.
+- **Needles**: spruces keep the shared 8-tier geometry reshaped per tree in the vertex shader (six PINE_PRESETS, aShape/aPine) and read the needle texture via aUv. Ferns (decor kind 'fern', placed in GameRenderer.buildUndergrowth) and palm fronds are ribbons with aUv; `patchFoliageMaterial({ needles: true })` gives aUv without the spruce morph.
+- **Quality**: createForest / createDecor take `{ quality }` and return `setQuality`; Low uses `plantPuffFlat` (no gl_FragDepth). GameRenderer.setQuality calls forest, decor and undergrowth, then patchFowObject on each (the swapped-in puff material has no fog until then).
+- **Light**: uFoliage (wrap, translucency, filter, rim), uFolShade (cool tint on indirect light), night grade 0.2 * uFolNight (0.4 was monochrome teal) bound to WORLD_UNIFORMS.uNight ([time-of-day-system](time-of-day-system.md)). Patch order: foliage, patchWorldMaterial, fog.
+- **Budgets**: tree up to 160 triangles (broadleaf 84, birch 76, pine 144, palm 152), decor up to 200 (ferns 80 and 64); re-measure before raising.
+- **Tools**: tools/gallery-foliage.html (views stand|lineup|single|far|plants, quality=, tod= through the real setTimeOfDay, manual=1, window.gallery.bench(n)) and tools/shot-foliage.mjs (--perf, --bench N); see [render-shot-workflow](render-shot-workflow.md).
+
+**Why:** a later thread (buildings, units, tuning) needs to know why foliage is built from quads and shaders and which knobs exist.
+**How to apply:** tune looks in props.js (geometry, colors), the detail arrays in shared() and the FOLIAGE_* strings in foliage-shader.js; keep tests/render/foliage.test.js (11) and game-renderer-foliage.test.js green. The owner was asked to judge Low on his laptop; the lean Low crown is the fallback ([foliage-cost-and-outcrops](foliage-cost-and-outcrops.md)).
